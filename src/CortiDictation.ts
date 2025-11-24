@@ -1,20 +1,26 @@
-import { type Corti } from '@corti/sdk';
+import type { Corti } from "@corti/sdk";
 
 // corti-dictation.ts
-import { html, LitElement } from 'lit';
-import { property, state } from 'lit/decorators.js';
-import { RecorderManager } from './RecorderManager.js';
-import './components/settings-menu.js';
-import './components/audio-visualiser.js';
-import './icons/icons.js';
-import ThemeStyles from './styles/theme.js';
-import ButtonStyles from './styles/buttons.js';
-import ComponentStyles from './styles/ComponentStyles.js';
-
-import type { ConfigurableSettings, RecordingState, ServerConfig } from './types.js';
-import { DEFAULT_DICTATION_CONFIG, LANGUAGES_SUPPORTED } from './constants.js';
-import CalloutStyles from './styles/callout.js';
-import { decodeToken } from './utils.js';
+import { html, LitElement } from "lit";
+import { property, state } from "lit/decorators.js";
+import { RecorderManager } from "./RecorderManager.js";
+import "./components/settings-menu.js";
+import "./components/audio-visualiser.js";
+import "./icons/icons.js";
+import {
+  DEFAULT_DICTATION_CONFIG,
+  LANGUAGES_SUPPORTED_EU,
+} from "./constants.js";
+import ButtonStyles from "./styles/buttons.js";
+import ComponentStyles from "./styles/ComponentStyles.js";
+import CalloutStyles from "./styles/callout.js";
+import ThemeStyles from "./styles/theme.js";
+import type {
+  ConfigurableSettings,
+  RecordingState,
+  ServerConfig,
+} from "./types.js";
+import { decodeToken } from "./utils.js";
 
 export class CortiDictation extends LitElement {
   static styles = [ButtonStyles, ThemeStyles, ComponentStyles, CalloutStyles];
@@ -23,14 +29,15 @@ export class CortiDictation extends LitElement {
   dictationConfig: Corti.TranscribeConfig = DEFAULT_DICTATION_CONFIG;
 
   @property({ type: Array })
-  languagesSupported: Corti.TranscribeSupportedLanguage[] = LANGUAGES_SUPPORTED;
+  languagesSupported: Corti.TranscribeSupportedLanguage[] =
+    LANGUAGES_SUPPORTED_EU;
 
   @property({ type: Boolean })
   debug_displayAudio: boolean = false;
 
   @property({ type: Array })
   settingsEnabled: ConfigurableSettings[] = ["device", "language"];
-  
+
   @property({ type: Boolean })
   preventButtonFocus: boolean = true;
 
@@ -41,7 +48,7 @@ export class CortiDictation extends LitElement {
   private _audioLevel: number = 0;
 
   @state()
-  private _recordingState: RecordingState = 'stopped';
+  private _recordingState: RecordingState = "stopped";
 
   @state()
   private _selectedDevice: MediaDeviceInfo | undefined;
@@ -57,37 +64,37 @@ export class CortiDictation extends LitElement {
     if (devices.selectedDevice) {
       this._selectedDevice = this.recorderManager.selectedDevice;
       this._devices = this.recorderManager.devices;
-      this.dispatchEvent(new CustomEvent('ready'));
+      this.dispatchEvent(new CustomEvent("ready"));
     }
 
     // Map event names to any extra handling logic
     const eventHandlers: Record<string, (e: CustomEvent) => void> = {
-      'recording-state-changed': e => {
-        this._recordingState = e.detail.state;
+      "audio-level-changed": (e) => {
+        this._audioLevel = e.detail.audioLevel;
+        this.requestUpdate();
       },
-      'devices-changed': () => {
+      "devices-changed": () => {
         this._devices = [...this.recorderManager.devices];
         this.requestUpdate();
       },
-      'audio-level-changed': e => {
-        this._audioLevel = e.detail.audioLevel;
-        this.requestUpdate();
+      "recording-state-changed": (e) => {
+        this._recordingState = e.detail.state;
       },
     };
 
     const eventsToRelay = [
-      'recording-state-changed',
-      'recording-devices-changed',
-      'audio-level-changed',
-      'error',
-      'transcript',
-      'command',
-      'ready',
-      'usage',
-      'stream-closed',
+      "recording-state-changed",
+      "recording-devices-changed",
+      "audio-level-changed",
+      "error",
+      "transcript",
+      "command",
+      "ready",
+      "usage",
+      "stream-closed",
     ];
 
-    eventsToRelay.forEach(eventName => {
+    eventsToRelay.forEach((eventName) => {
       this.recorderManager.addEventListener(eventName, (e: Event) => {
         const customEvent = e as CustomEvent;
         // Perform any additional handling if defined
@@ -97,9 +104,9 @@ export class CortiDictation extends LitElement {
         // Re-dispatch the event from the component
         this.dispatchEvent(
           new CustomEvent(eventName, {
-            detail: customEvent.detail,
-            bubbles: eventName !== 'error',
+            bubbles: eventName !== "error",
             composed: true,
+            detail: customEvent.detail,
           }),
         );
       });
@@ -109,9 +116,9 @@ export class CortiDictation extends LitElement {
   public startRecording() {
     if (!this._serverConfig) return;
     this.recorderManager.startRecording({
+      debug_displayAudio: this.debug_displayAudio,
       dictationConfig: this.dictationConfig,
       serverConfig: this._serverConfig!,
-      debug_displayAudio: this.debug_displayAudio,
     });
   }
 
@@ -120,9 +127,9 @@ export class CortiDictation extends LitElement {
   }
 
   public toggleRecording() {
-    if (this._recordingState === 'recording') {
+    if (this._recordingState === "recording") {
       this.stopRecording();
-    } else if (this._recordingState === 'stopped') {
+    } else if (this._recordingState === "stopped") {
       this.startRecording();
     }
   }
@@ -140,7 +147,7 @@ export class CortiDictation extends LitElement {
       this._serverConfig = decoded;
       return decoded;
     } catch (e) {
-      throw new Error('Invalid token');
+      throw new Error("Invalid token");
     }
   }
 
@@ -156,15 +163,18 @@ export class CortiDictation extends LitElement {
   ): Promise<ServerConfig> {
     try {
       const initialToken =
-        'accessToken' in config
-          ? { accessToken: config.accessToken, refreshToken: config.refreshToken }
+        "accessToken" in config
+          ? {
+              accessToken: config.accessToken,
+              refreshToken: config.refreshToken,
+            }
           : await config.refreshAccessToken();
 
       if (
         !initialToken?.accessToken ||
-        typeof initialToken.accessToken !== 'string'
+        typeof initialToken.accessToken !== "string"
       ) {
-        throw new Error('Access token is required and must be a string');
+        throw new Error("Access token is required and must be a string");
       }
 
       // Decode tokens only for return value compatibility
@@ -172,19 +182,17 @@ export class CortiDictation extends LitElement {
       const decoded = decodeToken(initialToken.accessToken);
 
       if (!decoded) {
-        throw new Error('Invalid token format');
+        throw new Error("Invalid token format");
       }
 
       this._serverConfig = {
-        environment: decoded.environment,
-        tenant: decoded.tenant,
         accessToken: initialToken.accessToken,
-        refreshToken: config.refreshToken,
+        environment: decoded.environment,
         refreshAccessToken: async (refreshToken?: string) => {
           try {
             if (!config.refreshAccessToken) {
               return {
-                accessToken: this._serverConfig?.accessToken || 'no_token',
+                accessToken: this._serverConfig?.accessToken || "no_token",
                 expiresIn: Infinity,
                 refreshToken,
               };
@@ -199,14 +207,16 @@ export class CortiDictation extends LitElement {
 
             return response;
           } catch (e) {
-            throw new Error('Error when refreshing access token');
+            throw new Error("Error when refreshing access token");
           }
         },
+        refreshToken: config.refreshToken,
+        tenant: decoded.tenant,
       };
 
       return this._serverConfig;
     } catch (e) {
-      throw new Error('Invalid config');
+      throw new Error("Invalid config");
     }
   }
 
@@ -226,7 +236,7 @@ export class CortiDictation extends LitElement {
     this.recorderManager.selectedDevice = device;
     this._selectedDevice = device;
     if (!this._serverConfig) return;
-    if (this._recordingState === 'recording') {
+    if (this._recordingState === "recording") {
       await this.recorderManager.stopRecording();
       await this.recorderManager.startRecording({
         dictationConfig: this.dictationConfig,
@@ -236,19 +246,19 @@ export class CortiDictation extends LitElement {
   }
 
   public setPrimaryLanguage(language: string) {
-    if (LANGUAGES_SUPPORTED.includes(language)) {
+    if (LANGUAGES_SUPPORTED_EU.includes(language)) {
       this.dictationConfig = {
         ...this.dictationConfig,
         primaryLanguage: language,
       };
 
       // If recording is in progress, restart to apply the language change
-      if (this._serverConfig && this._recordingState === 'recording') {
+      if (this._serverConfig && this._recordingState === "recording") {
         this.recorderManager.stopRecording();
         this.recorderManager.startRecording({
+          debug_displayAudio: this.debug_displayAudio,
           dictationConfig: this.dictationConfig,
           serverConfig: this._serverConfig,
-          debug_displayAudio: this.debug_displayAudio,
         });
       }
     }
@@ -283,37 +293,43 @@ export class CortiDictation extends LitElement {
     }
 
     const isLoading =
-      this._recordingState === 'initializing' ||
-      this._recordingState === 'stopping';
-    const isRecording = this._recordingState === 'recording';
+      this._recordingState === "initializing" ||
+      this._recordingState === "stopping";
+    const isRecording = this._recordingState === "recording";
     return html`
       <div class="wrapper">
         <button
           @click=${this.toggleRecording}
           @mousedown=${this._onButtonMouseDown}
-          class=${isRecording ? 'red' : 'accent'}
+          class=${isRecording ? "red" : "accent"}
         >
-          ${isLoading
-            ? html` <icon-loading-spinner></icon-loading-spinner>`
-            : isRecording
-              ? html` <icon-recording></icon-recording>`
-              : html` <icon-mic-on></icon-mic-on>`}
+          ${
+            isLoading
+              ? html` <icon-loading-spinner></icon-loading-spinner>`
+              : isRecording
+                ? html` <icon-recording></icon-recording>`
+                : html` <icon-mic-on></icon-mic-on>`
+          }
           <audio-visualiser
             .level=${this._audioLevel}
             .active=${isRecording}
           ></audio-visualiser>
         </button>
 
-        ${this.settingsEnabled.length > 0 ? html`
+        ${
+          this.settingsEnabled.length > 0
+            ? html`
         <settings-menu
           .selectedDevice=${this._selectedDevice}
           .selectedLanguage=${this.dictationConfig.primaryLanguage}
-          ?settingsDisabled=${this._recordingState !== 'stopped'}
+          ?settingsDisabled=${this._recordingState !== "stopped"}
           @recording-devices-changed=${this._onRecordingDevicesChanged}
           @language-changed=${this._onLanguageChanged}
           .settingsEnabled=${this.settingsEnabled}
         ></settings-menu>
-        ` : ''}
+        `
+            : ""
+        }
       </div>
     `;
   }
