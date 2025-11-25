@@ -5,17 +5,14 @@ import "../src/contexts/region-context.js";
 
 export default {
   argTypes: {
-    languagesSupported: {
+    languages: {
       control: "object",
       description: "Array of available language codes",
     },
-    onLanguageChanged: {
-      action: "language-changed",
-      description: "Fired when the selected language changes",
-    },
-    onLanguagesSupportedChanged: {
-      action: "languages-supported-changed",
-      description: "Fired when the list of supported languages changes",
+    onLanguagesChanged: {
+      action: "languages-changed",
+      description:
+        "Fired when the selected language or available languages change",
     },
     region: {
       control: "select",
@@ -43,23 +40,22 @@ interface Story<T> {
 interface LanguageSelectorArgTypes {
   region?: string;
   selectedLanguage?: string;
-  languagesSupported?: string[];
+  languages?: string[];
 }
 
 const LanguageSelectorTemplate: Story<LanguageSelectorArgTypes> = ({
   region,
   selectedLanguage,
-  languagesSupported,
+  languages,
 }: LanguageSelectorArgTypes) => {
-  if (languagesSupported) {
+  if (languages) {
     return html`
       <region-context-provider region=${region}>
         <div style="padding: 20px; max-width: 300px;">
           <language-selector
             selectedLanguage=${selectedLanguage}
-            .languagesSupported=${languagesSupported}
-            @languages-supported-changed=${action("languages-supported-changed")}
-            @language-changed=${action("language-changed")}
+            .languages=${languages}
+            @languages-changed=${action("languages-changed")}
           ></language-selector>
         </div>
       </region-context-provider>
@@ -71,8 +67,7 @@ const LanguageSelectorTemplate: Story<LanguageSelectorArgTypes> = ({
       <div style="padding: 20px; max-width: 300px;">
         <language-selector
           selectedLanguage=${selectedLanguage}
-          @languages-supported-changed=${action("languages-supported-changed")}
-          @language-changed=${action("language-changed")}
+          @languages-changed=${action("languages-changed")}
         ></language-selector>
       </div>
     </region-context-provider>
@@ -98,7 +93,7 @@ USRegion.args = {
 
 export const CustomLanguages = LanguageSelectorTemplate.bind({});
 CustomLanguages.args = {
-  languagesSupported: ["en", "es", "fr", "de"],
+  languages: ["en", "es", "fr", "de"],
   region: "eu",
   selectedLanguage: "es",
 };

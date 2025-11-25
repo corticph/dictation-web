@@ -1,22 +1,11 @@
 import { consume } from "@lit/context";
-import {
-  type CSSResultGroup,
-  html,
-  LitElement,
-  type PropertyValues,
-} from "lit";
+import { type CSSResultGroup, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { regionContext } from "../contexts/region-context.js";
 import DefaultThemeStyles from "../styles/default-theme.js";
 import SelectStyles from "../styles/select.js";
-import {
-  languageChangedEvent,
-  languagesSupportedChangedEvent,
-} from "../utils/events.js";
-import {
-  checkIfDefaultLanguagesList,
-  DEFAULT_LANGUAGES_BY_REGION,
-} from "../utils/languages.js";
+import { languagesChangedEvent } from "../utils/events.js";
+import { getLanguagesByRegion } from "../utils/languages.js";
 
 @customElement("language-selector")
 export class LanguageSelector extends LitElement {
@@ -24,41 +13,66 @@ export class LanguageSelector extends LitElement {
   selectedLanguage?: string;
 
   @property({ type: Array })
-  languagesSupported?: string[];
+  languages?: string[];
+
+  @property({ type: Boolean })
+  disabled: boolean = false;
 
   @consume({ context: regionContext, subscribe: true })
   @property({ attribute: false, type: String })
   _region?: string;
 
-  private _defaultLanguagesList = true;
+  /**
+   * Internal cache of loaded languages to check if languages were auto-loaded or provided via property
+   * @private
+   */
+  private _loadedLanguages: string[] = [];
+
+  private _languagesAutoLoaded(): boolean {
+    return this._loadedLanguages === this.languages;
+  }
 
   static styles: CSSResultGroup = [DefaultThemeStyles, SelectStyles];
 
-  async update(changedProperties: PropertyValues<this>) {
-    if (changedProperties.has("languagesSupported")) {
-      this._defaultLanguagesList = checkIfDefaultLanguagesList(
-        this.languagesSupported,
-      );
+  async connectedCallback(): Promise<void> {
+    super.connectedCallback();
+
+    if (this.languages) {
+      return;
     }
 
-    if (changedProperties.has("_region") && this._defaultLanguagesList) {
-      const region = this._region || "default";
-      const newLanguagesSupported = DEFAULT_LANGUAGES_BY_REGION[region];
-
-      this.languagesSupported = newLanguagesSupported;
-      await this.updateComplete;
-      this.dispatchEvent(languagesSupportedChangedEvent(newLanguagesSupported));
-    }
-
-    super.update(changedProperties);
+    await this._loadLanguages();
   }
 
-  private async _handleSelectLanguage(e: Event) {
+  updated(changedProperties: Map<string, unknown>): void {
+    if (changedProperties.has("_region") && this._languagesAutoLoaded()) {
+      this._loadLanguages();
+    }
+  }
+
+  private async _loadLanguages(): Promise<void> {
+    const { languages, defaultLanguage } = getLanguagesByRegion(this._region);
+    this.languages = languages;
+    this._loadedLanguages = languages;
+
+    if (!this.selectedLanguage && defaultLanguage) {
+      this.selectedLanguage = defaultLanguage;
+    }
+
+    await this.updateComplete;
+    this.dispatchEvent(
+      languagesChangedEvent(this.languages || [], this.selectedLanguage),
+    );
+  }
+
+  private async _handleSelectLanguage(e: Event): Promise<void> {
     const language = (e.target as HTMLSelectElement).value;
 
     this.selectedLanguage = language;
     await this.updateComplete;
-    this.dispatchEvent(languageChangedEvent(language));
+    this.dispatchEvent(
+      languagesChangedEvent(this.languages || [], this.selectedLanguage),
+    );
   }
 
   render() {
@@ -71,9 +85,9 @@ export class LanguageSelector extends LitElement {
           id="language-select"
           aria-labelledby="language-select-label"
           @change=${this._handleSelectLanguage}
-          ?disabled=${this.languagesSupported?.length === 0}
+          ?disabled=${this.disabled || !this.languages || this.languages.length === 0}
         >
-          ${this.languagesSupported?.map(
+          ${this.languages?.map(
             (language) => html`
               <option value=${language} ?selected=${this.selectedLanguage === language}>
                 ${language}

@@ -2,12 +2,9 @@
  * Custom event creators for component communication
  */
 
-export type LanguageChangedEventDetail = {
-  language: string;
-};
-
-export type LanguagesSupportedChangedEventDetail = {
-  languagesSupported: string[];
+export type LanguagesChangedEventDetail = {
+  languages: string[];
+  selectedLanguage: string | undefined;
 };
 
 export type RecordingDevicesChangedEventDetail = {
@@ -15,23 +12,14 @@ export type RecordingDevicesChangedEventDetail = {
   selectedDevice: MediaDeviceInfo | undefined;
 };
 
-export function languageChangedEvent(
-  language: string,
-): CustomEvent<LanguageChangedEventDetail> {
-  return new CustomEvent("language-changed", {
+export function languagesChangedEvent(
+  languages: string[],
+  selectedLanguage: string | undefined,
+): CustomEvent<LanguagesChangedEventDetail> {
+  return new CustomEvent("languages-changed", {
     bubbles: true,
     composed: true,
-    detail: { language },
-  });
-}
-
-export function languagesSupportedChangedEvent(
-  languagesSupported: string[],
-): CustomEvent<LanguagesSupportedChangedEventDetail> {
-  return new CustomEvent("languages-supported-changed", {
-    bubbles: true,
-    composed: true,
-    detail: { languagesSupported },
+    detail: { languages, selectedLanguage },
   });
 }
 

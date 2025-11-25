@@ -15,3 +15,12 @@ export function checkIfDefaultLanguagesList(languages: string[] = []): boolean {
   );
 }
 
+export function getLanguagesByRegion(
+  region?: string,
+): { languages: string[]; defaultLanguage: string | undefined } {
+  const languages = DEFAULT_LANGUAGES_BY_REGION[region || "default"];
+  const defaultLanguage = languages?.[0];
+
+  return { languages, defaultLanguage };
+}
+

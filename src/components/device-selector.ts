@@ -13,6 +13,9 @@ export class DeviceSelector extends LitElement {
   @property({ type: Array })
   devices?: MediaDeviceInfo[];
 
+  @property({ type: Boolean })
+  disabled: boolean = false;
+
   /**
    * Internal cache of loaded devices to check if devices were auto-loaded or provided via property
    * @private
@@ -90,7 +93,7 @@ export class DeviceSelector extends LitElement {
           id="device-select"
           aria-labelledby="device-select-label"
           @change=${this._handleSelectDevice}
-          ?disabled=${!this.devices || this.devices.length === 0}
+          ?disabled=${this.disabled || !this.devices || this.devices.length === 0}
         >
           ${this.devices?.map(
             (device) => html`
