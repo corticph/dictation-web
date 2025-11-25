@@ -10,6 +10,11 @@ export type LanguagesSupportedChangedEventDetail = {
   languagesSupported: string[];
 };
 
+export type RecordingDevicesChangedEventDetail = {
+  devices: MediaDeviceInfo[];
+  selectedDevice: MediaDeviceInfo | undefined;
+};
+
 export function languageChangedEvent(
   language: string,
 ): CustomEvent<LanguageChangedEventDetail> {
@@ -27,5 +32,16 @@ export function languagesSupportedChangedEvent(
     bubbles: true,
     composed: true,
     detail: { languagesSupported },
+  });
+}
+
+export function recordingDevicesChangedEvent(
+  devices: MediaDeviceInfo[],
+  selectedDevice: MediaDeviceInfo | undefined,
+): CustomEvent<RecordingDevicesChangedEventDetail> {
+  return new CustomEvent("recording-devices-changed", {
+    bubbles: true,
+    composed: true,
+    detail: { devices, selectedDevice },
   });
 }

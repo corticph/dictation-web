@@ -11,7 +11,6 @@ export class RegionContext extends LitElement {
   region?: string;
 
   render() {
-    console.log("CONTEXT", this.region);
     return html`<slot></slot>`;
   }
 }

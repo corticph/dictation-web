@@ -1,21 +1,26 @@
 // mic-selector.ts
-import { LitElement, html, css, TemplateResult, CSSResultGroup } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import {
+  type CSSResultGroup,
+  css,
+  html,
+  LitElement,
+  type TemplateResult,
+} from "lit";
+import { customElement, property, state } from "lit/decorators.js";
+import { LANGUAGES_SUPPORTED_EU } from "../constants.js";
+import ButtonStyles from "../styles/buttons.js";
+import CalloutStyles from "../styles/callout.js";
+import SelectStyles from "../styles/select.js";
+import type { ConfigurableSettings } from "../types.js";
+import { getAudioDevices, getLanguageName } from "../utils.js";
 
-import ButtonStyles from '../styles/buttons.js';
-import SelectStyles from '../styles/select.js';
-import { LANGUAGES_SUPPORTED } from '../constants.js';
-import { getAudioDevices, getLanguageName } from '../utils.js';
-import CalloutStyles from '../styles/callout.js';
-import type { ConfigurableSettings } from '../types.js';
-
-@customElement('settings-menu')
+@customElement("settings-menu")
 export class SettingsMenu extends LitElement {
   @property({ type: Object })
   selectedDevice: MediaDeviceInfo | undefined;
 
   @property({ type: String })
-  selectedLanguage: string = '';
+  selectedLanguage: string = "";
 
   @property({ type: Boolean })
   settingsDisabled: boolean = false;
@@ -27,13 +32,13 @@ export class SettingsMenu extends LitElement {
   private _devices: MediaDeviceInfo[] = [];
 
   get effectiveSelectedLanguage(): string {
-    return this.selectedLanguage || LANGUAGES_SUPPORTED[0] || '';
+    return this.selectedLanguage || LANGUAGES_SUPPORTED_EU[0] || "";
   }
 
   constructor() {
     super();
     navigator.mediaDevices.addEventListener(
-      'devicechange',
+      "devicechange",
       this.handleDevicesChange.bind(this),
     );
   }
@@ -90,35 +95,35 @@ export class SettingsMenu extends LitElement {
   ];
   private _selectDevice(deviceId: string): void {
     // Find the device object
-    const device = this._devices.find(d => d.deviceId === deviceId);
+    const device = this._devices.find((d) => d.deviceId === deviceId);
     if (!device) {
       return;
     }
     this.selectedDevice = device;
     this.dispatchEvent(
-      new CustomEvent('recording-devices-changed', {
+      new CustomEvent("recording-devices-changed", {
+        bubbles: true,
+        composed: true,
         detail: {
           devices: this._devices,
           selectedDevice: device,
         },
-        bubbles: true,
-        composed: true,
       }),
     );
   }
 
   private _selectLanguage(language: string): void {
-    if (!LANGUAGES_SUPPORTED.includes(language)) {
+    if (!LANGUAGES_SUPPORTED_EU.includes(language)) {
       return;
     }
     this.selectedLanguage = language;
     this.dispatchEvent(
-      new CustomEvent('language-changed', {
+      new CustomEvent("language-changed", {
+        bubbles: true,
+        composed: true,
         detail: {
           language: language,
         },
-        bubbles: true,
-        composed: true,
       }),
     );
   }
@@ -131,14 +136,18 @@ export class SettingsMenu extends LitElement {
         </button>
         <div id="settings-popover" popover>
           <div class="settings-wrapper">
-            ${this.settingsDisabled
-              ? html`
+            ${
+              this.settingsDisabled
+                ? html`
                   <div class="callout warn">
                     Recording is in progress. Stop recording to change settings.
                   </div>
                 `
-              : ''}
-            ${this.settingsEnabled.includes("device") ? html`
+                : ""
+            }
+            ${
+              this.settingsEnabled.includes("device")
+                ? html`
             <div class="form-group">
               <label id="device-select-label" for="device-select">
                 Recording Device
@@ -152,20 +161,25 @@ export class SettingsMenu extends LitElement {
                 ?disabled=${this.settingsDisabled}
               >
                 ${this._devices.map(
-                  device => html`
+                  (device) => html`
                     <option
                       value=${device.deviceId}
-                      ?selected=${this.selectedDevice?.deviceId ===
-                      device.deviceId}
+                      ?selected=${
+                        this.selectedDevice?.deviceId === device.deviceId
+                      }
                     >
-                      ${device.label || 'Unknown Device'}
+                      ${device.label || "Unknown Device"}
                     </option>
                   `,
                 )}
               </select>
             </div>
-            ` : ''}
-            ${this.settingsEnabled.includes("language") ? html`
+            `
+                : ""
+            }
+            ${
+              this.settingsEnabled.includes("language")
+                ? html`
             <div class="form-group">
               <label id="language-select-label" for="language-select">
                 Dictation Language
@@ -178,8 +192,8 @@ export class SettingsMenu extends LitElement {
                 }}
                 ?disabled=${this.settingsDisabled}
               >
-                ${LANGUAGES_SUPPORTED.map(
-                  language => html`
+                ${LANGUAGES_SUPPORTED_EU.map(
+                  (language) => html`
                     <option
                       value=${language}
                       ?selected=${this.effectiveSelectedLanguage === language}
@@ -190,7 +204,9 @@ export class SettingsMenu extends LitElement {
                 )}
               </select>
             </div>
-            ` : ''}
+            `
+                : ""
+            }
           </div>
         </div>
       </div>
@@ -200,6 +216,6 @@ export class SettingsMenu extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'settings-menu': SettingsMenu;
+    "settings-menu": SettingsMenu;
   }
 }
