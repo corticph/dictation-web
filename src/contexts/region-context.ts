@@ -1,6 +1,8 @@
 import { createContext, provide } from "@lit/context";
-import { html, LitElement } from "lit";
+import { type CSSResultGroup, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import ComponentStyles from "../styles/ComponentStyles.js";
+import ThemeStyles from "../styles/theme.js";
 
 export const regionContext = createContext<string | undefined>("region");
 
@@ -10,8 +12,17 @@ export class RegionContext extends LitElement {
   @property({ type: String })
   region?: string;
 
+  @property({ type: Boolean })
+  noWrapper: boolean = false;
+
+  static styles: CSSResultGroup = [ThemeStyles, ComponentStyles];
+
   render() {
-    return html`<slot></slot>`;
+    if (this.noWrapper) {
+      return html`<slot></slot>`;
+    }
+
+    return html`<div class="wrapper"><slot></slot></div>`;
   }
 }
 

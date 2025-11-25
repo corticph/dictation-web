@@ -50,7 +50,7 @@ const LanguageSelectorTemplate: Story<LanguageSelectorArgTypes> = ({
 }: LanguageSelectorArgTypes) => {
   if (languages) {
     return html`
-      <region-context-provider region=${region}>
+      <region-context-provider region=${region} ?noWrapper=${true}>
         <div style="padding: 20px; max-width: 300px;">
           <language-selector
             selectedLanguage=${selectedLanguage}
@@ -63,7 +63,7 @@ const LanguageSelectorTemplate: Story<LanguageSelectorArgTypes> = ({
   }
 
   return html`
-    <region-context-provider region=${region}>
+    <region-context-provider region=${region} ?noWrapper=${true}>
       <div style="padding: 20px; max-width: 300px;">
         <language-selector
           selectedLanguage=${selectedLanguage}

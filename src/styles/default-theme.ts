@@ -46,12 +46,6 @@ const DefaultThemeStyles = css`
     /* Visualiser Defaults */
     --visualiser-background: light-dark(#e0e0e0, #fff);
   }
-
-  :host {
-    box-sizing: border-box;
-    font-family: var(--component-font-family);
-    color: var(--component-text-color);
-  }
 `;
 
 export default DefaultThemeStyles;
