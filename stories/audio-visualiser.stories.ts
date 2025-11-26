@@ -1,19 +1,20 @@
-import { html, TemplateResult } from 'lit';
-import '../src/components/audio-visualiser.js';
+import { html, type TemplateResult } from "lit";
+
+import "../src/components-new/audio-visualiser.js";
 
 export default {
-  title: 'AudioVisualiser',
-  component: 'audio-visualiser',
   argTypes: {
-    level: {
-      control: { type: 'range', min: 0, max: 1, step: 0.01 },
-      description: 'Audio level from 0 to 1',
-    },
     active: {
-      control: 'boolean',
-      description: 'Whether the visualiser is active',
+      control: "boolean",
+      description: "Whether the visualiser is active",
+    },
+    level: {
+      control: { max: 1, min: 0, step: 0.01, type: "range" },
+      description: "Audio level from 0 to 1",
     },
   },
+  component: "audio-visualiser",
+  title: "AudioVisualiser",
 };
 
 interface Story<T> {
@@ -44,47 +45,46 @@ const AudioVisualiserTemplate: Story<AudioVisualiserArgTypes> = ({
       <audio-visualiser level=${level} active></audio-visualiser>
     </div>
   `;
-}
+};
 
 export const Default = AudioVisualiserTemplate.bind({});
 Default.args = {
-  level: 0.5,
   active: true,
+  level: 0.5,
 };
 
 export const Inactive = AudioVisualiserTemplate.bind({});
 Inactive.args = {
-  level: 0.5,
   active: false,
+  level: 0.5,
 };
 
 export const Low = AudioVisualiserTemplate.bind({});
 Low.args = {
-  level: 0.2,
   active: true,
+  level: 0.2,
 };
 
 export const Medium = AudioVisualiserTemplate.bind({});
 Medium.args = {
-  level: 0.5,
   active: true,
+  level: 0.5,
 };
 
 export const High = AudioVisualiserTemplate.bind({});
 High.args = {
-  level: 0.8,
   active: true,
+  level: 0.8,
 };
 
 export const Full = AudioVisualiserTemplate.bind({});
 Full.args = {
-  level: 1.0,
   active: true,
+  level: 1.0,
 };
 
 export const Silent = AudioVisualiserTemplate.bind({});
 Silent.args = {
-  level: 0,
   active: true,
+  level: 0,
 };
-

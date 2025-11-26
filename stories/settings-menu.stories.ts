@@ -1,7 +1,7 @@
 import { action } from "@storybook/addon-actions";
 import { html, type TemplateResult } from "lit";
 
-import "../src/components/settings-menu-new.js";
+import "../src/components-new/settings-menu.js";
 import "../src/contexts/region-context.js";
 
 export default {
@@ -153,14 +153,13 @@ NoSettings.args = {
 export const CustomLanguages = SettingsMenuNewTemplate.bind({});
 CustomLanguages.args = {
   disabled: false,
-  selectedLanguage: "es",
   languages: ["en", "es", "fr", "de", "it"],
+  selectedLanguage: "es",
   settingsEnabled: ["language"],
 };
 
 export const WithCustomDevices = SettingsMenuNewTemplate.bind({});
 WithCustomDevices.args = {
-  disabled: false,
   devices: [
     {
       deviceId: "device1",
@@ -175,14 +174,12 @@ WithCustomDevices.args = {
       label: "External USB Microphone",
     } as MediaDeviceInfo,
   ],
+  disabled: false,
   settingsEnabled: ["device"],
 };
 
 export const BothWithCustomOptions = SettingsMenuNewTemplate.bind({});
 BothWithCustomOptions.args = {
-  disabled: false,
-  selectedLanguage: "fr",
-  languages: ["en", "fr", "de"],
   devices: [
     {
       deviceId: "device1",
@@ -197,5 +194,8 @@ BothWithCustomOptions.args = {
       label: "Desk Microphone",
     } as MediaDeviceInfo,
   ],
+  disabled: false,
+  languages: ["en", "fr", "de"],
+  selectedLanguage: "fr",
   settingsEnabled: ["device", "language"],
 };

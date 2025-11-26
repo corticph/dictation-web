@@ -1,6 +1,6 @@
 import { action } from "@storybook/addon-actions";
 import { html, type TemplateResult } from "lit";
-import "../src/components/language-selector.js";
+import "../src/components-new/language-selector.js";
 import "../src/contexts/region-context.js";
 
 export default {

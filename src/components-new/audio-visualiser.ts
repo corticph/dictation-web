@@ -11,10 +11,10 @@ const SEGMENT_COUNT = 5;
 @customElement("audio-visualiser")
 export class AudioVisualiser extends LitElement {
   @property({ type: Number })
-  level = 0; // expects a value from 0 to 1
+  level: number = 0; // expects a value from 0 to 1
 
   @property({ type: Boolean })
-  active = false;
+  active: boolean = false;
 
   static styles = [DefaultThemeStyles, AudioVisualiserStyles];
 

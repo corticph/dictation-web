@@ -1,7 +1,7 @@
 import { action } from "@storybook/addon-actions";
 import { html, type TemplateResult } from "lit";
 
-import "../src/components/recording-button.js";
+import "../src/components-new/recording-button.js";
 
 export default {
   argTypes: {
@@ -102,4 +102,3 @@ PreventFocusDisabled.args = {
   preventFocus: false,
   recordingState: "stopped",
 };
-
