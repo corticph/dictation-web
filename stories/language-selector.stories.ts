@@ -6,26 +6,10 @@ import "../src/contexts/dictation-context.js";
 
 export default {
   argTypes: {
-    languages: {
-      control: "object",
-      description: "Array of available language codes",
-    },
-    onLanguagesChanged: {
-      action: "languages-changed",
-      description:
-        "Fired when the selected language or available languages change",
-    },
     region: {
       control: "select",
-      description: "Region for default language list",
+      description: "Region for loading language list",
       options: [undefined, "eu", "us"],
-      table: {
-        category: "Context Provider",
-      },
-    },
-    selectedLanguage: {
-      control: "text",
-      description: "Currently selected language code",
     },
   },
   component: "language-selector",
@@ -38,63 +22,57 @@ interface Story<T> {
   argTypes?: Record<string, unknown>;
 }
 
-interface LanguageSelectorArgTypes {
+interface StoryArgs {
   region?: string;
-  selectedLanguage?: string;
-  languages?: string[];
 }
 
-const LanguageSelectorTemplate: Story<LanguageSelectorArgTypes> = ({
-  region,
-  selectedLanguage,
-  languages,
-}: LanguageSelectorArgTypes) => {
-  if (languages) {
-    return html`
-      <dictation-context-provider region=${region} ?noWrapper=${true}>
-        <div style="padding: 20px; max-width: 300px;">
-          <language-selector
-            selectedLanguage=${selectedLanguage}
-            .languages=${languages}
-            @languages-changed=${action("languages-changed")}
-          ></language-selector>
-        </div>
-      </dictation-context-provider>
-    `;
-  }
-
+export const DefaultValues: Story<StoryArgs> = ({ region }: StoryArgs) => {
   return html`
-    <dictation-context-provider region=${region} ?noWrapper=${true}>
-      <div style="padding: 20px; max-width: 300px;">
-        <language-selector
-          selectedLanguage=${selectedLanguage}
-          @languages-changed=${action("languages-changed")}
-        ></language-selector>
-      </div>
+    <dictation-context-provider .region=${region} ?noWrapper=${true}>
+      <language-selector
+        @languages-changed=${action("languages-changed")}
+      ></language-selector>
     </dictation-context-provider>
   `;
 };
-
-export const Default = LanguageSelectorTemplate.bind({});
-Default.args = {
-  selectedLanguage: "",
+DefaultValues.args = {
+  region: "eu",
 };
 
-export const WithSelectedLanguage = LanguageSelectorTemplate.bind({});
+export const WithSelectedLanguage: Story<StoryArgs> = ({
+  region,
+}: StoryArgs) => {
+  return html`
+    <dictation-context-provider
+      .region=${region}
+      .selectedLanguage=${"da"}
+      ?noWrapper=${true}
+    >
+      <language-selector
+        @languages-changed=${action("languages-changed")}
+      ></language-selector>
+    </dictation-context-provider>
+  `;
+};
 WithSelectedLanguage.args = {
   region: "eu",
-  selectedLanguage: "en",
 };
 
-export const USRegion = LanguageSelectorTemplate.bind({});
-USRegion.args = {
-  region: "us",
-  selectedLanguage: "en",
+export const WithCustomLanguages: Story<StoryArgs> = ({
+  region,
+}: StoryArgs) => {
+  return html`
+    <dictation-context-provider
+      .region=${region}
+      .languages=${["en", "es", "fr", "de", "it"]}
+      ?noWrapper=${true}
+    >
+      <language-selector
+        @languages-changed=${action("languages-changed")}
+      ></language-selector>
+    </dictation-context-provider>
+  `;
 };
-
-export const CustomLanguages = LanguageSelectorTemplate.bind({});
-CustomLanguages.args = {
-  languages: ["en", "es", "fr", "de"],
+WithCustomLanguages.args = {
   region: "eu",
-  selectedLanguage: "es",
 };
