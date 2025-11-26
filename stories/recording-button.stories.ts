@@ -6,22 +6,9 @@ import "../src/contexts/dictation-context.js";
 
 export default {
   argTypes: {
-    audioLevel: {
-      control: { max: 1, min: 0, step: 0.1, type: "range" },
-      description: "Audio level from 0 to 1",
-    },
-    onToggleRecording: {
-      action: "toggle-recording",
-      description: "Fired when the button is clicked",
-    },
     preventFocus: {
       control: "boolean",
       description: "Prevent button from taking focus on click",
-    },
-    recordingState: {
-      control: "select",
-      description: "Current recording state",
-      options: ["stopped", "initializing", "recording", "stopping"],
     },
   },
   component: "recording-button",
@@ -34,74 +21,78 @@ interface Story<T> {
   argTypes?: Record<string, unknown>;
 }
 
-interface RecordingButtonArgTypes {
-  recordingState?: "stopped" | "initializing" | "recording" | "stopping";
-  audioLevel?: number;
+interface StoryArgs {
   preventFocus?: boolean;
 }
 
-const RecordingButtonTemplate: Story<RecordingButtonArgTypes> = ({
-  recordingState,
-  audioLevel,
-  preventFocus,
-}: RecordingButtonArgTypes) => {
+export const Stopped: Story<StoryArgs> = ({ preventFocus }: StoryArgs) => {
   return html`
     <dictation-context-provider ?noWrapper=${true}>
       <recording-button
-        .recordingState=${recordingState}
-        .audioLevel=${audioLevel}
         ?preventFocus=${preventFocus}
         @toggle-recording=${action("toggle-recording")}
       ></recording-button>
     </dictation-context-provider>
   `;
 };
-
-export const Stopped = RecordingButtonTemplate.bind({});
 Stopped.args = {
-  audioLevel: 0,
   preventFocus: true,
-  recordingState: "stopped",
 };
 
-export const Recording = RecordingButtonTemplate.bind({});
+export const Recording: Story<StoryArgs> = ({ preventFocus }: StoryArgs) => {
+  return html`
+    <dictation-context-provider ?noWrapper=${true} recordingState="recording">
+      <recording-button
+        ?preventFocus=${preventFocus}
+        @toggle-recording=${action("toggle-recording")}
+      ></recording-button>
+    </dictation-context-provider>
+  `;
+};
 Recording.args = {
-  audioLevel: 0.6,
   preventFocus: true,
-  recordingState: "recording",
 };
 
-export const RecordingLowAudio = RecordingButtonTemplate.bind({});
-RecordingLowAudio.args = {
-  audioLevel: 0.2,
-  preventFocus: true,
-  recordingState: "recording",
+export const Initializing: Story<StoryArgs> = ({ preventFocus }: StoryArgs) => {
+  return html`
+    <dictation-context-provider ?noWrapper=${true} recordingState="initializing">
+      <recording-button
+        ?preventFocus=${preventFocus}
+        @toggle-recording=${action("toggle-recording")}
+      ></recording-button>
+    </dictation-context-provider>
+  `;
 };
-
-export const RecordingHighAudio = RecordingButtonTemplate.bind({});
-RecordingHighAudio.args = {
-  audioLevel: 0.9,
-  preventFocus: true,
-  recordingState: "recording",
-};
-
-export const Initializing = RecordingButtonTemplate.bind({});
 Initializing.args = {
-  audioLevel: 0,
   preventFocus: true,
-  recordingState: "initializing",
 };
 
-export const Stopping = RecordingButtonTemplate.bind({});
+export const Stopping: Story<StoryArgs> = ({ preventFocus }: StoryArgs) => {
+  return html`
+    <dictation-context-provider ?noWrapper=${true} recordingState="stopping">
+      <recording-button
+        ?preventFocus=${preventFocus}
+        @toggle-recording=${action("toggle-recording")}
+      ></recording-button>
+    </dictation-context-provider>
+  `;
+};
 Stopping.args = {
-  audioLevel: 0.4,
   preventFocus: true,
-  recordingState: "stopping",
 };
 
-export const PreventFocusDisabled = RecordingButtonTemplate.bind({});
+export const PreventFocusDisabled: Story<StoryArgs> = ({
+  preventFocus,
+}: StoryArgs) => {
+  return html`
+    <dictation-context-provider ?noWrapper=${true}>
+      <recording-button
+        ?preventFocus=${preventFocus}
+        @toggle-recording=${action("toggle-recording")}
+      ></recording-button>
+    </dictation-context-provider>
+  `;
+};
 PreventFocusDisabled.args = {
-  audioLevel: 0,
   preventFocus: false,
-  recordingState: "stopped",
 };

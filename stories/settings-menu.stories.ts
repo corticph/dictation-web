@@ -42,9 +42,8 @@ DefaultValues.args = {
 
 export const DisabledSettings: Story<StoryArgs> = ({ region }: StoryArgs) => {
   return html`
-    <dictation-context-provider .region=${region}>
+    <dictation-context-provider .region=${region} recordingState="recording">
       <settings-menu
-        disabled
         @languages-changed=${action("languages-changed")}
         @recording-devices-changed=${action("recording-devices-changed")}
       ></settings-menu>

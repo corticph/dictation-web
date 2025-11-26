@@ -1,6 +1,7 @@
 import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import type { ConfigurableSettings, RecordingState } from "../types.js";
+import type { ConfigurableSettings } from "../types.js";
+import { commaSeparatedConverter } from "../utils/converters.js";
 
 import "../contexts/dictation-context.js";
 import "./recording-button.js";
@@ -9,32 +10,30 @@ import "./settings-menu.js";
 @customElement("corti-dictation")
 export class CortiDictation extends LitElement {
   @property({ type: String })
-  recordingState: RecordingState = "stopped";
-
-  @property({ type: Number })
-  audioLevel: number = 0;
-
-  @property({ type: String })
   region?: string;
+
+  @property({
+    converter: commaSeparatedConverter,
+    type: Array,
+  })
+  languages?: string[];
 
   @property({ type: String })
   selectedLanguage?: string;
 
-  @property({ type: Array })
-  languages?: string[];
-
-  @property({ type: Object })
-  selectedDevice?: MediaDeviceInfo;
-
-  @property({ type: Array })
+  @property({ attribute: false, type: Array })
   devices?: MediaDeviceInfo[];
 
-  @property({ type: Array })
+  @property({ attribute: false, type: Object })
+  selectedDevice?: MediaDeviceInfo;
+
+  @property({
+    converter: commaSeparatedConverter,
+    type: Array,
+  })
   settingsEnabled: ConfigurableSettings[] = ["device", "language"];
 
   render() {
-    const isRecording = this.recordingState === "recording";
-
     return html`
       <dictation-context-provider
         .region=${this.region}
@@ -43,14 +42,8 @@ export class CortiDictation extends LitElement {
         .devices=${this.devices}
         .selectedDevice=${this.selectedDevice}
       >
-        <recording-button
-          .recordingState=${this.recordingState}
-          .audioLevel=${this.audioLevel}
-        ></recording-button>
-        <settings-menu
-          .settingsEnabled=${this.settingsEnabled}
-          ?disabled=${isRecording}
-        ></settings-menu>
+        <recording-button></recording-button>
+        <settings-menu .settingsEnabled=${this.settingsEnabled}></settings-menu>
       </dictation-context-provider>
     `;
   }

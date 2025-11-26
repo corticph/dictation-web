@@ -1,9 +1,11 @@
+import { consume } from "@lit/context";
 import { type CSSResultGroup, html, LitElement, nothing } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
+import { recordingStateContext } from "../contexts/dictation-context.js";
 import ButtonStyles from "../styles/buttons.js";
 import CalloutStyles from "../styles/callout.js";
 import SettingsMenuStyles from "../styles/settings-menu.js";
-import type { ConfigurableSettings } from "../types.js";
+import type { ConfigurableSettings, RecordingState } from "../types.js";
 import { commaSeparatedConverter } from "../utils/converters.js";
 
 import "./device-selector.js";
@@ -12,8 +14,9 @@ import "../icons/icons.js";
 
 @customElement("settings-menu")
 export class SettingsMenu extends LitElement {
-  @property({ type: Boolean })
-  disabled: boolean = false;
+  @consume({ context: recordingStateContext, subscribe: true })
+  @state()
+  _recordingState: RecordingState = "stopped";
 
   @property({
     type: Array,
@@ -32,6 +35,7 @@ export class SettingsMenu extends LitElement {
       return nothing;
     }
 
+    const isRecording = this._recordingState === "recording";
     const showDeviceSelector = this.settingsEnabled.includes("device");
     const showLanguageSelector = this.settingsEnabled.includes("language");
 
@@ -43,7 +47,7 @@ export class SettingsMenu extends LitElement {
         <div id="settings-popover" popover>
           <div class="settings-wrapper">
             ${
-              this.disabled
+              isRecording
                 ? html`
                   <div class="callout warn">
                     Recording is in progress. Stop recording to change settings.
@@ -54,14 +58,14 @@ export class SettingsMenu extends LitElement {
             ${
               showDeviceSelector
                 ? html`<device-selector
-                  ?disabled=${this.disabled}
+                  ?disabled=${isRecording}
                 ></device-selector>`
                 : nothing
             }
             ${
               showLanguageSelector
                 ? html`<language-selector
-                  ?disabled=${this.disabled}
+                  ?disabled=${isRecording}
                 ></language-selector>`
                 : nothing
             }

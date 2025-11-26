@@ -1,5 +1,7 @@
+import { consume } from "@lit/context";
 import { type CSSResultGroup, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
+import { recordingStateContext } from "../contexts/dictation-context.js";
 import ButtonStyles from "../styles/buttons.js";
 import RecordingButtonStyles from "../styles/recording-button.js";
 import type { RecordingState } from "../types.js";
@@ -9,25 +11,17 @@ import "../icons/icons.js";
 
 @customElement("recording-button")
 export class RecordingButton extends LitElement {
-  @property({ type: String })
-  recordingState: RecordingState = "stopped";
+  @consume({ context: recordingStateContext, subscribe: true })
+  @state()
+  private _recordingState: RecordingState = "stopped";
 
-  @property({ type: Number })
-  audioLevel: number = 0;
+  @state()
+  private _audioLevel: number = 0;
 
   @property({ type: Boolean })
   preventFocus: boolean = true;
 
   static styles: CSSResultGroup = [RecordingButtonStyles, ButtonStyles];
-
-  private _handleClick(): void {
-    this.dispatchEvent(
-      new CustomEvent("toggle-recording", {
-        bubbles: true,
-        composed: true,
-      }),
-    );
-  }
 
   private _handleMouseDown(event: MouseEvent): void {
     // Prevent button from taking focus on mouse click
@@ -39,13 +33,12 @@ export class RecordingButton extends LitElement {
 
   render() {
     const isLoading =
-      this.recordingState === "initializing" ||
-      this.recordingState === "stopping";
-    const isRecording = this.recordingState === "recording";
+      this._recordingState === "initializing" ||
+      this._recordingState === "stopping";
+    const isRecording = this._recordingState === "recording";
 
     return html`
       <button
-        @click=${this._handleClick}
         @mousedown=${this._handleMouseDown}
         class=${isRecording ? "red" : "accent"}
         aria-label=${isRecording ? "Stop recording" : "Start recording"}
@@ -59,7 +52,7 @@ export class RecordingButton extends LitElement {
               : html`<icon-mic-on></icon-mic-on>`
         }
         <audio-visualiser
-          .level=${this.audioLevel}
+          .level=${this._audioLevel}
           ?active=${isRecording}
         ></audio-visualiser>
       </button>

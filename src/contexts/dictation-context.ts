@@ -1,8 +1,9 @@
 import { createContext, provide } from "@lit/context";
 import { type CSSResultGroup, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import ComponentStyles from "../styles/ComponentStyles.js";
 import DefaultThemeStyles from "../styles/default-theme.js";
+import type { RecordingState } from "../types.js";
 import { commaSeparatedConverter } from "../utils/converters.js";
 
 export const regionContext = createContext<string | undefined>("region");
@@ -17,6 +18,9 @@ export const devicesContext = createContext<MediaDeviceInfo[] | undefined>(
 );
 export const selectedDeviceContext = createContext<MediaDeviceInfo | undefined>(
   "selectedDevice",
+);
+export const recordingStateContext = createContext<RecordingState>(
+  "recordingState",
 );
 
 @customElement("dictation-context-provider")
@@ -43,6 +47,10 @@ export class DictationContext extends LitElement {
   @provide({ context: selectedDeviceContext })
   @property({ attribute: false, type: Object })
   selectedDevice?: MediaDeviceInfo;
+
+  @provide({ context: recordingStateContext })
+  @state()
+  private _recordingState: RecordingState = "stopped";
 
   @property({ type: Boolean })
   noWrapper: boolean = false;

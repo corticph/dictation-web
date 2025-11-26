@@ -5,44 +5,10 @@ import "../src/components-new/corti-dictation.js";
 
 export default {
   argTypes: {
-    audioLevel: {
-      control: { max: 1, min: 0, step: 0.01, type: "range" },
-      description: "Audio level from 0 to 1",
-    },
-    languages: {
-      control: "object",
-      description: "Custom array of available language codes",
-    },
-    onDeviceChanged: {
-      action: "device-changed",
-      description: "Fired when device selection changes",
-    },
-    onLanguagesChanged: {
-      action: "languages-changed",
-      description: "Fired when language selection changes",
-    },
-    onToggleRecording: {
-      action: "toggle-recording",
-      description: "Fired when recording button is clicked",
-    },
-    recordingState: {
-      control: "select",
-      description: "Current recording state",
-      options: ["stopped", "initializing", "recording", "stopping"],
-    },
     region: {
       control: "select",
       description: "Region for default language list",
       options: [undefined, "eu", "us"],
-    },
-    selectedLanguage: {
-      control: "text",
-      description: "Currently selected language code",
-    },
-    settingsEnabled: {
-      control: "object",
-      defaultValue: ["device", "language"],
-      description: "Array of enabled settings (device, language)",
     },
   },
   component: "corti-dictation",
@@ -55,82 +21,102 @@ interface Story<T> {
   argTypes?: Record<string, unknown>;
 }
 
-interface CortiDictationArgTypes {
-  recordingState?: "stopped" | "initializing" | "recording" | "stopping";
-  audioLevel?: number;
+interface StoryArgs {
   region?: string;
-  selectedLanguage?: string;
-  languages?: string[];
-  settingsEnabled?: ("device" | "language")[];
 }
 
-const CortiDictationTemplate: Story<CortiDictationArgTypes> = ({
-  recordingState = "stopped",
-  audioLevel = 0,
-  region,
-  selectedLanguage,
-  languages,
-  settingsEnabled = ["device", "language"],
-}: CortiDictationArgTypes) => {
+export const DefaultValues: Story<StoryArgs> = ({ region }: StoryArgs) => {
   return html`
-    <div style="padding: 20px;">
-      <corti-dictation
-        .recordingState=${recordingState}
-        .audioLevel=${audioLevel}
-        .region=${region}
-        .selectedLanguage=${selectedLanguage}
-        .languages=${languages}
-        .settingsEnabled=${settingsEnabled}
-        @languages-changed=${action("languages-changed")}
-        @recording-devices-changed=${action("recording-devices-changed")}
-      ></corti-dictation>
-    </div>
+    <corti-dictation
+      .region=${region}
+      @toggle-recording=${action("toggle-recording")}
+      @languages-changed=${action("languages-changed")}
+      @recording-devices-changed=${action("recording-devices-changed")}
+    ></corti-dictation>
+  `;
+};
+DefaultValues.args = {
+  region: "eu",
+};
+
+
+export const USRegion: Story<StoryArgs> = ({ region }: StoryArgs) => {
+  return html`
+    <corti-dictation
+      .region=${region}
+      @toggle-recording=${action("toggle-recording")}
+      @languages-changed=${action("languages-changed")}
+      @recording-devices-changed=${action("recording-devices-changed")}
+    ></corti-dictation>
+  `;
+};
+USRegion.args = {
+  region: "us",
+};
+
+export const OnlyLanguageSettings: Story<StoryArgs> = ({ region }: StoryArgs) => {
+  return html`
+    <corti-dictation
+      .region=${region}
+      settingsEnabled="language"
+      @toggle-recording=${action("toggle-recording")}
+      @languages-changed=${action("languages-changed")}
+      @recording-devices-changed=${action("recording-devices-changed")}
+    ></corti-dictation>
+  `;
+};
+OnlyLanguageSettings.args = {
+  region: "eu",
+};
+
+export const OnlyDeviceSettings: Story<StoryArgs> = () => {
+  return html`
+    <corti-dictation
+      .settingsEnabled=${["device"]}
+      @toggle-recording=${action("toggle-recording")}
+      @languages-changed=${action("languages-changed")}
+      @recording-devices-changed=${action("recording-devices-changed")}
+    ></corti-dictation>
   `;
 };
 
-export const Default = CortiDictationTemplate.bind({});
-Default.args = {
-  audioLevel: 0,
-  recordingState: "stopped",
-  settingsEnabled: ["device", "language"],
+export const NoSettings: Story<StoryArgs> = ({ region }: StoryArgs) => {
+  return html`
+    <corti-dictation
+      .region=${region}
+      .settingsEnabled=${[]}
+      @toggle-recording=${action("toggle-recording")}
+      @languages-changed=${action("languages-changed")}
+      @recording-devices-changed=${action("recording-devices-changed")}
+    ></corti-dictation>
+  `;
 };
-
-export const Recording = CortiDictationTemplate.bind({});
-Recording.args = {
-  audioLevel: 0.5,
-  recordingState: "recording",
-  settingsEnabled: ["device", "language"],
-};
-
-export const Initializing = CortiDictationTemplate.bind({});
-Initializing.args = {
-  audioLevel: 0,
-  recordingState: "initializing",
-  settingsEnabled: ["device", "language"],
-};
-
-export const WithRegion = CortiDictationTemplate.bind({});
-WithRegion.args = {
-  recordingState: "stopped",
-  region: "us",
-  selectedLanguage: "en",
-  settingsEnabled: ["device", "language"],
-};
-
-export const OnlyLanguageSettings = CortiDictationTemplate.bind({});
-OnlyLanguageSettings.args = {
-  recordingState: "stopped",
-  settingsEnabled: ["language"],
-};
-
-export const OnlyDeviceSettings = CortiDictationTemplate.bind({});
-OnlyDeviceSettings.args = {
-  recordingState: "stopped",
-  settingsEnabled: ["device"],
-};
-
-export const NoSettings = CortiDictationTemplate.bind({});
 NoSettings.args = {
-  recordingState: "stopped",
-  settingsEnabled: [],
+  region: "eu",
+};
+
+export const WithCustomLanguages: Story<StoryArgs> = () => {
+  return html`
+    <corti-dictation
+      .languages=${["en", "es", "fr", "de"]}
+      selectedLanguage="es"
+      settingsEnabled="language"
+      @toggle-recording=${action("toggle-recording")}
+      @languages-changed=${action("languages-changed")}
+      @recording-devices-changed=${action("recording-devices-changed")}
+    ></corti-dictation>
+  `;
+};
+
+export const WithLanguagesAttribute: Story<StoryArgs> = () => {
+  return html`
+    <corti-dictation
+      languages="en,da,es,fr"
+      selectedLanguage="da"
+      settingsEnabled="language"
+      @toggle-recording=${action("toggle-recording")}
+      @languages-changed=${action("languages-changed")}
+      @recording-devices-changed=${action("recording-devices-changed")}
+    ></corti-dictation>
+  `;
 };
