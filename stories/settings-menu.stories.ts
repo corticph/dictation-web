@@ -48,8 +48,8 @@ export default {
       description: "Array of settings to enable (device, language)",
     },
   },
-  component: "settings-menu-new",
-  title: "SettingsMenuNew",
+  component: "settings-menu",
+  title: "SettingsMenu",
 };
 
 interface Story<T> {
@@ -58,7 +58,7 @@ interface Story<T> {
   argTypes?: Record<string, unknown>;
 }
 
-interface SettingsMenuNewArgTypes {
+interface SettingsMenuArgTypes {
   region?: string;
   selectedLanguage?: string;
   languages?: string[];
@@ -68,7 +68,7 @@ interface SettingsMenuNewArgTypes {
   settingsEnabled?: string[];
 }
 
-const SettingsMenuNewTemplate: Story<SettingsMenuNewArgTypes> = ({
+const SettingsMenuTemplate: Story<SettingsMenuArgTypes> = ({
   region,
   selectedLanguage,
   languages,
@@ -76,7 +76,7 @@ const SettingsMenuNewTemplate: Story<SettingsMenuNewArgTypes> = ({
   devices,
   disabled,
   settingsEnabled,
-}: SettingsMenuNewArgTypes) => {
+}: SettingsMenuArgTypes) => {
   if (!settingsEnabled) {
     return html`
       <region-context-provider region=${region}>
@@ -109,33 +109,33 @@ const SettingsMenuNewTemplate: Story<SettingsMenuNewArgTypes> = ({
   `;
 };
 
-export const Default = SettingsMenuNewTemplate.bind({});
+export const Default = SettingsMenuTemplate.bind({});
 Default.args = {
   disabled: false,
   selectedLanguage: "en",
 };
 
-export const DisabledSettings = SettingsMenuNewTemplate.bind({});
+export const DisabledSettings = SettingsMenuTemplate.bind({});
 DisabledSettings.args = {
   disabled: true,
   selectedLanguage: "en",
   settingsEnabled: ["device", "language"],
 };
 
-export const OnlyDeviceSelector = SettingsMenuNewTemplate.bind({});
+export const OnlyDeviceSelector = SettingsMenuTemplate.bind({});
 OnlyDeviceSelector.args = {
   disabled: false,
   settingsEnabled: ["device"],
 };
 
-export const OnlyLanguageSelector = SettingsMenuNewTemplate.bind({});
+export const OnlyLanguageSelector = SettingsMenuTemplate.bind({});
 OnlyLanguageSelector.args = {
   disabled: false,
   selectedLanguage: "en",
   settingsEnabled: ["language"],
 };
 
-export const USRegion = SettingsMenuNewTemplate.bind({});
+export const USRegion = SettingsMenuTemplate.bind({});
 USRegion.args = {
   disabled: false,
   region: "us",
@@ -143,14 +143,14 @@ USRegion.args = {
   settingsEnabled: ["device", "language"],
 };
 
-export const NoSettings = SettingsMenuNewTemplate.bind({});
+export const NoSettings = SettingsMenuTemplate.bind({});
 NoSettings.args = {
   disabled: false,
   selectedLanguage: "en",
   settingsEnabled: [],
 };
 
-export const CustomLanguages = SettingsMenuNewTemplate.bind({});
+export const CustomLanguages = SettingsMenuTemplate.bind({});
 CustomLanguages.args = {
   disabled: false,
   languages: ["en", "es", "fr", "de", "it"],
@@ -158,7 +158,7 @@ CustomLanguages.args = {
   settingsEnabled: ["language"],
 };
 
-export const WithCustomDevices = SettingsMenuNewTemplate.bind({});
+export const WithCustomDevices = SettingsMenuTemplate.bind({});
 WithCustomDevices.args = {
   devices: [
     {
@@ -178,7 +178,7 @@ WithCustomDevices.args = {
   settingsEnabled: ["device"],
 };
 
-export const BothWithCustomOptions = SettingsMenuNewTemplate.bind({});
+export const BothWithCustomOptions = SettingsMenuTemplate.bind({});
 BothWithCustomOptions.args = {
   devices: [
     {
