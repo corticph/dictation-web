@@ -4,6 +4,7 @@ import ButtonStyles from "../styles/buttons.js";
 import CalloutStyles from "../styles/callout.js";
 import SettingsMenuStyles from "../styles/settings-menu.js";
 import type { ConfigurableSettings } from "../types.js";
+import { commaSeparatedConverter } from "../utils/converters.js";
 
 import "./device-selector.js";
 import "./language-selector.js";
@@ -14,7 +15,10 @@ export class SettingsMenu extends LitElement {
   @property({ type: Boolean })
   disabled: boolean = false;
 
-  @property({ type: Array })
+  @property({
+    type: Array,
+    converter: commaSeparatedConverter,
+  })
   settingsEnabled: ConfigurableSettings[] = ["device", "language"];
 
   static styles: CSSResultGroup = [

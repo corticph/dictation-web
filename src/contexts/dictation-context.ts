@@ -3,6 +3,7 @@ import { type CSSResultGroup, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import ComponentStyles from "../styles/ComponentStyles.js";
 import DefaultThemeStyles from "../styles/default-theme.js";
+import { commaSeparatedConverter } from "../utils/converters.js";
 
 export const regionContext = createContext<string | undefined>("region");
 export const languagesContext = createContext<string[] | undefined>(
@@ -27,11 +28,7 @@ export class DictationContext extends LitElement {
   @provide({ context: languagesContext })
   @property({
     type: Array,
-    converter: {
-      fromAttribute: (value: string | null) =>
-        value?.split(",").map((s) => s.trim()),
-      toAttribute: (value: string[] | undefined) => value?.join(","),
-    },
+    converter: commaSeparatedConverter,
   })
   languages?: string[];
 
@@ -40,11 +37,11 @@ export class DictationContext extends LitElement {
   selectedLanguage?: string;
 
   @provide({ context: devicesContext })
-  @property({ type: Array, attribute: false })
+  @property({ attribute: false, type: Array })
   devices?: MediaDeviceInfo[];
 
   @provide({ context: selectedDeviceContext })
-  @property({ type: Object, attribute: false })
+  @property({ attribute: false, type: Object })
   selectedDevice?: MediaDeviceInfo;
 
   @property({ type: Boolean })
@@ -63,12 +60,14 @@ export class DictationContext extends LitElement {
 
   private _handleLanguageChanged = (e: Event) => {
     const event = e as CustomEvent;
+
     this.languages = event.detail.languages;
     this.selectedLanguage = event.detail.selectedLanguage;
   };
 
   private _handleDeviceChanged = (e: Event) => {
     const event = e as CustomEvent;
+
     this.devices = event.detail.devices;
     this.selectedDevice = event.detail.selectedDevice;
   };
