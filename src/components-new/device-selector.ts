@@ -1,19 +1,23 @@
 import { consume } from "@lit/context";
 import { html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { selectedDeviceContext } from "../contexts/dictation-context.js";
+import {
+  devicesContext,
+  selectedDeviceContext,
+} from "../contexts/dictation-context.js";
 import SelectStyles from "../styles/select.js";
 import { getAudioDevices } from "../utils/devices.js";
 import { recordingDevicesChangedEvent } from "../utils/events.js";
 
 @customElement("device-selector")
 export class DeviceSelector extends LitElement {
+  @consume({ context: devicesContext, subscribe: true })
+  @state()
+  private _devices?: MediaDeviceInfo[];
+
   @consume({ context: selectedDeviceContext, subscribe: true })
   @state()
-  selectedDevice?: MediaDeviceInfo;
-
-  @property({ type: Array })
-  devices?: MediaDeviceInfo[];
+  private _selectedDevice?: MediaDeviceInfo;
 
   @property({ type: Boolean })
   disabled: boolean = false;
@@ -25,7 +29,7 @@ export class DeviceSelector extends LitElement {
   private _loadedDevices: MediaDeviceInfo[] = [];
 
   private _devicesAutoLoaded(): boolean {
-    return this._loadedDevices === this.devices;
+    return this._loadedDevices === this._devices;
   }
 
   static styles = SelectStyles;
@@ -33,7 +37,7 @@ export class DeviceSelector extends LitElement {
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
 
-    if (this.devices) {
+    if (this._devices) {
       return;
     }
 
@@ -56,15 +60,14 @@ export class DeviceSelector extends LitElement {
 
   private async _loadDevices(): Promise<void> {
     const { devices, defaultDevice } = await getAudioDevices();
-    this.devices = devices;
     this._loadedDevices = devices;
 
-    if (!this.selectedDevice && defaultDevice) {
-      await this.updateComplete;
-      this.dispatchEvent(
-        recordingDevicesChangedEvent(this.devices || [], defaultDevice),
-      );
-    }
+    this.dispatchEvent(
+      recordingDevicesChangedEvent(
+        devices,
+        this._selectedDevice ?? defaultDevice,
+      ),
+    );
   }
 
   private _handleDeviceChange = async () => {
@@ -75,10 +78,10 @@ export class DeviceSelector extends LitElement {
 
   private _handleSelectDevice(e: Event): void {
     const deviceId = (e.target as HTMLSelectElement).value;
-    const device = this.devices?.find((d) => d.deviceId === deviceId);
+    const device = this._devices?.find((d) => d.deviceId === deviceId);
 
     this.dispatchEvent(
-      recordingDevicesChangedEvent(this.devices || [], device),
+      recordingDevicesChangedEvent(this._devices || [], device),
     );
   }
 
@@ -92,13 +95,13 @@ export class DeviceSelector extends LitElement {
           id="device-select"
           aria-labelledby="device-select-label"
           @change=${this._handleSelectDevice}
-          ?disabled=${this.disabled || !this.devices || this.devices.length === 0}
+          ?disabled=${this.disabled || !this._devices || this._devices.length === 0}
         >
-          ${this.devices?.map(
+          ${this._devices?.map(
             (device) => html`
               <option
                 value=${device.deviceId}
-                ?selected=${this.selectedDevice?.deviceId === device.deviceId}
+                ?selected=${this._selectedDevice?.deviceId === device.deviceId}
               >
                 ${device.label || "Unknown Device"}
               </option>

@@ -1,5 +1,5 @@
 import { consume } from "@lit/context";
-import { html, LitElement } from "lit";
+import { html, LitElement, type PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import {
   languagesContext,
@@ -49,7 +49,7 @@ export class LanguageSelector extends LitElement {
     await this._loadLanguages();
   }
 
-  updated(changedProperties: Map<string, unknown>): void {
+  updated(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has("_region") && this._languagesAutoLoaded()) {
       this._loadLanguages();
     }

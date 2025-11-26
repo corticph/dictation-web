@@ -40,6 +40,7 @@ export class CortiDictation extends LitElement {
         .region=${this.region}
         .languages=${this.languages}
         .selectedLanguage=${this.selectedLanguage}
+        .devices=${this.devices}
         .selectedDevice=${this.selectedDevice}
       >
         <recording-button
@@ -47,7 +48,6 @@ export class CortiDictation extends LitElement {
           .audioLevel=${this.audioLevel}
         ></recording-button>
         <settings-menu
-          .devices=${this.devices}
           .settingsEnabled=${this.settingsEnabled}
           ?disabled=${isRecording}
         ></settings-menu>

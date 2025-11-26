@@ -17,9 +17,6 @@ export class SettingsMenu extends LitElement {
   @property({ type: Array })
   settingsEnabled: ConfigurableSettings[] = ["device", "language"];
 
-  @property({ type: Array })
-  devices?: MediaDeviceInfo[];
-
   static styles: CSSResultGroup = [
     SettingsMenuStyles,
     ButtonStyles,
@@ -53,7 +50,6 @@ export class SettingsMenu extends LitElement {
             ${
               showDeviceSelector
                 ? html`<device-selector
-                  .devices=${this.devices}
                   ?disabled=${this.disabled}
                 ></device-selector>`
                 : nothing

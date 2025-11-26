@@ -76,3 +76,13 @@ export const WithCustomLanguages: Story<StoryArgs> = ({
 WithCustomLanguages.args = {
   region: "eu",
 };
+
+export const WithLanguagesAttribute: Story<StoryArgs> = () => {
+  return html`
+    <dictation-context-provider languages="en,da,es,fr" ?noWrapper=${true}>
+      <language-selector
+        @languages-changed=${action("languages-changed")}
+      ></language-selector>
+    </dictation-context-provider>
+  `;
+};

@@ -4,24 +4,6 @@ import "../src/components-new/device-selector.js";
 import "../src/contexts/dictation-context.js";
 
 export default {
-  argTypes: {
-    devices: {
-      description: "Array of available devices (auto-loaded if not provided)",
-      table: {
-        type: { summary: "MediaDeviceInfo[]" },
-      },
-    },
-    onRecordingDevicesChanged: {
-      action: "recording-devices-changed",
-      description: "Fired when the selected device or available devices change",
-    },
-    selectedDevice: {
-      description: "Currently selected device",
-      table: {
-        type: { summary: "MediaDeviceInfo" },
-      },
-    },
-  },
   component: "device-selector",
   title: "DeviceSelector",
 };
@@ -32,55 +14,69 @@ interface Story<T> {
   argTypes?: Record<string, unknown>;
 }
 
-interface DeviceSelectorArgTypes {
-  devices?: MediaDeviceInfo[];
-  selectedDevice?: MediaDeviceInfo;
-}
+interface StoryArgs {}
 
-const DeviceSelectorTemplate: Story<DeviceSelectorArgTypes> = ({
-  devices,
-}: DeviceSelectorArgTypes) => {
-  if (devices) {
-    return html`
-      <dictation-context-provider ?noWrapper=${true}>
-        <div style="padding: 20px; max-width: 300px;">
-          <device-selector
-            .devices=${devices}
-            @recording-devices-changed=${action("recording-devices-changed")}
-          ></device-selector>
-        </div>
-      </dictation-context-provider>
-    `;
-  }
-
+export const DefaultValues: Story<StoryArgs> = () => {
   return html`
     <dictation-context-provider ?noWrapper=${true}>
-      <div style="padding: 20px; max-width: 300px;">
-        <device-selector
-          @recording-devices-changed=${action("recording-devices-changed")}
-        ></device-selector>
-      </div>
+      <device-selector
+        @recording-devices-changed=${action("recording-devices-changed")}
+      ></device-selector>
     </dictation-context-provider>
   `;
 };
 
-export const Default = DeviceSelectorTemplate.bind({});
-Default.args = {};
+export const WithSelectedDevice: Story<StoryArgs> = () => {
+  const mockDevice: MediaDeviceInfo = {
+    deviceId: "mock-device-1",
+    groupId: "group1",
+    kind: "audioinput",
+    label: "Mock Microphone",
+    toJSON: () => ({}),
+  };
 
-export const CustomDevices = DeviceSelectorTemplate.bind({});
-CustomDevices.args = {
-  devices: [
+  return html`
+    <dictation-context-provider
+      .selectedDevice=${mockDevice}
+      ?noWrapper=${true}
+    >
+      <device-selector
+        @recording-devices-changed=${action("recording-devices-changed")}
+      ></device-selector>
+    </dictation-context-provider>
+  `;
+};
+
+export const WithCustomDevices: Story<StoryArgs> = () => {
+  const customDevices: MediaDeviceInfo[] = [
     {
       deviceId: "device1",
       groupId: "group1",
       kind: "audioinput",
       label: "Custom Microphone 1",
+      toJSON: () => ({}),
     },
     {
       deviceId: "device2",
       groupId: "group1",
       kind: "audioinput",
       label: "Custom Microphone 2",
+      toJSON: () => ({}),
     },
-  ] as MediaDeviceInfo[],
+    {
+      deviceId: "device3",
+      groupId: "group1",
+      kind: "audioinput",
+      label: "Custom Microphone 3",
+      toJSON: () => ({}),
+    },
+  ];
+
+  return html`
+    <dictation-context-provider .devices=${customDevices} ?noWrapper=${true}>
+      <device-selector
+        @recording-devices-changed=${action("recording-devices-changed")}
+      ></device-selector>
+    </dictation-context-provider>
+  `;
 };

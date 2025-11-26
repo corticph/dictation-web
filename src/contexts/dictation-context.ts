@@ -11,6 +11,9 @@ export const languagesContext = createContext<string[] | undefined>(
 export const selectedLanguageContext = createContext<string | undefined>(
   "selectedLanguage",
 );
+export const devicesContext = createContext<MediaDeviceInfo[] | undefined>(
+  "devices",
+);
 export const selectedDeviceContext = createContext<MediaDeviceInfo | undefined>(
   "selectedDevice",
 );
@@ -22,15 +25,26 @@ export class DictationContext extends LitElement {
   region?: string;
 
   @provide({ context: languagesContext })
-  @property({ type: Array })
+  @property({
+    type: Array,
+    converter: {
+      fromAttribute: (value: string | null) =>
+        value?.split(",").map((s) => s.trim()),
+      toAttribute: (value: string[] | undefined) => value?.join(","),
+    },
+  })
   languages?: string[];
 
   @provide({ context: selectedLanguageContext })
   @property({ type: String })
   selectedLanguage?: string;
 
+  @provide({ context: devicesContext })
+  @property({ type: Array, attribute: false })
+  devices?: MediaDeviceInfo[];
+
   @provide({ context: selectedDeviceContext })
-  @property({ type: Object })
+  @property({ type: Object, attribute: false })
   selectedDevice?: MediaDeviceInfo;
 
   @property({ type: Boolean })
@@ -49,14 +63,13 @@ export class DictationContext extends LitElement {
 
   private _handleLanguageChanged = (e: Event) => {
     const event = e as CustomEvent;
-
     this.languages = event.detail.languages;
     this.selectedLanguage = event.detail.selectedLanguage;
   };
 
   private _handleDeviceChanged = (e: Event) => {
     const event = e as CustomEvent;
-
+    this.devices = event.detail.devices;
     this.selectedDevice = event.detail.selectedDevice;
   };
 
