@@ -2,8 +2,7 @@ import { css } from 'lit';
 
 const ButtonStyles = css`
   /* Default (plain) button styling */
-  button,
-  .button {
+  button {
     background: var(--action-plain-background);
     /* border: 1px solid var(--action-plain-border-color); */
     border: none;
@@ -19,8 +18,7 @@ const ButtonStyles = css`
     font-family: var(--component-font-family);
   }
 
-  button:hover,
-  .button:hover {
+  button:hover {
     background: var(--action-plain-background-hover);
   }
 
@@ -30,28 +28,24 @@ const ButtonStyles = css`
   }
 
   /* Accent variant */
-  button.accent,
-  .button.accent {
+  button.accent {
     background: var(--action-accent-background);
     color: var(--action-accent-text-color);
     border: none;
   }
 
-  button.accent:hover,
-  .button.accent:hover {
+  button.accent:hover {
     background: var(--action-accent-background-hover);
   }
 
-  /* Accent variant */
-  button.red,
-  .button.red {
+  /* Red variant */
+  button.red {
     background: var(--action-red-background);
     color: var(--action-red-text-color);
     border: none;
   }
 
-  button.red:hover,
-  .button.red:hover {
+  button.red:hover {
     background: var(--action-red-background-hover);
   }
 `;

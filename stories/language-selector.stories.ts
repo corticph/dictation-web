@@ -1,7 +1,8 @@
 import { action } from "@storybook/addon-actions";
 import { html, type TemplateResult } from "lit";
+
 import "../src/components-new/language-selector.js";
-import "../src/contexts/region-context.js";
+import "../src/contexts/dictation-context.js";
 
 export default {
   argTypes: {
@@ -50,7 +51,7 @@ const LanguageSelectorTemplate: Story<LanguageSelectorArgTypes> = ({
 }: LanguageSelectorArgTypes) => {
   if (languages) {
     return html`
-      <region-context-provider region=${region} ?noWrapper=${true}>
+      <dictation-context-provider region=${region} ?noWrapper=${true}>
         <div style="padding: 20px; max-width: 300px;">
           <language-selector
             selectedLanguage=${selectedLanguage}
@@ -58,19 +59,19 @@ const LanguageSelectorTemplate: Story<LanguageSelectorArgTypes> = ({
             @languages-changed=${action("languages-changed")}
           ></language-selector>
         </div>
-      </region-context-provider>
+      </dictation-context-provider>
     `;
   }
 
   return html`
-    <region-context-provider region=${region} ?noWrapper=${true}>
+    <dictation-context-provider region=${region} ?noWrapper=${true}>
       <div style="padding: 20px; max-width: 300px;">
         <language-selector
           selectedLanguage=${selectedLanguage}
           @languages-changed=${action("languages-changed")}
         ></language-selector>
       </div>
-    </region-context-provider>
+    </dictation-context-provider>
   `;
 };
 

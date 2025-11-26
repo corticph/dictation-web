@@ -13,20 +13,10 @@ const CalloutStyles = css`
     align-items: center;
     max-width: 100%;
     height: fit-content;
-    &.error {
-      background: var(--callout-error-background);
-      border: 1px solid var(--callout-error-border);
-      color: var(--callout-warn-text);
-    }
     &.warn {
       background: var(--callout-warn-background);
       border: 1px solid var(--callout-warn-border);
       color: var(--callout-warn-text);
-    }
-    &.small {
-      width: 100%;
-      padding: 6px;
-      font-size: 0.7rem;
     }
   }
 `;

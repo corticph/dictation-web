@@ -41,8 +41,8 @@ export default {
     },
     settingsEnabled: {
       control: "object",
-      description: "Array of enabled settings (device, language)",
       defaultValue: ["device", "language"],
+      description: "Array of enabled settings (device, language)",
     },
   },
   component: "corti-dictation",
@@ -81,9 +81,8 @@ const CortiDictationTemplate: Story<CortiDictationArgTypes> = ({
         .selectedLanguage=${selectedLanguage}
         .languages=${languages}
         .settingsEnabled=${settingsEnabled}
-        @toggle-recording=${action("toggle-recording")}
         @languages-changed=${action("languages-changed")}
-        @device-changed=${action("device-changed")}
+        @recording-devices-changed=${action("recording-devices-changed")}
       ></corti-dictation>
     </div>
   `;

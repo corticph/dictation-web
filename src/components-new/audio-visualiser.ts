@@ -4,7 +4,6 @@ import { classMap } from "lit/directives/class-map.js";
 import { map } from "lit/directives/map.js";
 import { range } from "lit/directives/range.js";
 import AudioVisualiserStyles from "../styles/audio-visualiser.js";
-import DefaultThemeStyles from "../styles/default-theme.js";
 
 const SEGMENT_COUNT = 5;
 
@@ -16,7 +15,7 @@ export class AudioVisualiser extends LitElement {
   @property({ type: Boolean })
   active: boolean = false;
 
-  static styles = [DefaultThemeStyles, AudioVisualiserStyles];
+  static styles = AudioVisualiserStyles;
 
   render() {
     // Each segment represents 20%. Using Math.round to fill segments.

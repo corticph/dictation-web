@@ -1,6 +1,7 @@
 import { html, type TemplateResult } from "lit";
 
 import "../src/components-new/audio-visualiser.js";
+import "../src/contexts/dictation-context.js";
 
 export default {
   argTypes: {
@@ -34,16 +35,20 @@ const AudioVisualiserTemplate: Story<AudioVisualiserArgTypes> = ({
 }: AudioVisualiserArgTypes) => {
   if (!active) {
     return html`
-    <div style="height: 100px;">
-      <audio-visualiser level=${level}></audio-visualiser>
-    </div>
-  `;
+      <dictation-context-provider ?noWrapper=${true}>
+        <div style="height: 100px;">
+          <audio-visualiser level=${level}></audio-visualiser>
+        </div>
+      </dictation-context-provider>
+    `;
   }
 
   return html`
-    <div style="height: 100px;">
-      <audio-visualiser level=${level} active></audio-visualiser>
-    </div>
+    <dictation-context-provider ?noWrapper=${true}>
+      <div style="height: 100px;">
+        <audio-visualiser level=${level} active></audio-visualiser>
+      </div>
+    </dictation-context-provider>
   `;
 };
 

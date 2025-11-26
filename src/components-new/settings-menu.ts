@@ -2,7 +2,6 @@ import { type CSSResultGroup, html, LitElement, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import ButtonStyles from "../styles/buttons.js";
 import CalloutStyles from "../styles/callout.js";
-import DefaultThemeStyles from "../styles/default-theme.js";
 import SettingsMenuStyles from "../styles/settings-menu.js";
 import type { ConfigurableSettings } from "../types.js";
 
@@ -12,12 +11,6 @@ import "../icons/icons.js";
 
 @customElement("settings-menu")
 export class SettingsMenu extends LitElement {
-  @property({ type: Object })
-  selectedDevice?: MediaDeviceInfo;
-
-  @property({ type: String })
-  selectedLanguage?: string;
-
   @property({ type: Boolean })
   disabled: boolean = false;
 
@@ -27,11 +20,7 @@ export class SettingsMenu extends LitElement {
   @property({ type: Array })
   devices?: MediaDeviceInfo[];
 
-  @property({ type: Array })
-  languages?: string[];
-
   static styles: CSSResultGroup = [
-    DefaultThemeStyles,
     SettingsMenuStyles,
     ButtonStyles,
     CalloutStyles,
@@ -64,7 +53,6 @@ export class SettingsMenu extends LitElement {
             ${
               showDeviceSelector
                 ? html`<device-selector
-                  .selectedDevice=${this.selectedDevice}
                   .devices=${this.devices}
                   ?disabled=${this.disabled}
                 ></device-selector>`
@@ -73,8 +61,6 @@ export class SettingsMenu extends LitElement {
             ${
               showLanguageSelector
                 ? html`<language-selector
-                  .selectedLanguage=${this.selectedLanguage}
-                  .languages=${this.languages}
                   ?disabled=${this.disabled}
                 ></language-selector>`
                 : nothing

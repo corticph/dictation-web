@@ -1,8 +1,6 @@
 import { type CSSResultGroup, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import ButtonStyles from "../styles/buttons.js";
-import ComponentStyles from "../styles/ComponentStyles.js";
-import DefaultThemeStyles from "../styles/default-theme.js";
 import RecordingButtonStyles from "../styles/recording-button.js";
 import type { RecordingState } from "../types.js";
 
@@ -20,12 +18,7 @@ export class RecordingButton extends LitElement {
   @property({ type: Boolean })
   preventFocus: boolean = true;
 
-  static styles: CSSResultGroup = [
-    DefaultThemeStyles,
-    RecordingButtonStyles,
-    ButtonStyles,
-    ComponentStyles,
-  ];
+  static styles: CSSResultGroup = [RecordingButtonStyles, ButtonStyles];
 
   private _handleClick(): void {
     this.dispatchEvent(

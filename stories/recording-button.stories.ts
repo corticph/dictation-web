@@ -2,6 +2,7 @@ import { action } from "@storybook/addon-actions";
 import { html, type TemplateResult } from "lit";
 
 import "../src/components-new/recording-button.js";
+import "../src/contexts/dictation-context.js";
 
 export default {
   argTypes: {
@@ -45,12 +46,14 @@ const RecordingButtonTemplate: Story<RecordingButtonArgTypes> = ({
   preventFocus,
 }: RecordingButtonArgTypes) => {
   return html`
-    <recording-button
-      .recordingState=${recordingState}
-      .audioLevel=${audioLevel}
-      ?preventFocus=${preventFocus}
-      @toggle-recording=${action("toggle-recording")}
-    ></recording-button>
+    <dictation-context-provider ?noWrapper=${true}>
+      <recording-button
+        .recordingState=${recordingState}
+        .audioLevel=${audioLevel}
+        ?preventFocus=${preventFocus}
+        @toggle-recording=${action("toggle-recording")}
+      ></recording-button>
+    </dictation-context-provider>
   `;
 };
 

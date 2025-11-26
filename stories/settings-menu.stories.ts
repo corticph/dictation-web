@@ -2,7 +2,7 @@ import { action } from "@storybook/addon-actions";
 import { html, type TemplateResult } from "lit";
 
 import "../src/components-new/settings-menu.js";
-import "../src/contexts/region-context.js";
+import "../src/contexts/dictation-context.js";
 
 export default {
   argTypes: {
@@ -79,7 +79,7 @@ const SettingsMenuTemplate: Story<SettingsMenuArgTypes> = ({
 }: SettingsMenuArgTypes) => {
   if (!settingsEnabled) {
     return html`
-      <region-context-provider region=${region}>
+      <dictation-context-provider region=${region}>
         <settings-menu
           .selectedLanguage=${selectedLanguage}
           .languages=${languages}
@@ -89,12 +89,12 @@ const SettingsMenuTemplate: Story<SettingsMenuArgTypes> = ({
           @languages-changed=${action("languages-changed")}
           @recording-devices-changed=${action("recording-devices-changed")}
         ></settings-menu>
-      </region-context-provider>
+      </dictation-context-provider>
   `;
   }
 
   return html`
-      <region-context-provider region=${region}>
+      <dictation-context-provider region=${region}>
         <settings-menu
           .selectedLanguage=${selectedLanguage}
           .languages=${languages}
@@ -105,7 +105,7 @@ const SettingsMenuTemplate: Story<SettingsMenuArgTypes> = ({
           @languages-changed=${action("languages-changed")}
           @recording-devices-changed=${action("recording-devices-changed")}
         ></settings-menu>
-      </region-context-provider>
+      </dictation-context-provider>
   `;
 };
 

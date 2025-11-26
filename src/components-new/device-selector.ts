@@ -1,13 +1,15 @@
-import { type CSSResultGroup, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import DefaultThemeStyles from "../styles/default-theme.js";
+import { consume } from "@lit/context";
+import { html, LitElement } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
+import { selectedDeviceContext } from "../contexts/dictation-context.js";
 import SelectStyles from "../styles/select.js";
 import { getAudioDevices } from "../utils/devices.js";
 import { recordingDevicesChangedEvent } from "../utils/events.js";
 
 @customElement("device-selector")
 export class DeviceSelector extends LitElement {
-  @property({ type: Object })
+  @consume({ context: selectedDeviceContext, subscribe: true })
+  @state()
   selectedDevice?: MediaDeviceInfo;
 
   @property({ type: Array })
@@ -26,7 +28,7 @@ export class DeviceSelector extends LitElement {
     return this._loadedDevices === this.devices;
   }
 
-  static styles: CSSResultGroup = [DefaultThemeStyles, SelectStyles];
+  static styles = SelectStyles;
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
@@ -58,13 +60,11 @@ export class DeviceSelector extends LitElement {
     this._loadedDevices = devices;
 
     if (!this.selectedDevice && defaultDevice) {
-      this.selectedDevice = defaultDevice;
+      await this.updateComplete;
+      this.dispatchEvent(
+        recordingDevicesChangedEvent(this.devices || [], defaultDevice),
+      );
     }
-
-    await this.updateComplete;
-    this.dispatchEvent(
-      recordingDevicesChangedEvent(this.devices || [], this.selectedDevice),
-    );
   }
 
   private _handleDeviceChange = async () => {
@@ -73,13 +73,12 @@ export class DeviceSelector extends LitElement {
     }
   };
 
-  private async _handleSelectDevice(e: Event): Promise<void> {
+  private _handleSelectDevice(e: Event): void {
     const deviceId = (e.target as HTMLSelectElement).value;
-    this.selectedDevice = this.devices?.find((d) => d.deviceId === deviceId);
+    const device = this.devices?.find((d) => d.deviceId === deviceId);
 
-    await this.updateComplete;
     this.dispatchEvent(
-      recordingDevicesChangedEvent(this.devices || [], this.selectedDevice),
+      recordingDevicesChangedEvent(this.devices || [], device),
     );
   }
 

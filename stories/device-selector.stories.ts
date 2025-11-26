@@ -1,6 +1,7 @@
 import { action } from "@storybook/addon-actions";
 import { html, type TemplateResult } from "lit";
 import "../src/components-new/device-selector.js";
+import "../src/contexts/dictation-context.js";
 
 export default {
   argTypes: {
@@ -41,21 +42,25 @@ const DeviceSelectorTemplate: Story<DeviceSelectorArgTypes> = ({
 }: DeviceSelectorArgTypes) => {
   if (devices) {
     return html`
-      <div style="padding: 20px; max-width: 300px;">
-        <device-selector
-          .devices=${devices}
-          @recording-devices-changed=${action("recording-devices-changed")}
-        ></device-selector>
-      </div>
+      <dictation-context-provider ?noWrapper=${true}>
+        <div style="padding: 20px; max-width: 300px;">
+          <device-selector
+            .devices=${devices}
+            @recording-devices-changed=${action("recording-devices-changed")}
+          ></device-selector>
+        </div>
+      </dictation-context-provider>
     `;
   }
 
   return html`
-    <div style="padding: 20px; max-width: 300px;">
-      <device-selector
-        @recording-devices-changed=${action("recording-devices-changed")}
-      ></device-selector>
-    </div>
+    <dictation-context-provider ?noWrapper=${true}>
+      <div style="padding: 20px; max-width: 300px;">
+        <device-selector
+          @recording-devices-changed=${action("recording-devices-changed")}
+        ></device-selector>
+      </div>
+    </dictation-context-provider>
   `;
 };
 
