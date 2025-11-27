@@ -1,21 +1,28 @@
-import { html, LitElement } from "lit";
+import { html, LitElement, type PropertyValues } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { map } from "lit/directives/map.js";
 import { range } from "lit/directives/range.js";
 import AudioVisualiserStyles from "../styles/audio-visualiser.js";
+import { normalizeToRange } from "../utils/validation.js";
 
 const SEGMENT_COUNT = 5;
 
 @customElement("audio-visualiser")
 export class AudioVisualiser extends LitElement {
   @property({ type: Number })
-  level: number = 0; // expects a value from 0 to 1
+  level: number = 0;
 
   @property({ type: Boolean })
   active: boolean = false;
 
   static styles = AudioVisualiserStyles;
+
+  willUpdate(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has("level")) {
+      this.level = normalizeToRange(this.level);
+    }
+  }
 
   render() {
     // Each segment represents 20%. Using Math.round to fill segments.

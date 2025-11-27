@@ -8,7 +8,7 @@ import {
 } from "../contexts/dictation-context.js";
 import SelectStyles from "../styles/select.js";
 import { languagesChangedEvent } from "../utils/events.js";
-import { getLanguagesByRegion } from "../utils/languages.js";
+import { getLanguageName, getLanguagesByRegion } from "../utils/languages.js";
 
 @customElement("language-selector")
 export class LanguageSelector extends LitElement {
@@ -88,7 +88,7 @@ export class LanguageSelector extends LitElement {
           ${this._languages?.map(
             (language) => html`
               <option value=${language} ?selected=${this._selectedLanguage === language}>
-                ${language}
+                ${getLanguageName(language)}
               </option>
             `,
           )}
