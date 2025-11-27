@@ -12,6 +12,9 @@ export class CortiDictation extends LitElement {
   @property({ type: String })
   region?: string;
 
+  @property({ type: String })
+  accessToken?: string;
+
   @property({
     converter: commaSeparatedConverter,
     type: Array,
@@ -37,6 +40,7 @@ export class CortiDictation extends LitElement {
     return html`
       <dictation-context-provider
         .region=${this.region}
+        .accessToken=${this.accessToken}
         .languages=${this.languages}
         .selectedLanguage=${this.selectedLanguage}
         .devices=${this.devices}

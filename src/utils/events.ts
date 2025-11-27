@@ -1,6 +1,4 @@
-/**
- * Custom event creators for component communication
- */
+import type { RecordingState } from "../types.js";
 
 export type LanguagesChangedEventDetail = {
   languages: string[];
@@ -10,6 +8,10 @@ export type LanguagesChangedEventDetail = {
 export type RecordingDevicesChangedEventDetail = {
   devices: MediaDeviceInfo[];
   selectedDevice: MediaDeviceInfo | undefined;
+};
+
+export type RecordingStateChangedEventDetail = {
+  state: RecordingState;
 };
 
 export function languagesChangedEvent(
@@ -31,5 +33,55 @@ export function recordingDevicesChangedEvent(
     bubbles: true,
     composed: true,
     detail: { devices, selectedDevice },
+  });
+}
+
+export function recordingStateChangedEvent(
+  state: RecordingState,
+): CustomEvent<RecordingStateChangedEventDetail> {
+  return new CustomEvent("recording-state-changed", {
+    bubbles: true,
+    composed: true,
+    detail: { state },
+  });
+}
+
+export function transcriptEvent(detail: unknown): CustomEvent {
+  return new CustomEvent("transcript", {
+    bubbles: true,
+    composed: true,
+    detail,
+  });
+}
+
+export function commandEvent(detail: unknown): CustomEvent {
+  return new CustomEvent("command", {
+    bubbles: true,
+    composed: true,
+    detail,
+  });
+}
+
+export function usageEvent(detail: unknown): CustomEvent {
+  return new CustomEvent("usage", {
+    bubbles: true,
+    composed: true,
+    detail,
+  });
+}
+
+export function errorEvent(detail: unknown): CustomEvent {
+  return new CustomEvent("error", {
+    bubbles: true,
+    composed: true,
+    detail,
+  });
+}
+
+export function streamClosedEvent(detail: unknown): CustomEvent {
+  return new CustomEvent("stream-closed", {
+    bubbles: true,
+    composed: true,
+    detail,
   });
 }

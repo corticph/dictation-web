@@ -22,12 +22,19 @@ export const selectedDeviceContext = createContext<MediaDeviceInfo | undefined>(
 export const recordingStateContext = createContext<RecordingState>(
   "recordingState",
 );
+export const accessTokenContext = createContext<string | undefined>(
+  "accessToken",
+);
 
 @customElement("dictation-context-provider")
 export class DictationContext extends LitElement {
   @provide({ context: regionContext })
   @property({ type: String })
   region?: string;
+
+  @provide({ context: accessTokenContext })
+  @property({ type: String })
+  accessToken?: string;
 
   @provide({ context: languagesContext })
   @property({
@@ -64,6 +71,10 @@ export class DictationContext extends LitElement {
       "recording-devices-changed",
       this._handleDeviceChanged,
     );
+    this.addEventListener(
+      "recording-state-changed",
+      this._handleRecordingStateChanged,
+    );
   }
 
   private _handleLanguageChanged = (e: Event) => {
@@ -78,6 +89,12 @@ export class DictationContext extends LitElement {
 
     this.devices = event.detail.devices;
     this.selectedDevice = event.detail.selectedDevice;
+  };
+
+  private _handleRecordingStateChanged = (e: Event) => {
+    const event = e as CustomEvent;
+
+    this._recordingState = event.detail.state;
   };
 
   render() {
