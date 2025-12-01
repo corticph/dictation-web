@@ -1,14 +1,6 @@
 import { type Corti, CortiClient } from "@corti/sdk";
 import type { ReactiveController, ReactiveControllerHost } from "lit";
 import { DEFAULT_DICTATION_CONFIG } from "../constants.js";
-import {
-  commandEvent,
-  errorEvent,
-  streamClosedEvent,
-  transcriptEvent,
-  usageEvent,
-} from "../utils/events.js";
-import { getErrorMessage } from "../utils.js";
 
 type TranscribeSocket = Awaited<
   ReturnType<CortiClient["transcribe"]["connect"]>
@@ -16,7 +8,20 @@ type TranscribeSocket = Awaited<
 
 interface DictationControllerHost extends ReactiveControllerHost {
   _accessToken?: string;
-  dispatchEvent(event: Event): boolean;
+}
+
+export type TranscribeMessage =
+  | Corti.TranscribeConfigStatusMessage
+  | Corti.TranscribeUsageMessage
+  | Corti.TranscribeEndedMessage
+  | Corti.TranscribeErrorMessage
+  | Corti.TranscribeTranscriptMessage
+  | Corti.TranscribeCommandMessage;
+
+interface WebSocketCallbacks {
+  onMessage?: (message: TranscribeMessage) => void;
+  onError?: (error: Error) => void;
+  onClose?: (event: unknown) => void;
 }
 
 export class DictationController implements ReactiveController {
@@ -24,7 +29,6 @@ export class DictationController implements ReactiveController {
 
   private _cortiClient: CortiClient | null = null;
   private _webSocket: TranscribeSocket | null = null;
-  private _mediaRecorder: MediaRecorder | null = null;
   private _closeTimeout?: number;
 
   constructor(host: DictationControllerHost) {
@@ -39,103 +43,107 @@ export class DictationController implements ReactiveController {
   async connect(
     mediaRecorder: MediaRecorder | null,
     dictationConfig: Corti.TranscribeConfig = DEFAULT_DICTATION_CONFIG,
+    callbacks: WebSocketCallbacks = {},
+    authConfig?: Corti.BearerOptions,
   ): Promise<void> {
-    if (!this.host._accessToken) {
-      return;
+    const auth: Corti.BearerOptions = authConfig || {
+      accessToken: this.host._accessToken || "",
+      refreshAccessToken: () => ({
+        accessToken: this.host._accessToken || "",
+      }),
+    };
+
+    if (!auth.accessToken && !auth.refreshAccessToken) {
+      throw new Error(
+        "Auth config with accessToken or refreshAccessToken is required to connect",
+      );
     }
 
     if (!mediaRecorder) {
       throw new Error("MediaRecorder is required to connect");
     }
 
-    this._mediaRecorder = mediaRecorder;
+    if (this._webSocket?.readyState === WebSocket.OPEN) {
+      throw new Error("Already connected. Disconnect before reconnecting.");
+    }
+
     this._cortiClient =
       this._cortiClient ||
       new CortiClient({
-        auth: {
-          refreshAccessToken: () => ({
-            accessToken: this.host._accessToken || "",
-          }),
-        },
+        auth,
       });
 
-    // Should resolve only when configuration is accepted
     this._webSocket = await this._cortiClient.transcribe.connect({
       configuration: dictationConfig,
     });
-
-    this.setupWebSocketHandlers();
-    this.setupMediaRecorder();
+    this.setupMediaRecorder(mediaRecorder);
+    this.setupWebSocketHandlers(callbacks);
   }
 
-  private setupWebSocketHandlers(): void {
+  private setupWebSocketHandlers(callbacks: WebSocketCallbacks): void {
     if (!this._webSocket) {
-      return;
+      throw new Error("WebSocket not initialized");
     }
 
     this._webSocket.on("message", (message) => {
-      switch (message.type) {
-        case "CONFIG_ACCEPTED":
-          this._mediaRecorder?.start(250);
-          break;
-        case "transcript":
-          this.host.dispatchEvent(transcriptEvent(message));
-          break;
-        case "command":
-          this.host.dispatchEvent(commandEvent(message));
-          break;
-        case "usage":
-          this.host.dispatchEvent(usageEvent(message));
-          break;
-        default:
-          break;
+      if (callbacks.onMessage) {
+        callbacks.onMessage(message);
       }
     });
 
     this._webSocket.on("error", (event) => {
-      this.host.dispatchEvent(errorEvent(getErrorMessage(event)));
+      if (callbacks.onError) {
+        callbacks.onError(event);
+      }
     });
 
     this._webSocket.on("close", (event) => {
-      this.host.dispatchEvent(streamClosedEvent(event));
+      if (callbacks.onClose) {
+        callbacks.onClose(event);
+      }
     });
   }
 
-  private setupMediaRecorder(): void {
-    if (!this._mediaRecorder) {
-      return;
-    }
-
-    this._mediaRecorder.ondataavailable = (event) => {
-      if (this._webSocket?.readyState === WebSocket.OPEN) {
-        this._webSocket.sendAudio(event.data);
-      }
+  private setupMediaRecorder(mediaRecorder: MediaRecorder): void {
+    mediaRecorder.ondataavailable = (event) => {
+      this._webSocket?.sendAudio(event.data);
     };
   }
 
-  async disconnect(): Promise<void> {
-    return new Promise((resolve) => {
-      this._mediaRecorder?.stop();
-
-      if (this._webSocket?.readyState === WebSocket.OPEN) {
-        this._webSocket.sendEnd({ type: "end" });
+  async disconnect(onClose?: (event: unknown) => void): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+      if (!this._webSocket || this._webSocket.readyState !== WebSocket.OPEN) {
+        resolve();
+        return;
       }
 
-      this._closeTimeout = window.setTimeout(() => {
-        if (this._webSocket?.readyState === WebSocket.OPEN) {
-          this._webSocket.close();
-        }
-      }, 10000);
-
-      this._webSocket?.on("close", () => {
-        resolve();
-
+      this._webSocket.on("close", (event) => {
         if (this._closeTimeout) {
           clearTimeout(this._closeTimeout);
           this._closeTimeout = undefined;
         }
+
+        if (onClose) {
+          onClose(event);
+        }
+
+        resolve();
       });
+
+      this._webSocket.sendEnd({ type: "end" });
+
+      this._closeTimeout = window.setTimeout(() => {
+        // Reject the promise before closing the web socket, so the promise rejects before close event fires
+        reject(new Error("WebSocket close timeout"));
+        
+        if (this._webSocket?.readyState === WebSocket.OPEN) {
+          console.log("closing web socket");
+          this._webSocket.close();
+        }
+      }, 10000);
     });
+
+    this.cleanup();
   }
 
   cleanup(): void {
@@ -149,10 +157,5 @@ export class DictationController implements ReactiveController {
     }
 
     this._webSocket = null;
-    this._mediaRecorder = null;
-  }
-
-  get isConnected(): boolean {
-    return this._webSocket?.readyState === WebSocket.OPEN;
   }
 }

@@ -14,10 +14,10 @@ interface Story<T> {
   argTypes?: Record<string, unknown>;
 }
 
-interface StoryArgs {}
+type StoryArgs = {};
 
 export const DefaultValues: Story<StoryArgs> = () => {
-    return html`
+  return html`
     <dictation-context-provider ?noWrapper=${true}>
         <device-selector
           @recording-devices-changed=${action("recording-devices-changed")}

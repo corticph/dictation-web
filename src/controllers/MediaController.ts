@@ -1,6 +1,9 @@
 import type { ReactiveController, ReactiveControllerHost } from "lit";
-import { calculateAudioLevel, createAudioAnalyzer } from "../utils/media.js";
-import { getMediaStream } from "../utils.js";
+import {
+  calculateAudioLevel,
+  createAudioAnalyzer,
+  getMediaStream,
+} from "../utils/media.js";
 
 interface MediaControllerHost extends ReactiveControllerHost {
   _selectedDevice?: MediaDeviceInfo;
@@ -15,6 +18,7 @@ export class MediaController implements ReactiveController {
   private _mediaRecorder: MediaRecorder | null = null;
   private _visualiserInterval?: number;
   private _audioLevel: number = 0;
+  private _onTrackEnded?: () => void;
 
   constructor(host: MediaControllerHost) {
     this.host = host;
@@ -25,12 +29,21 @@ export class MediaController implements ReactiveController {
     this.cleanup();
   }
 
-  async initialize(): Promise<void> {
-    this.cleanup();
+  async initialize(onTrackEnded?: () => void): Promise<void> {
+    await this.cleanup();
 
-    const deviceId = this.host._selectedDevice?.deviceId;
+    this._onTrackEnded = onTrackEnded;
+    this._mediaStream = await getMediaStream(
+      this.host._selectedDevice?.deviceId,
+    );
 
-    this._mediaStream = await getMediaStream(deviceId);
+    this._mediaStream.getTracks().forEach((track: MediaStreamTrack) => {
+      track.addEventListener("ended", () => {
+        if (this._onTrackEnded) {
+          this._onTrackEnded();
+        }
+      });
+    });
 
     const { audioContext, analyser } = createAudioAnalyzer(this._mediaStream);
 
@@ -66,6 +79,10 @@ export class MediaController implements ReactiveController {
   async cleanup(): Promise<void> {
     this.stopAudioLevelMonitoring();
 
+    if (this._mediaRecorder?.state === "recording") {
+      this._mediaRecorder.stop();
+    }
+
     if (this._mediaStream) {
       this._mediaStream.getTracks().forEach((track) => {
         track.stop();
@@ -73,17 +90,15 @@ export class MediaController implements ReactiveController {
       this._mediaStream = null;
     }
 
-    if (this._audioContext) {
-      await this._audioContext.close();
-      this._audioContext = null;
+    if (this._audioContext && this._audioContext.state !== "closed") {
+        await this._audioContext.close();
     }
+  
+    this._audioContext = null;
 
     this._analyser = null;
     this._mediaRecorder = null;
-  }
-
-  get mediaStream(): MediaStream | null {
-    return this._mediaStream;
+    this._onTrackEnded = undefined;
   }
 
   get mediaRecorder(): MediaRecorder | null {
