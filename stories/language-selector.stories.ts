@@ -31,6 +31,7 @@ export const DefaultValues: Story<StoryArgs> = ({ region }: StoryArgs) => {
     <dictation-context-provider .region=${region} ?noWrapper=${true}>
       <language-selector
         @languages-changed=${action("languages-changed")}
+        @error=${action("error")}
       ></language-selector>
     </dictation-context-provider>
   `;
@@ -50,6 +51,7 @@ export const WithSelectedLanguage: Story<StoryArgs> = ({
     >
       <language-selector
         @languages-changed=${action("languages-changed")}
+        @error=${action("error")}
       ></language-selector>
     </dictation-context-provider>
   `;
@@ -69,6 +71,7 @@ export const WithCustomLanguages: Story<StoryArgs> = ({
     >
       <language-selector
         @languages-changed=${action("languages-changed")}
+        @error=${action("error")}
       ></language-selector>
     </dictation-context-provider>
   `;
@@ -82,6 +85,7 @@ export const WithLanguagesAttribute: Story<StoryArgs> = () => {
     <dictation-context-provider languages="en,da,es,fr" ?noWrapper=${true}>
       <language-selector
         @languages-changed=${action("languages-changed")}
+        @error=${action("error")}
       ></language-selector>
     </dictation-context-provider>
   `;

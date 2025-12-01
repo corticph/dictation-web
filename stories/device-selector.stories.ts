@@ -21,6 +21,7 @@ export const DefaultValues: Story<StoryArgs> = () => {
     <dictation-context-provider ?noWrapper=${true}>
       <device-selector
         @recording-devices-changed=${action("recording-devices-changed")}
+        @error=${action("error")}
       ></device-selector>
     </dictation-context-provider>
   `;
@@ -42,6 +43,7 @@ export const WithSelectedDevice: Story<StoryArgs> = () => {
     >
       <device-selector
         @recording-devices-changed=${action("recording-devices-changed")}
+        @error=${action("error")}
       ></device-selector>
     </dictation-context-provider>
   `;
@@ -76,6 +78,7 @@ export const WithCustomDevices: Story<StoryArgs> = () => {
     <dictation-context-provider .devices=${customDevices} ?noWrapper=${true}>
       <device-selector
         @recording-devices-changed=${action("recording-devices-changed")}
+        @error=${action("error")}
       ></device-selector>
     </dictation-context-provider>
   `;

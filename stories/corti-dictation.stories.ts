@@ -42,6 +42,7 @@ export const DefaultValues: Story<StoryArgs> = ({ region }: StoryArgs) => {
       @toggle-recording=${action("toggle-recording")}
       @languages-changed=${action("languages-changed")}
       @recording-devices-changed=${action("recording-devices-changed")}
+      @error=${action("error")}
     ></corti-dictation>
   `;
 };
@@ -56,6 +57,7 @@ export const USRegion: Story<StoryArgs> = ({ region }: StoryArgs) => {
       @toggle-recording=${action("toggle-recording")}
       @languages-changed=${action("languages-changed")}
       @recording-devices-changed=${action("recording-devices-changed")}
+      @error=${action("error")}
     ></corti-dictation>
   `;
 };
@@ -73,6 +75,7 @@ export const OnlyLanguageSettings: Story<StoryArgs> = ({
       @toggle-recording=${action("toggle-recording")}
       @languages-changed=${action("languages-changed")}
       @recording-devices-changed=${action("recording-devices-changed")}
+      @error=${action("error")}
     ></corti-dictation>
   `;
 };
@@ -87,6 +90,7 @@ export const OnlyDeviceSettings: Story<StoryArgs> = () => {
       @toggle-recording=${action("toggle-recording")}
       @languages-changed=${action("languages-changed")}
       @recording-devices-changed=${action("recording-devices-changed")}
+      @error=${action("error")}
     ></corti-dictation>
   `;
 };
@@ -99,6 +103,7 @@ export const NoSettings: Story<StoryArgs> = ({ region }: StoryArgs) => {
       @toggle-recording=${action("toggle-recording")}
       @languages-changed=${action("languages-changed")}
       @recording-devices-changed=${action("recording-devices-changed")}
+      @error=${action("error")}
     ></corti-dictation>
   `;
 };
@@ -115,6 +120,7 @@ export const WithCustomLanguages: Story<StoryArgs> = () => {
       @toggle-recording=${action("toggle-recording")}
       @languages-changed=${action("languages-changed")}
       @recording-devices-changed=${action("recording-devices-changed")}
+      @error=${action("error")}
     ></corti-dictation>
   `;
 };
@@ -128,6 +134,7 @@ export const WithLanguagesAttribute: Story<StoryArgs> = () => {
       @toggle-recording=${action("toggle-recording")}
       @languages-changed=${action("languages-changed")}
       @recording-devices-changed=${action("recording-devices-changed")}
+      @error=${action("error")}
     ></corti-dictation>
   `;
 };

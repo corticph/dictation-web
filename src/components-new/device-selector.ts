@@ -7,7 +7,7 @@ import {
 } from "../contexts/dictation-context.js";
 import SelectStyles from "../styles/select.js";
 import { getAudioDevices } from "../utils/devices.js";
-import { recordingDevicesChangedEvent } from "../utils/events.js";
+import { errorEvent, recordingDevicesChangedEvent } from "../utils/events.js";
 
 @customElement("device-selector")
 export class DeviceSelector extends LitElement {
@@ -59,15 +59,19 @@ export class DeviceSelector extends LitElement {
   }
 
   private async _loadDevices(): Promise<void> {
-    const { devices, defaultDevice } = await getAudioDevices();
-    this._loadedDevices = devices;
+    try {
+      const { devices, defaultDevice } = await getAudioDevices();
+      this._loadedDevices = devices;
 
-    this.dispatchEvent(
-      recordingDevicesChangedEvent(
-        devices,
-        this._selectedDevice ?? defaultDevice,
-      ),
-    );
+      this.dispatchEvent(
+        recordingDevicesChangedEvent(
+          devices,
+          this._selectedDevice ?? defaultDevice,
+        ),
+      );
+    } catch (error) {
+      this.dispatchEvent(errorEvent(error));
+    }
   }
 
   private _handleDeviceChange = async () => {
@@ -79,6 +83,10 @@ export class DeviceSelector extends LitElement {
   private _handleSelectDevice(e: Event): void {
     const deviceId = (e.target as HTMLSelectElement).value;
     const device = this._devices?.find((d) => d.deviceId === deviceId);
+
+    if (!device) {
+      return;
+    }
 
     this.dispatchEvent(
       recordingDevicesChangedEvent(this._devices || [], device),
