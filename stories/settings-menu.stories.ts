@@ -27,13 +27,13 @@ interface StoryArgs {
 }
 
 export const DefaultValues: Story<StoryArgs> = ({ region }: StoryArgs) => {
-  return html`
+    return html`
     <dictation-context-provider .region=${region}>
-      <settings-menu
-        @languages-changed=${action("languages-changed")}
-        @recording-devices-changed=${action("recording-devices-changed")}
-      ></settings-menu>
-    </dictation-context-provider>
+        <settings-menu
+          @languages-changed=${action("languages-changed")}
+          @recording-devices-changed=${action("recording-devices-changed")}
+        ></settings-menu>
+      </dictation-context-provider>
   `;
 };
 DefaultValues.args = {
@@ -43,11 +43,11 @@ DefaultValues.args = {
 export const DisabledSettings: Story<StoryArgs> = ({ region }: StoryArgs) => {
   return html`
     <dictation-context-provider .region=${region} recordingState="recording">
-      <settings-menu
-        @languages-changed=${action("languages-changed")}
-        @recording-devices-changed=${action("recording-devices-changed")}
-      ></settings-menu>
-    </dictation-context-provider>
+        <settings-menu
+          @languages-changed=${action("languages-changed")}
+          @recording-devices-changed=${action("recording-devices-changed")}
+        ></settings-menu>
+      </dictation-context-provider>
   `;
 };
 DisabledSettings.args = {

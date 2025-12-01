@@ -1,3 +1,16 @@
+export async function getMediaStream(deviceId?: string): Promise<MediaStream> {
+  if (!deviceId) {
+    throw new Error("No device ID provided");
+  }
+
+  const constraints: MediaStreamConstraints =
+    deviceId !== "default"
+      ? { audio: { deviceId: { exact: deviceId } } }
+      : { audio: true };
+
+  return await navigator.mediaDevices.getUserMedia(constraints);
+}
+
 export function createAudioAnalyzer(
   mediaStream: MediaStream,
 ): { audioContext: AudioContext; analyser: AnalyserNode } {

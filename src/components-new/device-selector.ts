@@ -60,15 +60,15 @@ export class DeviceSelector extends LitElement {
 
   private async _loadDevices(): Promise<void> {
     try {
-      const { devices, defaultDevice } = await getAudioDevices();
-      this._loadedDevices = devices;
+    const { devices, defaultDevice } = await getAudioDevices();
+    this._loadedDevices = devices;
 
-      this.dispatchEvent(
+    this.dispatchEvent(
         recordingDevicesChangedEvent(
           devices,
           this._selectedDevice ?? defaultDevice,
         ),
-      );
+    );
     } catch (error) {
       this.dispatchEvent(errorEvent(error));
     }

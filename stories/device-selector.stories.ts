@@ -17,14 +17,14 @@ interface Story<T> {
 interface StoryArgs {}
 
 export const DefaultValues: Story<StoryArgs> = () => {
-  return html`
+    return html`
     <dictation-context-provider ?noWrapper=${true}>
-      <device-selector
-        @recording-devices-changed=${action("recording-devices-changed")}
+        <device-selector
+          @recording-devices-changed=${action("recording-devices-changed")}
         @error=${action("error")}
-      ></device-selector>
+        ></device-selector>
     </dictation-context-provider>
-  `;
+    `;
 };
 
 export const WithSelectedDevice: Story<StoryArgs> = () => {

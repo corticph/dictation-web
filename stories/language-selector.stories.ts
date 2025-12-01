@@ -27,14 +27,14 @@ interface StoryArgs {
 }
 
 export const DefaultValues: Story<StoryArgs> = ({ region }: StoryArgs) => {
-  return html`
+    return html`
     <dictation-context-provider .region=${region} ?noWrapper=${true}>
-      <language-selector
-        @languages-changed=${action("languages-changed")}
+          <language-selector
+            @languages-changed=${action("languages-changed")}
         @error=${action("error")}
-      ></language-selector>
-    </dictation-context-provider>
-  `;
+          ></language-selector>
+      </dictation-context-provider>
+    `;
 };
 DefaultValues.args = {
   region: "eu",
@@ -49,10 +49,10 @@ export const WithSelectedLanguage: Story<StoryArgs> = ({
       .selectedLanguage=${"da"}
       ?noWrapper=${true}
     >
-      <language-selector
-        @languages-changed=${action("languages-changed")}
+        <language-selector
+          @languages-changed=${action("languages-changed")}
         @error=${action("error")}
-      ></language-selector>
+        ></language-selector>
     </dictation-context-provider>
   `;
 };

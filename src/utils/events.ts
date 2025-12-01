@@ -71,12 +71,13 @@ export function usageEvent(detail: unknown): CustomEvent {
 }
 
 export function errorEvent(error: unknown): CustomEvent {
-  const detail = error instanceof Error ? error.message : String(error);
+  const message =
+    error instanceof Error && error.message ? error.message : String(error);
 
   return new CustomEvent("error", {
     bubbles: false,
     composed: true,
-    detail,
+    detail: { message },
   });
 }
 

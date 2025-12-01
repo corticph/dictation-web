@@ -6,12 +6,22 @@ import {
   recordingStateContext,
   selectedDeviceContext,
 } from "../contexts/dictation-context.js";
-import { DictationController } from "../controllers/DictationController.js";
+import {
+  DictationController,
+  type TranscribeMessage,
+} from "../controllers/DictationController.js";
 import { MediaController } from "../controllers/MediaController.js";
 import ButtonStyles from "../styles/buttons.js";
 import RecordingButtonStyles from "../styles/recording-button.js";
 import type { RecordingState } from "../types.js";
-import { recordingStateChangedEvent } from "../utils/events.js";
+import {
+  commandEvent,
+  errorEvent,
+  recordingStateChangedEvent,
+  streamClosedEvent,
+  transcriptEvent,
+  usageEvent,
+} from "../utils/events.js";
 
 import "./audio-visualiser.js";
 import "../icons/icons.js";
@@ -44,25 +54,73 @@ export class RecordingButton extends LitElement {
     }
   }
 
+  private _handleWebSocketMessage = (message: TranscribeMessage): void => {
+    if (message.type === "CONFIG_ACCEPTED") {
+      this._mediaController.mediaRecorder?.start(250);
+      this._mediaController.startAudioLevelMonitoring();
+      this.dispatchEvent(recordingStateChangedEvent("recording"));
+    }
+
+    switch (message.type) {
+      case "transcript":
+        this.dispatchEvent(transcriptEvent(message));
+        break;
+      case "command":
+        this.dispatchEvent(commandEvent(message));
+        break;
+      case "usage":
+        this.dispatchEvent(usageEvent(message));
+        break;
+    }
+  };
+
+  private _handleWebSocketError = (error: Error): void => {
+    this.dispatchEvent(errorEvent("Socket error: " + error.message));
+    this._handleStop();
+  };
+
+  private _handleWebSocketClose = (event: unknown): void => {
+    this.dispatchEvent(streamClosedEvent(event));
+  };
+
   private async _handleStart(): Promise<void> {
     this.dispatchEvent(recordingStateChangedEvent("initializing"));
 
-    await this._mediaController.initialize();
+    try {
+      await this._mediaController.initialize(() => {
+        if (this._recordingState === "recording") {
+          this.dispatchEvent(errorEvent("Microphone access was lost."));
+          this._handleStop();
+        }
+      });
 
-    await this._dictationController.connect(
-      this._mediaController.mediaRecorder,
-    );
-    this._mediaController.startAudioLevelMonitoring();
-
-    this.dispatchEvent(recordingStateChangedEvent("recording"));
+      await this._dictationController.connect(
+        this._mediaController.mediaRecorder,
+        undefined, // dictationConfig - use default
+        {
+          onClose: this._handleWebSocketClose,
+          onError: this._handleWebSocketError,
+          onMessage: this._handleWebSocketMessage,
+        },
+      );
+    } catch (error) {
+      this.dispatchEvent(errorEvent(error));
+      await this._handleStop();
+    }
   }
 
   private async _handleStop(): Promise<void> {
     this.dispatchEvent(recordingStateChangedEvent("stopping"));
 
-    this._mediaController.stopAudioLevelMonitoring();
-    await this._dictationController.disconnect();
-    await this._mediaController.cleanup();
+    try {
+      this._mediaController.stopAudioLevelMonitoring();
+      this._mediaController.mediaRecorder?.stop();
+
+      await this._dictationController.disconnect(this._handleWebSocketClose);
+      await this._mediaController.cleanup();
+    } catch (error) {
+      this.dispatchEvent(errorEvent(error));
+    }
 
     this.dispatchEvent(recordingStateChangedEvent("stopped"));
   }

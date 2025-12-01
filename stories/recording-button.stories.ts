@@ -28,10 +28,10 @@ interface StoryArgs {
 export const Stopped: Story<StoryArgs> = ({ preventFocus }: StoryArgs) => {
   return html`
     <dictation-context-provider ?noWrapper=${true}>
-      <recording-button
-        ?preventFocus=${preventFocus}
-        @toggle-recording=${action("toggle-recording")}
-      ></recording-button>
+    <recording-button
+      ?preventFocus=${preventFocus}
+      @toggle-recording=${action("toggle-recording")}
+    ></recording-button>
     </dictation-context-provider>
   `;
 };
