@@ -1,7 +1,7 @@
 import { action } from "@storybook/addon-actions";
 import { html, type TemplateResult } from "lit";
 
-import "../src/components-new/language-selector.js";
+import "../src/components/language-selector.js";
 import "../src/contexts/dictation-context.js";
 
 export default {
@@ -27,7 +27,7 @@ interface StoryArgs {
 }
 
 export const DefaultValues: Story<StoryArgs> = ({ region }: StoryArgs) => {
-    return html`
+  return html`
     <dictation-context-provider .region=${region} ?noWrapper=${true}>
           <language-selector
             @languages-changed=${action("languages-changed")}

@@ -1,6 +1,6 @@
 import { action } from "@storybook/addon-actions";
 import { html, type TemplateResult } from "lit";
-import "../src/components-new/device-selector.js";
+import "../src/components/device-selector.js";
 import "../src/contexts/dictation-context.js";
 
 export default {

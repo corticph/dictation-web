@@ -1,7 +1,7 @@
 import { action } from "@storybook/addon-actions";
 import { html, type TemplateResult } from "lit";
 
-import "../src/components-new/corti-dictation.js";
+import "../src/components/corti-dictation.js";
 import { CortiAuth } from "@corti/sdk";
 
 export default {

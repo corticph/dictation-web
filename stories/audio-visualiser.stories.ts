@@ -1,6 +1,6 @@
 import { html, type TemplateResult } from "lit";
 
-import "../src/components-new/audio-visualiser.js";
+import "../src/components/audio-visualiser.js";
 import "../src/contexts/dictation-context.js";
 
 export default {

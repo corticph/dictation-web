@@ -1,7 +1,7 @@
 import { action } from "@storybook/addon-actions";
 import { html, type TemplateResult } from "lit";
 
-import "../src/components-new/recording-button.js";
+import "../src/components/recording-button.js";
 import "../src/contexts/dictation-context.js";
 
 export default {

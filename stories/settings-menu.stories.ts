@@ -1,7 +1,7 @@
 import { action } from "@storybook/addon-actions";
 import { html, type TemplateResult } from "lit";
 
-import "../src/components-new/settings-menu.js";
+import "../src/components/settings-menu.js";
 import "../src/contexts/dictation-context.js";
 
 export default {
@@ -27,7 +27,7 @@ interface StoryArgs {
 }
 
 export const DefaultValues: Story<StoryArgs> = ({ region }: StoryArgs) => {
-    return html`
+  return html`
     <dictation-context-provider .region=${region}>
         <settings-menu
           @languages-changed=${action("languages-changed")}
@@ -66,7 +66,9 @@ export const OnlyDeviceSelector: Story<StoryArgs> = () => {
   `;
 };
 
-export const OnlyLanguageSelector: Story<StoryArgs> = ({ region }: StoryArgs) => {
+export const OnlyLanguageSelector: Story<StoryArgs> = ({
+  region,
+}: StoryArgs) => {
   return html`
     <dictation-context-provider .region=${region}>
       <settings-menu
