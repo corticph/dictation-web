@@ -19,8 +19,8 @@ export class SettingsMenu extends LitElement {
   _recordingState: RecordingState = "stopped";
 
   @property({
-    type: Array,
     converter: commaSeparatedConverter,
+    type: Array,
   })
   settingsEnabled: ConfigurableSettings[] = ["device", "language"];
 

@@ -7,7 +7,9 @@ type TranscribeSocket = Awaited<
 >;
 
 interface DictationControllerHost extends ReactiveControllerHost {
-  _accessToken?: string;
+  _authConfig?: Corti.BearerOptions;
+  _region?: string;
+  _tenantName?: string;
 }
 
 export type TranscribeMessage =
@@ -44,19 +46,9 @@ export class DictationController implements ReactiveController {
     mediaRecorder: MediaRecorder | null,
     dictationConfig: Corti.TranscribeConfig = DEFAULT_DICTATION_CONFIG,
     callbacks: WebSocketCallbacks = {},
-    authConfig?: Corti.BearerOptions,
   ): Promise<void> {
-    const auth: Corti.BearerOptions = authConfig || {
-      accessToken: this.host._accessToken || "",
-      refreshAccessToken: () => ({
-        accessToken: this.host._accessToken || "",
-      }),
-    };
-
-    if (!auth.accessToken && !auth.refreshAccessToken) {
-      throw new Error(
-        "Auth config with accessToken or refreshAccessToken is required to connect",
-      );
+    if (!this.host._authConfig) {
+      throw new Error("Auth configuration is required to connect");
     }
 
     if (!mediaRecorder) {
@@ -70,7 +62,9 @@ export class DictationController implements ReactiveController {
     this._cortiClient =
       this._cortiClient ||
       new CortiClient({
-        auth,
+        auth: this.host._authConfig,
+        environment: this.host._region,
+        tenantName: this.host._tenantName,
       });
 
     this._webSocket = await this._cortiClient.transcribe.connect({
@@ -135,7 +129,7 @@ export class DictationController implements ReactiveController {
       this._closeTimeout = window.setTimeout(() => {
         // Reject the promise before closing the web socket, so the promise rejects before close event fires
         reject(new Error("WebSocket close timeout"));
-        
+
         if (this._webSocket?.readyState === WebSocket.OPEN) {
           console.log("closing web socket");
           this._webSocket.close();

@@ -3,4 +3,3 @@ export const commaSeparatedConverter = {
     value?.split(",").map((s) => s.trim()),
   toAttribute: (value: string[] | undefined) => value?.join(","),
 };
-

@@ -1,10 +1,11 @@
+import type { Corti } from "@corti/sdk";
 import { consume } from "@lit/context";
 import { html, LitElement, type PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import {
+  dictationConfigContext,
   languagesContext,
   regionContext,
-  selectedLanguageContext,
 } from "../contexts/dictation-context.js";
 import SelectStyles from "../styles/select.js";
 import { languagesChangedEvent } from "../utils/events.js";
@@ -16,9 +17,9 @@ export class LanguageSelector extends LitElement {
   @state()
   private _languages?: string[];
 
-  @consume({ context: selectedLanguageContext, subscribe: true })
+  @consume({ context: dictationConfigContext, subscribe: true })
   @state()
-  private _selectedLanguage?: string;
+  private _dictationConfig?: Corti.TranscribeConfig;
 
   @property({ type: Boolean })
   disabled: boolean = false;
@@ -62,7 +63,7 @@ export class LanguageSelector extends LitElement {
     this.dispatchEvent(
       languagesChangedEvent(
         languages,
-        this._selectedLanguage ?? defaultLanguage,
+        this._dictationConfig?.primaryLanguage ?? defaultLanguage,
       ),
     );
   }
@@ -87,7 +88,10 @@ export class LanguageSelector extends LitElement {
         >
           ${this._languages?.map(
             (language) => html`
-              <option value=${language} ?selected=${this._selectedLanguage === language}>
+              <option
+                value=${language}
+                ?selected=${this._dictationConfig?.primaryLanguage === language}
+              >
                 ${getLanguageName(language)}
               </option>
             `,

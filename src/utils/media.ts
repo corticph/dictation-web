@@ -11,9 +11,10 @@ export async function getMediaStream(deviceId?: string): Promise<MediaStream> {
   return await navigator.mediaDevices.getUserMedia(constraints);
 }
 
-export function createAudioAnalyzer(
-  mediaStream: MediaStream,
-): { audioContext: AudioContext; analyser: AnalyserNode } {
+export function createAudioAnalyzer(mediaStream: MediaStream): {
+  audioContext: AudioContext;
+  analyser: AnalyserNode;
+} {
   const audioContext = new AudioContext();
   const source = audioContext.createMediaStreamSource(mediaStream);
   const analyser = audioContext.createAnalyser();
@@ -22,7 +23,7 @@ export function createAudioAnalyzer(
 
   source.connect(analyser);
 
-  return { audioContext, analyser };
+  return { analyser, audioContext };
 }
 
 export function calculateAudioLevel(analyser: AnalyserNode): number {
@@ -36,4 +37,3 @@ export function calculateAudioLevel(analyser: AnalyserNode): number {
 
   return Math.sqrt(sumSquares / dataArray.length);
 }
-

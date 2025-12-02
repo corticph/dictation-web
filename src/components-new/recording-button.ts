@@ -1,10 +1,14 @@
+import type { Corti } from "@corti/sdk";
 import { consume } from "@lit/context";
 import { type CSSResultGroup, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import {
-  accessTokenContext,
+  authConfigContext,
+  dictationConfigContext,
   recordingStateContext,
+  regionContext,
   selectedDeviceContext,
+  tenantNameContext,
 } from "../contexts/dictation-context.js";
 import {
   DictationController,
@@ -36,9 +40,21 @@ export class RecordingButton extends LitElement {
   @state()
   _selectedDevice?: MediaDeviceInfo;
 
-  @consume({ context: accessTokenContext, subscribe: true })
+  @consume({ context: authConfigContext, subscribe: true })
   @state()
-  _accessToken?: string;
+  _authConfig?: Corti.BearerOptions;
+
+  @consume({ context: regionContext, subscribe: true })
+  @state()
+  _region?: string;
+
+  @consume({ context: tenantNameContext, subscribe: true })
+  @state()
+  _tenantName?: string;
+
+  @consume({ context: dictationConfigContext, subscribe: true })
+  @state()
+  _dictationConfig?: Corti.TranscribeConfig;
 
   @property({ type: Boolean })
   preventFocus: boolean = false;
@@ -96,7 +112,7 @@ export class RecordingButton extends LitElement {
 
       await this._dictationController.connect(
         this._mediaController.mediaRecorder,
-        undefined, // dictationConfig - use default
+        this._dictationConfig,
         {
           onClose: this._handleWebSocketClose,
           onError: this._handleWebSocketError,
@@ -131,6 +147,26 @@ export class RecordingButton extends LitElement {
     } else if (this._recordingState === "recording") {
       this._handleStop();
     }
+  }
+
+  public startRecording(): void {
+    if (this._recordingState !== "stopped") {
+      return;
+    }
+
+    this._handleStart();
+  }
+
+  public stopRecording(): void {
+    if (this._recordingState !== "recording") {
+      return;
+    }
+
+    this._handleStop();
+  }
+
+  public toggleRecording(): void {
+    this._handleClick();
   }
 
   render() {

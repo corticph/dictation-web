@@ -91,9 +91,9 @@ export class MediaController implements ReactiveController {
     }
 
     if (this._audioContext && this._audioContext.state !== "closed") {
-        await this._audioContext.close();
+      await this._audioContext.close();
     }
-  
+
     this._audioContext = null;
 
     this._analyser = null;

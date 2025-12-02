@@ -7,7 +7,11 @@ import {
 } from "../contexts/dictation-context.js";
 import SelectStyles from "../styles/select.js";
 import { getAudioDevices } from "../utils/devices.js";
-import { errorEvent, recordingDevicesChangedEvent } from "../utils/events.js";
+import {
+  errorEvent,
+  readyEvent,
+  recordingDevicesChangedEvent,
+} from "../utils/events.js";
 
 @customElement("device-selector")
 export class DeviceSelector extends LitElement {
@@ -37,16 +41,16 @@ export class DeviceSelector extends LitElement {
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
 
-    if (this._devices) {
-      return;
+    if (!this._devices) {
+      await this._loadDevices();
+
+      navigator.mediaDevices.addEventListener(
+        "devicechange",
+        this._handleDeviceChange,
+      );
     }
 
-    await this._loadDevices();
-
-    navigator.mediaDevices.addEventListener(
-      "devicechange",
-      this._handleDeviceChange,
-    );
+    this.dispatchEvent(readyEvent());
   }
 
   disconnectedCallback(): void {
@@ -60,15 +64,15 @@ export class DeviceSelector extends LitElement {
 
   private async _loadDevices(): Promise<void> {
     try {
-    const { devices, defaultDevice } = await getAudioDevices();
-    this._loadedDevices = devices;
+      const { devices, defaultDevice } = await getAudioDevices();
+      this._loadedDevices = devices;
 
-    this.dispatchEvent(
+      this.dispatchEvent(
         recordingDevicesChangedEvent(
           devices,
           this._selectedDevice ?? defaultDevice,
         ),
-    );
+      );
     } catch (error) {
       this.dispatchEvent(errorEvent(error));
     }

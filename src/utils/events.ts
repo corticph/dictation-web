@@ -88,3 +88,10 @@ export function streamClosedEvent(detail: unknown): CustomEvent {
     detail,
   });
 }
+
+export function readyEvent(): CustomEvent {
+  return new CustomEvent("ready", {
+    bubbles: true,
+    composed: true,
+  });
+}
