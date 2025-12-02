@@ -67,11 +67,13 @@ export class DeviceSelector extends LitElement {
       const { devices, defaultDevice } = await getAudioDevices();
       this._loadedDevices = devices;
 
+      // Use selected device if it still exists, otherwise fall back to default
+      const selectedDevice =
+        devices.find((d) => d.deviceId === this._selectedDevice?.deviceId) ??
+        defaultDevice;
+
       this.dispatchEvent(
-        recordingDevicesChangedEvent(
-          devices,
-          this._selectedDevice ?? defaultDevice,
-        ),
+        recordingDevicesChangedEvent(devices, selectedDevice),
       );
     } catch (error) {
       this.dispatchEvent(errorEvent(error));

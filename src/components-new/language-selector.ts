@@ -8,7 +8,10 @@ import {
   regionContext,
 } from "../contexts/dictation-context.js";
 import SelectStyles from "../styles/select.js";
-import { languagesChangedEvent } from "../utils/events.js";
+import {
+  languageChangedEvent,
+  languagesChangedEvent,
+} from "../utils/events.js";
 import { getLanguageName, getLanguagesByRegion } from "../utils/languages.js";
 
 @customElement("language-selector")
@@ -60,18 +63,24 @@ export class LanguageSelector extends LitElement {
     const { languages, defaultLanguage } = getLanguagesByRegion(this._region);
     this._loadedLanguages = languages;
 
-    this.dispatchEvent(
-      languagesChangedEvent(
-        languages,
-        this._dictationConfig?.primaryLanguage ?? defaultLanguage,
-      ),
-    );
+    const selectedLanguage =
+      this._dictationConfig?.primaryLanguage ?? defaultLanguage;
+
+    this.dispatchEvent(languagesChangedEvent(languages, selectedLanguage));
+
+    // Dispatch backward compatible event
+    if (selectedLanguage) {
+      this.dispatchEvent(languageChangedEvent(selectedLanguage));
+    }
   }
 
   private _handleSelectLanguage(e: Event): void {
     const language = (e.target as HTMLSelectElement).value;
 
     this.dispatchEvent(languagesChangedEvent(this._languages || [], language));
+
+    // Dispatch backward compatible event
+    this.dispatchEvent(languageChangedEvent(language));
   }
 
   render() {

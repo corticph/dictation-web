@@ -19,6 +19,7 @@ export class MediaController implements ReactiveController {
   private _visualiserInterval?: number;
   private _audioLevel: number = 0;
   private _onTrackEnded?: () => void;
+  private _onAudioLevelChange?: (level: number) => void;
 
   constructor(host: MediaControllerHost) {
     this.host = host;
@@ -57,12 +58,18 @@ export class MediaController implements ReactiveController {
     return this._analyser ? calculateAudioLevel(this._analyser) : 0;
   }
 
-  startAudioLevelMonitoring(): void {
+  startAudioLevelMonitoring(onAudioLevelChange?: (level: number) => void): void {
     this.stopAudioLevelMonitoring();
+
+    this._onAudioLevelChange = onAudioLevelChange;
 
     this._visualiserInterval = window.setInterval(() => {
       this._audioLevel = this.getAudioLevel() * 3;
       this.host.requestUpdate();
+      
+      if (this._onAudioLevelChange) {
+        this._onAudioLevelChange(this._audioLevel);
+      }
     }, 150);
   }
 
@@ -74,6 +81,10 @@ export class MediaController implements ReactiveController {
 
     this._audioLevel = 0;
     this.host.requestUpdate();
+    
+    if (this._onAudioLevelChange) {
+      this._onAudioLevelChange(this._audioLevel);
+    }
   }
 
   async cleanup(): Promise<void> {
@@ -99,6 +110,7 @@ export class MediaController implements ReactiveController {
     this._analyser = null;
     this._mediaRecorder = null;
     this._onTrackEnded = undefined;
+    this._onAudioLevelChange = undefined;
   }
 
   get mediaRecorder(): MediaRecorder | null {

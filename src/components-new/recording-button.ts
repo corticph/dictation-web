@@ -19,6 +19,7 @@ import ButtonStyles from "../styles/buttons.js";
 import RecordingButtonStyles from "../styles/recording-button.js";
 import type { RecordingState } from "../types.js";
 import {
+  audioLevelChangedEvent,
   commandEvent,
   errorEvent,
   recordingStateChangedEvent,
@@ -73,7 +74,9 @@ export class RecordingButton extends LitElement {
   private _handleWebSocketMessage = (message: TranscribeMessage): void => {
     if (message.type === "CONFIG_ACCEPTED") {
       this._mediaController.mediaRecorder?.start(250);
-      this._mediaController.startAudioLevelMonitoring();
+      this._mediaController.startAudioLevelMonitoring((level) => {
+        this.dispatchEvent(audioLevelChangedEvent(level));
+      });
       this.dispatchEvent(recordingStateChangedEvent("recording"));
     }
 

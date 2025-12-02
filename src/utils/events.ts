@@ -5,6 +5,10 @@ export type LanguagesChangedEventDetail = {
   selectedLanguage: string | undefined;
 };
 
+export type LanguageChangedEventDetail = {
+  language: string;
+};
+
 export type RecordingDevicesChangedEventDetail = {
   devices: MediaDeviceInfo[];
   selectedDevice: MediaDeviceInfo | undefined;
@@ -12,6 +16,10 @@ export type RecordingDevicesChangedEventDetail = {
 
 export type RecordingStateChangedEventDetail = {
   state: RecordingState;
+};
+
+export type AudioLevelChangedEventDetail = {
+  audioLevel: number;
 };
 
 export function languagesChangedEvent(
@@ -22,6 +30,19 @@ export function languagesChangedEvent(
     bubbles: true,
     composed: true,
     detail: { languages, selectedLanguage },
+  });
+}
+
+/**
+ * @deprecated Use languagesChangedEvent instead. This event is kept for backward compatibility.
+ */
+export function languageChangedEvent(
+  language: string,
+): CustomEvent<LanguageChangedEventDetail> {
+  return new CustomEvent("language-changed", {
+    bubbles: true,
+    composed: true,
+    detail: { language },
   });
 }
 
@@ -93,5 +114,15 @@ export function readyEvent(): CustomEvent {
   return new CustomEvent("ready", {
     bubbles: true,
     composed: true,
+  });
+}
+
+export function audioLevelChangedEvent(
+  audioLevel: number,
+): CustomEvent<AudioLevelChangedEventDetail> {
+  return new CustomEvent("audio-level-changed", {
+    bubbles: true,
+    composed: true,
+    detail: { audioLevel },
   });
 }
