@@ -26,6 +26,7 @@ interface WebSocketCallbacks {
   onMessage?: (message: TranscribeMessage) => void;
   onError?: (error: Error) => void;
   onClose?: (event: unknown) => void;
+  onNetworkActivity?: (direction: "sent" | "received", data: unknown) => void;
 }
 
 export class DictationController implements ReactiveController {
@@ -34,6 +35,7 @@ export class DictationController implements ReactiveController {
   private _cortiClient: CortiClient | null = null;
   private _webSocket: TranscribeSocket | null = null;
   private _closeTimeout?: number;
+  private _onNetworkActivity?: WebSocketCallbacks["onNetworkActivity"];
 
   constructor(host: DictationControllerHost) {
     this.host = host;
@@ -50,7 +52,9 @@ export class DictationController implements ReactiveController {
     callbacks: WebSocketCallbacks = {},
   ): Promise<void> {
     if (!this.host._authConfig && !this.host._accessToken) {
-      throw new Error("Auth configuration or access token is required to connect");
+      throw new Error(
+        "Auth configuration or access token is required to connect",
+      );
     }
 
     if (!mediaRecorder) {
@@ -78,6 +82,7 @@ export class DictationController implements ReactiveController {
     this._webSocket = await this._cortiClient.transcribe.connect({
       configuration: dictationConfig,
     });
+    this._onNetworkActivity = callbacks.onNetworkActivity;
     this.setupMediaRecorder(mediaRecorder);
     this.setupWebSocketHandlers(callbacks);
   }
@@ -88,6 +93,8 @@ export class DictationController implements ReactiveController {
     }
 
     this._webSocket.on("message", (message) => {
+      this._onNetworkActivity?.("received", message);
+
       if (callbacks.onMessage) {
         callbacks.onMessage(message);
       }
@@ -109,6 +116,10 @@ export class DictationController implements ReactiveController {
   private setupMediaRecorder(mediaRecorder: MediaRecorder): void {
     mediaRecorder.ondataavailable = (event) => {
       this._webSocket?.sendAudio(event.data);
+      this._onNetworkActivity?.("sent", {
+        size: event.data.size,
+        type: "audio",
+      });
     };
   }
 
@@ -133,6 +144,7 @@ export class DictationController implements ReactiveController {
       });
 
       this._webSocket.sendEnd({ type: "end" });
+      this._onNetworkActivity?.("sent", { type: "end" });
 
       this._closeTimeout = window.setTimeout(() => {
         // Reject the promise before closing the web socket, so the promise rejects before close event fires

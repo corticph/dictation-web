@@ -126,3 +126,19 @@ export function audioLevelChangedEvent(
     detail: { audioLevel },
   });
 }
+
+export type NetworkActivityEventDetail = {
+  direction: "sent" | "received";
+  data: unknown;
+};
+
+export function networkActivityEvent(
+  direction: "sent" | "received",
+  data: unknown,
+): CustomEvent<NetworkActivityEventDetail> {
+  return new CustomEvent("network-activity", {
+    bubbles: true,
+    composed: true,
+    detail: { data, direction },
+  });
+}

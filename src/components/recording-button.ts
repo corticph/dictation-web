@@ -23,6 +23,7 @@ import {
   audioLevelChangedEvent,
   commandEvent,
   errorEvent,
+  networkActivityEvent,
   recordingStateChangedEvent,
   streamClosedEvent,
   transcriptEvent,
@@ -126,6 +127,9 @@ export class RecordingButton extends LitElement {
           onClose: this._handleWebSocketClose,
           onError: this._handleWebSocketError,
           onMessage: this._handleWebSocketMessage,
+          onNetworkActivity: (direction, data) => {
+            this.dispatchEvent(networkActivityEvent(direction, data));
+          },
         },
       );
     } catch (error) {
