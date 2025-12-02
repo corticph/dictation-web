@@ -1,6 +1,7 @@
 import type { Corti } from "@corti/sdk";
-import { html, LitElement } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { classMap } from "lit/directives/class-map.js";
 import { createRef, type Ref, ref } from "lit/directives/ref.js";
 import { DEFAULT_DICTATION_CONFIG } from "../constants.js";
 import type { DictationContext } from "../contexts/dictation-context.js";
@@ -14,6 +15,11 @@ import "./settings-menu.js";
 
 @customElement("corti-dictation")
 export class CortiDictation extends LitElement {
+  static styles = css`
+    .hidden {
+      display: none;
+    }
+  `;
   // ─────────────────────────────────────────────────────────────────────────────
   // Private refs
   // ─────────────────────────────────────────────────────────────────────────────
@@ -193,13 +199,10 @@ export class CortiDictation extends LitElement {
   // ─────────────────────────────────────────────────────────────────────────────
 
   render() {
-    if (!this.accessToken && !this.authConfig) {
-      return html`<div style="display: none"></div> `;
-    }
-
     return html`
       <dictation-context-provider
         ${ref(this.contextProviderRef)}
+        class=${classMap({ hidden: !this.accessToken && !this.authConfig })}
         .accessToken=${this.accessToken}
         .authConfig=${this.authConfig}
         .dictationConfig=${this._dictationConfig}

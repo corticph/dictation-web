@@ -57,9 +57,10 @@ export class DictationContext extends LitElement {
   // Properties
   // ─────────────────────────────────────────────────────────────────────────────
 
+  @provide({ context: accessTokenContext })
+  @state()
   private _accessToken?: string;
 
-  @provide({ context: accessTokenContext })
   @property({ type: String })
   set accessToken(token: string | undefined) {
     this.setAccessToken(token);
@@ -69,16 +70,13 @@ export class DictationContext extends LitElement {
     return this._accessToken;
   }
 
+  @provide({ context: authConfigContext })
+  @state()
   private _authConfig?: Corti.BearerOptions;
 
-  @provide({ context: authConfigContext })
   @property({ attribute: false, type: Object })
   set authConfig(config: Corti.BearerOptions | undefined) {
-    this._authConfig = config;
-
-    if (config) {
-      this.setAuthConfig(config);
-    }
+    this.setAuthConfig(config);
   }
 
   get authConfig(): Corti.BearerOptions | undefined {
@@ -169,8 +167,12 @@ export class DictationContext extends LitElement {
    * Sets the auth config and parses region/tenant from the initial token.
    * @returns Promise with ServerConfig containing environment, tenant, and accessToken
    */
-  public async setAuthConfig(config: Corti.BearerOptions) {
+  public async setAuthConfig(config?: Corti.BearerOptions) {
     this._authConfig = config;
+
+    if (!config) {
+      return { accessToken: undefined, environment: undefined, tenant: undefined };
+    }
 
     try {
       const { accessToken } = await getInitialToken(config);
