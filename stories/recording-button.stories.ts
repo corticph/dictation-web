@@ -28,10 +28,12 @@ interface StoryArgs {
 export const Stopped: Story<StoryArgs> = ({ preventFocus }: StoryArgs) => {
   return html`
     <dictation-context-provider ?noWrapper=${true}>
-    <recording-button
-      ?preventFocus=${preventFocus}
-      @toggle-recording=${action("toggle-recording")}
-    ></recording-button>
+      <recording-button
+        ?preventFocus=${preventFocus}
+        @recording-state-changed=${action("recording-state-changed")}
+        @network-activity=${action("network-activity")}
+        @error=${action("error")}
+      ></recording-button>
     </dictation-context-provider>
   `;
 };
@@ -44,7 +46,9 @@ export const Recording: Story<StoryArgs> = ({ preventFocus }: StoryArgs) => {
     <dictation-context-provider ?noWrapper=${true} recordingState="recording">
       <recording-button
         ?preventFocus=${preventFocus}
-        @toggle-recording=${action("toggle-recording")}
+        @recording-state-changed=${action("recording-state-changed")}
+        @network-activity=${action("network-activity")}
+        @error=${action("error")}
       ></recording-button>
     </dictation-context-provider>
   `;
@@ -58,7 +62,9 @@ export const Initializing: Story<StoryArgs> = ({ preventFocus }: StoryArgs) => {
     <dictation-context-provider ?noWrapper=${true} recordingState="initializing">
       <recording-button
         ?preventFocus=${preventFocus}
-        @toggle-recording=${action("toggle-recording")}
+        @recording-state-changed=${action("recording-state-changed")}
+        @network-activity=${action("network-activity")}
+        @error=${action("error")}
       ></recording-button>
     </dictation-context-provider>
   `;
@@ -72,7 +78,9 @@ export const Stopping: Story<StoryArgs> = ({ preventFocus }: StoryArgs) => {
     <dictation-context-provider ?noWrapper=${true} recordingState="stopping">
       <recording-button
         ?preventFocus=${preventFocus}
-        @toggle-recording=${action("toggle-recording")}
+        @recording-state-changed=${action("recording-state-changed")}
+        @network-activity=${action("network-activity")}
+        @error=${action("error")}
       ></recording-button>
     </dictation-context-provider>
   `;
@@ -88,7 +96,9 @@ export const PreventFocusDisabled: Story<StoryArgs> = ({
     <dictation-context-provider ?noWrapper=${true}>
       <recording-button
         ?preventFocus=${preventFocus}
-        @toggle-recording=${action("toggle-recording")}
+        @recording-state-changed=${action("recording-state-changed")}
+        @network-activity=${action("network-activity")}
+        @error=${action("error")}
       ></recording-button>
     </dictation-context-provider>
   `;

@@ -5,13 +5,6 @@ import "../src/components/settings-menu.js";
 import "../src/contexts/dictation-context.js";
 
 export default {
-  argTypes: {
-    region: {
-      control: "select",
-      description: "Region for loading language list",
-      options: [undefined, "eu", "us"],
-    },
-  },
   component: "settings-menu",
   title: "SettingsMenu",
 };
@@ -22,36 +15,32 @@ interface Story<T> {
   argTypes?: Record<string, unknown>;
 }
 
-interface StoryArgs {
-  region?: string;
-}
+type StoryArgs = Record<string, never>;
 
-export const DefaultValues: Story<StoryArgs> = ({ region }: StoryArgs) => {
+export const DefaultValues: Story<StoryArgs> = () => {
   return html`
-    <dictation-context-provider .region=${region}>
-        <settings-menu
-          @languages-changed=${action("languages-changed")}
-          @recording-devices-changed=${action("recording-devices-changed")}
-        ></settings-menu>
-      </dictation-context-provider>
+    <dictation-context-provider>
+      <settings-menu
+        @languages-changed=${action("languages-changed")}
+        @recording-devices-changed=${action("recording-devices-changed")}
+        @ready=${action("ready")}
+        @error=${action("error")}
+      ></settings-menu>
+    </dictation-context-provider>
   `;
 };
-DefaultValues.args = {
-  region: "eu",
-};
 
-export const DisabledSettings: Story<StoryArgs> = ({ region }: StoryArgs) => {
+export const DisabledSettings: Story<StoryArgs> = () => {
   return html`
-    <dictation-context-provider .region=${region} recordingState="recording">
-        <settings-menu
-          @languages-changed=${action("languages-changed")}
-          @recording-devices-changed=${action("recording-devices-changed")}
-        ></settings-menu>
-      </dictation-context-provider>
+    <dictation-context-provider recordingState="recording">
+      <settings-menu
+        @languages-changed=${action("languages-changed")}
+        @recording-devices-changed=${action("recording-devices-changed")}
+        @ready=${action("ready")}
+        @error=${action("error")}
+      ></settings-menu>
+    </dictation-context-provider>
   `;
-};
-DisabledSettings.args = {
-  region: "eu",
 };
 
 export const OnlyDeviceSelector: Story<StoryArgs> = () => {
@@ -61,53 +50,50 @@ export const OnlyDeviceSelector: Story<StoryArgs> = () => {
         settingsEnabled="device"
         @languages-changed=${action("languages-changed")}
         @recording-devices-changed=${action("recording-devices-changed")}
+        @ready=${action("ready")}
+        @error=${action("error")}
       ></settings-menu>
     </dictation-context-provider>
   `;
 };
 
-export const OnlyLanguageSelector: Story<StoryArgs> = ({
-  region,
-}: StoryArgs) => {
+export const OnlyLanguageSelector: Story<StoryArgs> = () => {
   return html`
-    <dictation-context-provider .region=${region}>
+    <dictation-context-provider>
       <settings-menu
         .settingsEnabled=${["language"]}
         @languages-changed=${action("languages-changed")}
         @recording-devices-changed=${action("recording-devices-changed")}
+        @ready=${action("ready")}
+        @error=${action("error")}
       ></settings-menu>
     </dictation-context-provider>
   `;
 };
-OnlyLanguageSelector.args = {
-  region: "eu",
-};
 
-export const NoSettings: Story<StoryArgs> = ({ region }: StoryArgs) => {
+export const NoSettings: Story<StoryArgs> = () => {
   return html`
-    <dictation-context-provider .region=${region}>
+    <dictation-context-provider>
       <settings-menu
         .settingsEnabled=${[]}
         @languages-changed=${action("languages-changed")}
         @recording-devices-changed=${action("recording-devices-changed")}
+        @ready=${action("ready")}
+        @error=${action("error")}
       ></settings-menu>
     </dictation-context-provider>
   `;
 };
-NoSettings.args = {
-  region: "eu",
-};
 
 export const WithCustomLanguages: Story<StoryArgs> = () => {
   return html`
-    <dictation-context-provider
-      .languages=${["en", "es", "fr", "de", "it"]}
-      selectedLanguage="es"
-    >
+    <dictation-context-provider .languages=${["en", "es", "fr", "de", "it"]}>
       <settings-menu
         settingsEnabled="language"
         @languages-changed=${action("languages-changed")}
         @recording-devices-changed=${action("recording-devices-changed")}
+        @ready=${action("ready")}
+        @error=${action("error")}
       ></settings-menu>
     </dictation-context-provider>
   `;
@@ -115,14 +101,13 @@ export const WithCustomLanguages: Story<StoryArgs> = () => {
 
 export const WithLanguagesAttribute: Story<StoryArgs> = () => {
   return html`
-    <dictation-context-provider
-      languages="en,da,es,fr"
-      selectedLanguage="da"
-    >
+    <dictation-context-provider languages="en,da,es,fr">
       <settings-menu
         settingsEnabled="language"
         @languages-changed=${action("languages-changed")}
         @recording-devices-changed=${action("recording-devices-changed")}
+        @ready=${action("ready")}
+        @error=${action("error")}
       ></settings-menu>
     </dictation-context-provider>
   `;
@@ -152,6 +137,8 @@ export const WithCustomDevices: Story<StoryArgs> = () => {
         settingsEnabled="device"
         @languages-changed=${action("languages-changed")}
         @recording-devices-changed=${action("recording-devices-changed")}
+        @ready=${action("ready")}
+        @error=${action("error")}
       ></settings-menu>
     </dictation-context-provider>
   `;
@@ -176,15 +163,13 @@ export const BothWithCustomOptions: Story<StoryArgs> = () => {
   ];
 
   return html`
-    <dictation-context-provider
-      languages="en,fr,de"
-      selectedLanguage="fr"
-      .devices=${customDevices}
-    >
+    <dictation-context-provider languages="en,fr,de" .devices=${customDevices}>
       <settings-menu
         settingsEnabled="device,language"
         @languages-changed=${action("languages-changed")}
         @recording-devices-changed=${action("recording-devices-changed")}
+        @ready=${action("ready")}
+        @error=${action("error")}
       ></settings-menu>
     </dictation-context-provider>
   `;

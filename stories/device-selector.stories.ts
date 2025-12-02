@@ -14,17 +14,18 @@ interface Story<T> {
   argTypes?: Record<string, unknown>;
 }
 
-type StoryArgs = {};
+type StoryArgs = Record<string, never>;
 
 export const DefaultValues: Story<StoryArgs> = () => {
   return html`
     <dictation-context-provider ?noWrapper=${true}>
-        <device-selector
-          @recording-devices-changed=${action("recording-devices-changed")}
+      <device-selector
+        @recording-devices-changed=${action("recording-devices-changed")}
+        @ready=${action("ready")}
         @error=${action("error")}
-        ></device-selector>
+      ></device-selector>
     </dictation-context-provider>
-    `;
+  `;
 };
 
 export const WithSelectedDevice: Story<StoryArgs> = () => {
@@ -37,12 +38,10 @@ export const WithSelectedDevice: Story<StoryArgs> = () => {
   };
 
   return html`
-    <dictation-context-provider
-      .selectedDevice=${mockDevice}
-      ?noWrapper=${true}
-    >
+    <dictation-context-provider .selectedDevice=${mockDevice} ?noWrapper=${true}>
       <device-selector
         @recording-devices-changed=${action("recording-devices-changed")}
+        @ready=${action("ready")}
         @error=${action("error")}
       ></device-selector>
     </dictation-context-provider>
@@ -78,6 +77,20 @@ export const WithCustomDevices: Story<StoryArgs> = () => {
     <dictation-context-provider .devices=${customDevices} ?noWrapper=${true}>
       <device-selector
         @recording-devices-changed=${action("recording-devices-changed")}
+        @ready=${action("ready")}
+        @error=${action("error")}
+      ></device-selector>
+    </dictation-context-provider>
+  `;
+};
+
+export const Disabled: Story<StoryArgs> = () => {
+  return html`
+    <dictation-context-provider ?noWrapper=${true}>
+      <device-selector
+        disabled
+        @recording-devices-changed=${action("recording-devices-changed")}
+        @ready=${action("ready")}
         @error=${action("error")}
       ></device-selector>
     </dictation-context-provider>
