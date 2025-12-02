@@ -7,6 +7,7 @@ type TranscribeSocket = Awaited<
 >;
 
 interface DictationControllerHost extends ReactiveControllerHost {
+  _accessToken?: string;
   _authConfig?: Corti.BearerOptions;
   _region?: string;
   _tenantName?: string;
@@ -18,7 +19,8 @@ export type TranscribeMessage =
   | Corti.TranscribeEndedMessage
   | Corti.TranscribeErrorMessage
   | Corti.TranscribeTranscriptMessage
-  | Corti.TranscribeCommandMessage;
+  | Corti.TranscribeCommandMessage
+  | Corti.TranscribeFlushedMessage;
 
 interface WebSocketCallbacks {
   onMessage?: (message: TranscribeMessage) => void;
@@ -47,8 +49,8 @@ export class DictationController implements ReactiveController {
     dictationConfig: Corti.TranscribeConfig = DEFAULT_DICTATION_CONFIG,
     callbacks: WebSocketCallbacks = {},
   ): Promise<void> {
-    if (!this.host._authConfig) {
-      throw new Error("Auth configuration is required to connect");
+    if (!this.host._authConfig && !this.host._accessToken) {
+      throw new Error("Auth configuration or access token is required to connect");
     }
 
     if (!mediaRecorder) {
@@ -59,13 +61,19 @@ export class DictationController implements ReactiveController {
       throw new Error("Already connected. Disconnect before reconnecting.");
     }
 
-    this._cortiClient =
-      this._cortiClient ||
-      new CortiClient({
-        auth: this.host._authConfig,
-        environment: this.host._region,
-        tenantName: this.host._tenantName,
-      });
+    // Use authConfig if available, otherwise create one from accessToken
+    const auth: Corti.BearerOptions = this.host._authConfig || {
+      accessToken: this.host._accessToken || "",
+      refreshAccessToken: () => ({
+        accessToken: this.host._accessToken || "",
+      }),
+    };
+
+    this._cortiClient = new CortiClient({
+      auth,
+      environment: this.host._region,
+      tenantName: this.host._tenantName,
+    });
 
     this._webSocket = await this._cortiClient.transcribe.connect({
       configuration: dictationConfig,
@@ -131,7 +139,6 @@ export class DictationController implements ReactiveController {
         reject(new Error("WebSocket close timeout"));
 
         if (this._webSocket?.readyState === WebSocket.OPEN) {
-          console.log("closing web socket");
           this._webSocket.close();
         }
       }, 10000);

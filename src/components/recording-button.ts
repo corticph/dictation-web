@@ -3,6 +3,7 @@ import { consume } from "@lit/context";
 import { type CSSResultGroup, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import {
+  accessTokenContext,
   authConfigContext,
   dictationConfigContext,
   recordingStateContext,
@@ -41,6 +42,10 @@ export class RecordingButton extends LitElement {
   @state()
   _selectedDevice?: MediaDeviceInfo;
 
+  @consume({ context: accessTokenContext, subscribe: true })
+  @state()
+  _accessToken?: string;
+
   @consume({ context: authConfigContext, subscribe: true })
   @state()
   _authConfig?: Corti.BearerOptions;
@@ -77,6 +82,7 @@ export class RecordingButton extends LitElement {
       this._mediaController.startAudioLevelMonitoring((level) => {
         this.dispatchEvent(audioLevelChangedEvent(level));
       });
+
       this.dispatchEvent(recordingStateChangedEvent("recording"));
     }
 

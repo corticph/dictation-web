@@ -14,39 +14,70 @@ import "./settings-menu.js";
 
 @customElement("corti-dictation")
 export class CortiDictation extends LitElement {
-  @property({ type: String })
-  region?: string;
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Private refs
+  // ─────────────────────────────────────────────────────────────────────────────
 
-  @property({ type: String })
-  tenantName?: string;
+  private recordingButtonRef: Ref<RecordingButton> = createRef();
+  private contextProviderRef: Ref<DictationContext> = createRef();
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Properties
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Latest access token
+   */
   @property({ type: String })
   accessToken?: string;
 
-  @property({
-    converter: commaSeparatedConverter,
-    type: Array,
-  })
-  languages?: string[];
+  /**
+   * Authentication configuration with optional refresh mechanism.
+   */
+  @property({ attribute: false, type: Object })
+  authConfig?: Corti.BearerOptions;
 
   /**
-   * @deprecated Use `languages` instead
+   * List of all language codes available for use with the Web Component.
+   *  Default list depends on the accessToken
    */
   @property({
     converter: commaSeparatedConverter,
     type: Array,
   })
   set languagesSupported(value: string[] | undefined) {
-    this.languages = value;
+    this._languagesSupported = value;
   }
 
   get languagesSupported(): string[] | undefined {
-    return this.languages;
+    return this.contextProviderRef.value?.languages || this._languagesSupported;
   }
 
   @state()
-  private _dictationConfig: Corti.TranscribeConfig = DEFAULT_DICTATION_CONFIG;
+  private _languagesSupported?: string[];
 
+  /**
+   * Which settings should be available in the UI.
+   *  If an empty array is passed, the settings will be disabled entirely.
+   *  Options are language and devices
+   */
+  @property({
+    converter: commaSeparatedConverter,
+    type: Array,
+  })
+  settingsEnabled: ConfigurableSettings[] = ["device", "language"];
+
+  /**
+   * When false (default), allows the start/stop button from taking focus when clicked,
+   *  disabling textareas or other input elements to maintain focus.
+   *  Set to "true" to allow the button to receive focus on click.
+   */
+  @property({ type: Boolean })
+  allowButtonFocus: boolean = false;
+
+  /**
+   * Configuration settings for dictation
+   */
   @property({ attribute: false, type: Object })
   set dictationConfig(value: Corti.TranscribeConfig) {
     this._dictationConfig = value;
@@ -59,11 +90,11 @@ export class CortiDictation extends LitElement {
   }
 
   @state()
-  private _devices?: MediaDeviceInfo[];
+  private _dictationConfig: Corti.TranscribeConfig = DEFAULT_DICTATION_CONFIG;
 
-  @state()
-  private _selectedDevice?: MediaDeviceInfo;
-
+  /**
+   * List of available recording devices
+   */
   @property({ attribute: false, type: Array })
   set devices(value: MediaDeviceInfo[] | undefined) {
     this._devices = value;
@@ -73,81 +104,106 @@ export class CortiDictation extends LitElement {
     return this.contextProviderRef.value?.devices || this._devices || [];
   }
 
+  @state()
+  private _devices?: MediaDeviceInfo[];
+
+  /**
+   * The selected device used for recording (MediaDeviceInfo).
+   */
   @property({ attribute: false, type: Object })
   set selectedDevice(value: MediaDeviceInfo | undefined) {
     this._selectedDevice = value;
   }
 
-  get selectedDevice(): MediaDeviceInfo | null {
+  get selectedDevice(): MediaDeviceInfo | undefined {
     return (
-      this.contextProviderRef.value?.selectedDevice ||
-      this._selectedDevice ||
-      null
+      this.contextProviderRef.value?.selectedDevice || this._selectedDevice
     );
   }
 
-  @property({
-    converter: commaSeparatedConverter,
-    type: Array,
-  })
-  settingsEnabled: ConfigurableSettings[] = ["device", "language"];
+  @state()
+  private _selectedDevice?: MediaDeviceInfo;
 
-  @property({ type: Boolean })
-  allowButtonFocus: boolean = false;
-
-  private recordingButtonRef: Ref<RecordingButton> = createRef();
-  private contextProviderRef: Ref<DictationContext> = createRef();
-
-  public setAccessToken(token: string) {
-    this.accessToken = token;
-
-    return {
-      accessToken: token,
-      environment: this.contextProviderRef.value?.effectiveRegion,
-      tenant: this.contextProviderRef.value?.effectiveTenantName,
-    };
-  }
-
-  @property({ attribute: false, type: Object })
-  authConfig?: Corti.BearerOptions;
-
-  public async setAuthConfig(config: Corti.BearerOptions) {
-    this.authConfig = config;
-    await this.updateComplete;
-
-    return {
-      accessToken: this.contextProviderRef.value?.accessToken,
-      environment: this.contextProviderRef.value?.effectiveRegion,
-      tenant: this.contextProviderRef.value?.effectiveTenantName,
-    };
-  }
-
-  public startRecording(): void {
-    this.recordingButtonRef.value?.startRecording();
-  }
-
-  public stopRecording(): void {
-    this.recordingButtonRef.value?.stopRecording();
-  }
-
-  public toggleRecording(): void {
-    this.recordingButtonRef.value?.toggleRecording();
-  }
-
+  /**
+   * Current state of recording (stopped, recording, initializing and stopping, ).
+   */
   get recordingState(): RecordingState {
     return this.contextProviderRef.value?.recordingState || "stopped";
   }
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Public methods
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Set the latest access token.
+   * @returns ServerConfig with environment, tenant, and accessToken
+   */
+  public setAccessToken(token: string) {
+    this.accessToken = token;
+
+    return (
+      this.contextProviderRef.value?.setAccessToken(token) ?? {
+        accessToken: token,
+        environment: undefined,
+        tenant: undefined,
+      }
+    );
+  }
+
+  /**
+   * Set the auth configuration for OAuth flows.
+   * @returns Promise with ServerConfig containing environment, tenant, and accessToken
+   */
+  public async setAuthConfig(config: Corti.BearerOptions) {
+    this.authConfig = config;
+
+    return (
+      this.contextProviderRef.value?.setAuthConfig(config) ?? {
+        accessToken: undefined,
+        environment: undefined,
+        tenant: undefined,
+      }
+    );
+  }
+
+  /**
+   * Starts a recording.
+   */
+  public startRecording(): void {
+    this.recordingButtonRef.value?.startRecording();
+  }
+
+  /**
+   * Stops a recording.
+   */
+  public stopRecording(): void {
+    this.recordingButtonRef.value?.stopRecording();
+  }
+
+  /**
+   * Starts or stops recording. Convenience layer on top of the start/stop methods.
+   */
+  public toggleRecording(): void {
+    this.recordingButtonRef.value?.toggleRecording();
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Render
+  // ─────────────────────────────────────────────────────────────────────────────
+
   render() {
+    if (!this.accessToken && !this.authConfig) {
+      return html`<div style="display: none"></div> `;
+    }
+
     return html`
       <dictation-context-provider
         ${ref(this.contextProviderRef)}
-        .region=${this.region}
-        .tenantName=${this.tenantName}
         .accessToken=${this.accessToken}
         .authConfig=${this.authConfig}
         .dictationConfig=${this._dictationConfig}
-        .languages=${this.languages}
+        .languages=${this._languagesSupported}
         .devices=${this._devices}
         .selectedDevice=${this._selectedDevice}
       >

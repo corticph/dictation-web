@@ -2,7 +2,7 @@ import type { Corti } from "@corti/sdk";
 import { createContext, provide } from "@lit/context";
 import { type CSSResultGroup, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import ComponentStyles from "../styles/component-styles.js";
+import ComponentStyles from "../styles/ComponentStyles.js";
 import DefaultThemeStyles from "../styles/default-theme.js";
 import type { RecordingState } from "../types.js";
 import { getInitialToken } from "../utils/auth.js";
@@ -37,96 +37,52 @@ export const authConfigContext = createContext<Corti.BearerOptions | undefined>(
 
 @customElement("dictation-context-provider")
 export class DictationContext extends LitElement {
-  @property({ type: String })
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Context state
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  @provide({ context: regionContext })
+  @state()
   region?: string;
 
-  @property({ type: String })
+  @provide({ context: tenantNameContext })
+  @state()
   tenantName?: string;
 
-  private _accessToken?: string;
-  private _authConfig?: Corti.BearerOptions;
-
+  @provide({ context: recordingStateContext })
   @state()
-  private _decodedToken?: {
-    environment?: string;
-    tenant?: string;
-  };
+  recordingState: RecordingState = "stopped";
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Properties
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  private _accessToken?: string;
+
+  @provide({ context: accessTokenContext })
   @property({ type: String })
   set accessToken(token: string | undefined) {
-    this._accessToken = token;
-    this._decodedToken = undefined;
-
-    if (!token || (this.region && this.tenantName)) {
-      return;
-    }
-
-    try {
-      this._decodedToken = decodeToken(token);
-    } catch (error) {
-      this.dispatchEvent(errorEvent(error));
-    }
+    this.setAccessToken(token);
   }
 
   get accessToken(): string | undefined {
     return this._accessToken;
   }
 
+  private _authConfig?: Corti.BearerOptions;
+
+  @provide({ context: authConfigContext })
   @property({ attribute: false, type: Object })
   set authConfig(config: Corti.BearerOptions | undefined) {
     this._authConfig = config;
 
     if (config) {
-      this._processAuthConfig(config);
+      this.setAuthConfig(config);
     }
   }
 
   get authConfig(): Corti.BearerOptions | undefined {
     return this._authConfig;
-  }
-
-  @provide({ context: authConfigContext })
-  get effectiveAuthConfig(): Corti.BearerOptions | undefined {
-    // If explicit authConfig is provided, use it
-    if (this._authConfig) {
-      return this._authConfig;
-    }
-
-    // Otherwise, create authConfig from accessToken
-    if (this._accessToken) {
-      return {
-        accessToken: this._accessToken,
-        refreshAccessToken: () => ({
-          accessToken: this._accessToken || "",
-        }),
-      };
-    }
-
-    return undefined;
-  }
-
-  private async _processAuthConfig(config: Corti.BearerOptions): Promise<void> {
-    try {
-      const { accessToken } = await getInitialToken(config);
-      this.accessToken = accessToken;
-    } catch (error) {
-      this.dispatchEvent(errorEvent(error));
-    }
-  }
-
-  @provide({ context: regionContext })
-  get effectiveRegion(): string | undefined {
-    return this.region || this._decodedToken?.environment;
-  }
-
-  @provide({ context: tenantNameContext })
-  get effectiveTenantName(): string | undefined {
-    return this.tenantName || this._decodedToken?.tenant;
-  }
-
-  @provide({ context: accessTokenContext })
-  get effectiveAccessToken(): string | undefined {
-    return this.accessToken;
   }
 
   @provide({ context: dictationConfigContext })
@@ -148,14 +104,18 @@ export class DictationContext extends LitElement {
   @property({ attribute: false, type: Object })
   selectedDevice?: MediaDeviceInfo;
 
-  @provide({ context: recordingStateContext })
-  @state()
-  recordingState: RecordingState = "stopped";
-
   @property({ type: Boolean })
   noWrapper: boolean = false;
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Static
+  // ─────────────────────────────────────────────────────────────────────────────
+
   static styles: CSSResultGroup = [DefaultThemeStyles, ComponentStyles];
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Lifecycle
+  // ─────────────────────────────────────────────────────────────────────────────
 
   constructor() {
     super();
@@ -169,6 +129,67 @@ export class DictationContext extends LitElement {
       this._handleRecordingStateChanged,
     );
   }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Public methods
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Sets the access token and parses region/tenant from it.
+   * @returns ServerConfig with environment, tenant, and accessToken
+   */
+  public setAccessToken(token: string | undefined) {
+    this._accessToken = token;
+    this.region = undefined;
+    this.tenantName = undefined;
+
+    if (!token) {
+      return { accessToken: token, environment: undefined, tenant: undefined };
+    }
+
+    try {
+      const decoded = decodeToken(token);
+
+      this.region = decoded?.environment;
+      this.tenantName = decoded?.tenant;
+
+      return {
+        accessToken: token,
+        environment: decoded?.environment,
+        tenant: decoded?.tenant,
+      };
+    } catch (error) {
+      this.dispatchEvent(errorEvent(error));
+    }
+
+    return { accessToken: token, environment: undefined, tenant: undefined };
+  }
+
+  /**
+   * Sets the auth config and parses region/tenant from the initial token.
+   * @returns Promise with ServerConfig containing environment, tenant, and accessToken
+   */
+  public async setAuthConfig(config: Corti.BearerOptions) {
+    this._authConfig = config;
+
+    try {
+      const { accessToken } = await getInitialToken(config);
+
+      return this.setAccessToken(accessToken);
+    } catch (error) {
+      this.dispatchEvent(errorEvent(error));
+    }
+
+    return {
+      accessToken: undefined,
+      environment: undefined,
+      tenant: undefined,
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Private event handlers
+  // ─────────────────────────────────────────────────────────────────────────────
 
   private _handleLanguageChanged = (e: Event) => {
     const event = e as CustomEvent;
@@ -192,6 +213,10 @@ export class DictationContext extends LitElement {
 
     this.recordingState = event.detail.state;
   };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Render
+  // ─────────────────────────────────────────────────────────────────────────────
 
   render() {
     if (this.noWrapper) {
