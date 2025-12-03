@@ -55,8 +55,10 @@ export class CortiDictation extends LitElement {
     this._languagesSupported = value;
   }
 
-  get languagesSupported(): string[] | undefined {
-    return this.contextProviderRef.value?.languages || this._languagesSupported;
+  get languagesSupported(): string[] {
+    return (
+      this.contextProviderRef.value?.languages || this._languagesSupported || []
+    );
   }
 
   @state()

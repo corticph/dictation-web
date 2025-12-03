@@ -33,7 +33,9 @@ export function getLanguagesByRegion(region?: string): {
   languages: string[];
   defaultLanguage: string | undefined;
 } {
-  const languages = DEFAULT_LANGUAGES_BY_REGION[region || "default"];
+  const languages =
+    DEFAULT_LANGUAGES_BY_REGION[region || "default"] ||
+    DEFAULT_LANGUAGES_BY_REGION["default"];
   const defaultLanguage = languages?.[0];
 
   return { defaultLanguage, languages };
