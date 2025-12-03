@@ -58,7 +58,9 @@ export class MediaController implements ReactiveController {
     return this._analyser ? calculateAudioLevel(this._analyser) : 0;
   }
 
-  startAudioLevelMonitoring(onAudioLevelChange?: (level: number) => void): void {
+  startAudioLevelMonitoring(
+    onAudioLevelChange?: (level: number) => void,
+  ): void {
     this.stopAudioLevelMonitoring();
 
     this._onAudioLevelChange = onAudioLevelChange;
@@ -66,7 +68,7 @@ export class MediaController implements ReactiveController {
     this._visualiserInterval = window.setInterval(() => {
       this._audioLevel = this.getAudioLevel() * 3;
       this.host.requestUpdate();
-      
+
       if (this._onAudioLevelChange) {
         this._onAudioLevelChange(this._audioLevel);
       }
@@ -81,7 +83,7 @@ export class MediaController implements ReactiveController {
 
     this._audioLevel = 0;
     this.host.requestUpdate();
-    
+
     if (this._onAudioLevelChange) {
       this._onAudioLevelChange(this._audioLevel);
     }
@@ -111,6 +113,25 @@ export class MediaController implements ReactiveController {
     this._mediaRecorder = null;
     this._onTrackEnded = undefined;
     this._onAudioLevelChange = undefined;
+  }
+
+  /**
+   * Stops the media recorder and waits for all buffered data to be flushed.
+   * This ensures the final ondataavailable event fires before resolving.
+   */
+  async stopRecording(): Promise<void> {
+    return new Promise<void>((resolve) => {
+      if (!this._mediaRecorder || this._mediaRecorder.state !== "recording") {
+        resolve();
+        return;
+      }
+
+      this._mediaRecorder.onstop = () => {
+        resolve();
+      };
+
+      this._mediaRecorder.stop();
+    });
   }
 
   get mediaRecorder(): MediaRecorder | null {

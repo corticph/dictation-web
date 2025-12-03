@@ -143,10 +143,10 @@ export class RecordingButton extends LitElement {
 
     try {
       this._mediaController.stopAudioLevelMonitoring();
-      this._mediaController.mediaRecorder?.stop();
-      await this._mediaController.cleanup();
+      await this._mediaController.stopRecording();
 
       await this._dictationController.disconnect(this._handleWebSocketClose);
+      await this._mediaController.cleanup();
     } catch (error) {
       this.dispatchEvent(errorEvent(error));
     }
