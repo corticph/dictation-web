@@ -162,4 +162,4 @@ This Web Component library is licensed under MIT.
 
 ## Support
 
-For issues or questions, contact **Corti Support** at [support@corti.ai](mailto:help@corti.ai) or [join our Discord](https://discord.com/invite/zXeXHgnZXX).
+For issues or questions, contact **Corti Support** at [help@corti.ai](mailto:help@corti.ai) or [join our Discord](https://discord.com/invite/zXeXHgnZXX).
