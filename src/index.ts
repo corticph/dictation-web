@@ -36,4 +36,18 @@ export { RecordingButton } from "./components/recording-button.js";
 export { SettingsMenu } from "./components/settings-menu.js";
 export { DictationContext } from "./contexts/dictation-context.js";
 
+export type { ConfigurableSettings, RecordingState } from "./types.js";
+export type {
+  AudioLevelChangedEventDetail,
+  CommandEventDetail,
+  ErrorEventDetail,
+  LanguageChangedEventDetail,
+  LanguagesChangedEventDetail,
+  NetworkActivityEventDetail,
+  RecordingDevicesChangedEventDetail,
+  RecordingStateChangedEventDetail,
+  TranscriptEventDetail,
+  UsageEventDetail,
+} from "./utils/events.js";
+
 export default CortiDictation;

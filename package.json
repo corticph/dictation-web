@@ -7,10 +7,14 @@
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
-    "import": "./dist/index.js",
-    "browser": "./dist/bundle.js",
-    "default": "./dist/bundle.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "browser": "./dist/bundle.js",
+      "default": "./dist/bundle.js"
+    }
   },
   "jsdelivr": "./dist/bundle.js",
   "browser": "./dist/bundle.js",

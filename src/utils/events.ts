@@ -1,3 +1,4 @@
+import type { Corti } from "@corti/sdk";
 import type { RecordingState } from "../types.js";
 
 export type LanguagesChangedEventDetail = {
@@ -20,6 +21,14 @@ export type RecordingStateChangedEventDetail = {
 
 export type AudioLevelChangedEventDetail = {
   audioLevel: number;
+};
+
+export type TranscriptEventDetail = Corti.TranscribeTranscriptMessage;
+export type CommandEventDetail = Corti.TranscribeCommandMessage;
+export type UsageEventDetail = Corti.TranscribeUsageMessage;
+
+export type ErrorEventDetail = {
+  message: string;
 };
 
 export function languagesChangedEvent(
@@ -67,7 +76,9 @@ export function recordingStateChangedEvent(
   });
 }
 
-export function transcriptEvent(detail: unknown): CustomEvent {
+export function transcriptEvent(
+  detail: TranscriptEventDetail,
+): CustomEvent<TranscriptEventDetail> {
   return new CustomEvent("transcript", {
     bubbles: true,
     composed: true,
@@ -75,7 +86,9 @@ export function transcriptEvent(detail: unknown): CustomEvent {
   });
 }
 
-export function commandEvent(detail: unknown): CustomEvent {
+export function commandEvent(
+  detail: CommandEventDetail,
+): CustomEvent<CommandEventDetail> {
   return new CustomEvent("command", {
     bubbles: true,
     composed: true,
@@ -83,7 +96,9 @@ export function commandEvent(detail: unknown): CustomEvent {
   });
 }
 
-export function usageEvent(detail: unknown): CustomEvent {
+export function usageEvent(
+  detail: UsageEventDetail,
+): CustomEvent<UsageEventDetail> {
   return new CustomEvent("usage", {
     bubbles: true,
     composed: true,
@@ -91,7 +106,7 @@ export function usageEvent(detail: unknown): CustomEvent {
   });
 }
 
-export function errorEvent(error: unknown): CustomEvent {
+export function errorEvent(error: unknown): CustomEvent<ErrorEventDetail> {
   const message =
     error instanceof Error && error.message ? error.message : String(error);
 

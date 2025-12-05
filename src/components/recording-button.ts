@@ -78,16 +78,24 @@ export class RecordingButton extends LitElement {
   }
 
   private _handleWebSocketMessage = (message: TranscribeMessage): void => {
-    if (message.type === "CONFIG_ACCEPTED") {
-      this._mediaController.mediaRecorder?.start(250);
-      this._mediaController.startAudioLevelMonitoring((level) => {
-        this.dispatchEvent(audioLevelChangedEvent(level));
-      });
-
-      this.dispatchEvent(recordingStateChangedEvent("recording"));
-    }
-
     switch (message.type) {
+      case "CONFIG_ACCEPTED":
+        this._mediaController.mediaRecorder?.start(250);
+        this._mediaController.startAudioLevelMonitoring((level) => {
+          this.dispatchEvent(audioLevelChangedEvent(level));
+        });
+        this.dispatchEvent(recordingStateChangedEvent("recording"));
+        break;
+      case "CONFIG_DENIED":
+        this.dispatchEvent(
+          errorEvent(`Config denied: ${message.reason ?? "Unknown reason"}`),
+        );
+        this._handleStop();
+        break;
+      case "CONFIG_TIMEOUT":
+        this.dispatchEvent(errorEvent("Config timeout"));
+        this._handleStop();
+        break;
       case "transcript":
         this.dispatchEvent(transcriptEvent(message));
         break;
@@ -96,6 +104,10 @@ export class RecordingButton extends LitElement {
         break;
       case "usage":
         this.dispatchEvent(usageEvent(message));
+        break;
+      case "error":
+        this.dispatchEvent(errorEvent(message.error));
+        this._handleStop();
         break;
     }
   };

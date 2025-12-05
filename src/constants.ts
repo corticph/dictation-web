@@ -9,10 +9,10 @@ export const LANGUAGES_SUPPORTED_EU: Corti.TranscribeSupportedLanguage[] = [
   "sv",
   "nl",
   "no",
-];
+].sort();
 export const LANGUAGES_SUPPORTED_US: Corti.TranscribeSupportedLanguage[] = [
   "en",
-];
+].sort();
 export const DEFAULT_DICTATION_CONFIG: Corti.TranscribeConfig = {
   automaticPunctuation: true,
   primaryLanguage: "en",
