@@ -18,11 +18,11 @@
     "dist"
   ],
   "bugs": {
-    "url": "https://help.corti.app",
+    "url": "https://docs.corti.ai",
     "email": "help@corti.ai"
   },
-  "repository": "github:corticph/dictation-web-sdk",
-  "homepage": "https://help.corti.app/en/articles/10714657-introducing-the-corti-dictation-browser-sdk",
+  "repository": "github:corticph/dictation-web",
+  "homepage": "https://docs.corti.ai/stt/dictation-web",
   "keywords": [
     "corti",
     "dictation",
