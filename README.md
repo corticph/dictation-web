@@ -1,5 +1,10 @@
 # Corti Dictation Web Component
 
+[![Published on npm](https://img.shields.io/npm/v/@corti/dictation-web.svg?logo=npm)](https://www.npmjs.com/package/@corti/dictation-web)
+[![License: MIT](https://img.shields.io/npm/l/%40corti%2Fdictation-web)](https://opensource.org/licenses/MIT)
+[![Get Support on Discord](https://img.shields.io/badge/Discord-Get%20Support-5865F2.svg?logo=discord&logoColor=fff)](https://discord.com/invite/zXeXHgnZXX)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-blue.svg?logo=rocket&logoColor=fff)](https://codepen.io/hccullen/pen/OPJmxQR)
+
 ## Overview
 
 The **Corti Dictation Web Component** is a web component that enables real-time speech-to-text dictation using Corti's Dictation API. It provides a simple interface for capturing audio, streaming it to the API, and handling transcripts.
@@ -143,13 +148,13 @@ The refresh mechanism automatically handles token renewal when the access token 
 
 ## Usage Examples
 
-Explore practical implementations and usage examples in the [Demo Folder](https://github.com/corticph/dictation-web-sdk/tree/main/demo). These demos can also be run locally.
+Explore practical implementations and usage examples in the [Demo Folder](https://github.com/corticph/dictation-web/tree/main/demo). These demos can also be run locally.
 
 ## Styling
 
-![UI Overview](https://github.com/corticph/dictation-web-sdk/blob/main/docs/ui.png)
+![UI Overview](https://github.com/corticph/dictation-web/blob/main/docs/ui.png)
 
-The default UI is designed to be slotted into existing applications seamlessly, however, it also supports custom styling as well as theming. The UI can be fully customized using CSS properties. Refer to our [Styling Guide](https://github.com/corticph/dictation-web-sdk/blob/main/docs/styling.md) for detailed instructions.
+The default UI is designed to be slotted into existing applications seamlessly, however, it also supports custom styling as well as theming. The UI can be fully customized using CSS properties. Refer to our [Styling Guide](https://github.com/corticph/dictation-web/blob/main/docs/styling.md) for detailed instructions.
 
 ## License
 
@@ -157,4 +162,4 @@ This Web Component library is licensed under MIT.
 
 ## Support
 
-For issues or questions, contact **Corti Support** at [support@corti.ai](mailto:help@corti.ai).
+For issues or questions, contact **Corti Support** at [help@corti.ai](mailto:help@corti.ai) or [join our Discord](https://discord.com/invite/zXeXHgnZXX).
