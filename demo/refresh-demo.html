@@ -44,7 +44,7 @@ THIS IS ONLY FOR DEMONSTRATION PURPOSES.
       const componentPlaceholder = document.getElementById("componentPlaceholder");
       const transcriptArea = document.getElementById("transcript");
 
-      dictation.setAuthConfig({
+      dictation.authConfig = {
         accessToken: "INITIAL_ACCESS_TOKEN",
         refreshToken: "INITIAL_REFRESH_TOKEN",
         refreshAccessToken: async (refreshToken) => {
@@ -56,7 +56,7 @@ THIS IS ONLY FOR DEMONSTRATION PURPOSES.
 
           return response.json();
         },
-      });
+      };
 
       // Update the textarea with transcript text when received
       dictation.addEventListener("transcript", (e) => {

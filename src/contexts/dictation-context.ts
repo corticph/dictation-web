@@ -135,6 +135,7 @@ export class DictationContext extends LitElement {
   /**
    * Sets the access token and parses region/tenant from it.
    * @returns ServerConfig with environment, tenant, and accessToken
+   * @deprecated Use 'accessToken' property instead.
    */
   public setAccessToken(token: string | undefined) {
     this._accessToken = token;
@@ -166,12 +167,17 @@ export class DictationContext extends LitElement {
   /**
    * Sets the auth config and parses region/tenant from the initial token.
    * @returns Promise with ServerConfig containing environment, tenant, and accessToken
+   * @deprecated Use 'authConfig' property instead.
    */
   public async setAuthConfig(config?: Corti.BearerOptions) {
     this._authConfig = config;
 
     if (!config) {
-      return { accessToken: undefined, environment: undefined, tenant: undefined };
+      return {
+        accessToken: undefined,
+        environment: undefined,
+        tenant: undefined,
+      };
     }
 
     try {

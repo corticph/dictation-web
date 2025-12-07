@@ -146,6 +146,7 @@ export class CortiDictation extends LitElement {
   /**
    * Set the latest access token.
    * @returns ServerConfig with environment, tenant, and accessToken
+   * @deprecated Use 'accessToken' property instead.
    */
   public setAccessToken(token: string) {
     this.accessToken = token;
@@ -162,6 +163,7 @@ export class CortiDictation extends LitElement {
   /**
    * Set the auth configuration for OAuth flows.
    * @returns Promise with ServerConfig containing environment, tenant, and accessToken
+   * @deprecated Use 'authConfig' property instead.
    */
   public async setAuthConfig(config: Corti.BearerOptions) {
     this.authConfig = config;
