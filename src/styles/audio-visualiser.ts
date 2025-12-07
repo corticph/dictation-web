@@ -20,7 +20,7 @@ const AudioVisualiserStyles = css`
 
   .segment {
     flex: 1;
-    background-color: var(--action-accent-text-color);
+    background-color: var(--action-accent-text-color, light-dark(#fff, #fff));
     transition: background-color 0.25s;
     border-radius: 1px;
     opacity: 0.5;

@@ -11,10 +11,10 @@ const SettingsMenuStyles = css`
   [popover] {
     margin: 0;
     padding: 16px;
-    background: var(--card-background);
-    border: 1px solid var(--card-border-color);
-    border-radius: var(--card-border-radius);
-    box-shadow: var(--card-box-shadow);
+    background: var(--card-background, light-dark(#fff, #333));
+    border: 1px solid var(--card-border-color, light-dark(#ddd, #555));
+    border-radius: var(--card-border-radius, 8px);
+    box-shadow: var(--card-box-shadow, 0 2px 5px rgba(0, 0, 0, 0.1));
     z-index: 1000;
     max-width: 260px;
     width: 100%;
