@@ -45,18 +45,16 @@ THIS IS ONLY FOR DEMONSTRATION PURPOSES.
       const transcriptArea = document.getElementById("transcript");
 
       dictation.setAuthConfig({
+        accessToken: "INITIAL_ACCESS_TOKEN",
+        refreshToken: "INITIAL_REFRESH_TOKEN",
         refreshAccessToken: async (refreshToken) => {
           const response = await fetch("https://your-auth-server/token", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ refreshToken: refreshToken ?? undefined }),
+            body: JSON.stringify({ refreshToken: refreshToken }),
           });
 
-          const result = await response.json();
-          return {
-            accessToken: result.accessToken,
-            refreshToken: result.refreshToken,
-          };
+          return response.json();
         },
       });
 
