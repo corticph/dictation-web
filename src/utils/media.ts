@@ -1,4 +1,22 @@
-export async function getMediaStream(deviceId?: string): Promise<MediaStream> {
+export async function getMediaStream(
+  deviceId?: string,
+  debug_displayAudio?: boolean,
+): Promise<MediaStream> {
+  if (debug_displayAudio) {
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      audio: true,
+      video: true,
+    });
+
+    stream.getTracks().forEach((track) => {
+      if (track.kind === "video") {
+        stream.removeTrack(track);
+      }
+    });
+
+    return stream;
+  }
+
   if (!deviceId) {
     throw new Error("No device ID provided");
   }

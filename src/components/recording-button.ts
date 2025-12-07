@@ -5,6 +5,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import {
   accessTokenContext,
   authConfigContext,
+  debugDisplayAudioContext,
   dictationConfigContext,
   recordingStateContext,
   regionContext,
@@ -72,6 +73,10 @@ export class RecordingButton extends LitElement {
   @consume({ context: socketProxyContext, subscribe: true })
   @state()
   _socketProxy?: ProxyOptions;
+
+  @consume({ context: debugDisplayAudioContext, subscribe: true })
+  @state()
+  _debug_displayAudio?: boolean;
 
   @property({ type: Boolean })
   preventFocus: boolean = false;

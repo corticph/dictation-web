@@ -100,6 +100,13 @@ export class CortiDictation extends LitElement {
   allowButtonFocus: boolean = false;
 
   /**
+   * Overrides any device selection and instead uses getDisplayMedia to stream system audio.
+   * Should only be used for debugging.
+   */
+  @property({ attribute: "debug-display-audio", type: Boolean })
+  debug_displayAudio: boolean = false;
+
+  /**
    * Configuration settings for dictation
    */
   @property({ attribute: false, type: Object })
@@ -237,6 +244,7 @@ export class CortiDictation extends LitElement {
         .languages=${this._languagesSupported}
         .devices=${this._devices}
         .selectedDevice=${this._selectedDevice}
+        .debug_displayAudio=${this.debug_displayAudio}
       >
         <recording-button
           ${ref(this.recordingButtonRef)}

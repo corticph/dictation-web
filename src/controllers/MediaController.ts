@@ -7,6 +7,7 @@ import {
 
 interface MediaControllerHost extends ReactiveControllerHost {
   _selectedDevice?: MediaDeviceInfo;
+  _debug_displayAudio?: boolean;
 }
 
 export class MediaController implements ReactiveController {
@@ -36,6 +37,7 @@ export class MediaController implements ReactiveController {
     this._onTrackEnded = onTrackEnded;
     this._mediaStream = await getMediaStream(
       this.host._selectedDevice?.deviceId,
+      this.host._debug_displayAudio,
     );
 
     this._mediaStream.getTracks().forEach((track: MediaStreamTrack) => {

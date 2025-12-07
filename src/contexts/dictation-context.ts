@@ -37,6 +37,9 @@ export const socketUrlContext = createContext<string | undefined>("socketUrl");
 export const socketProxyContext = createContext<ProxyOptions | undefined>(
   "socketProxy",
 );
+export const debugDisplayAudioContext = createContext<boolean | undefined>(
+  "debugDisplayAudio",
+);
 
 @customElement("dictation-context-provider")
 export class DictationContext extends LitElement {
@@ -112,6 +115,10 @@ export class DictationContext extends LitElement {
   @provide({ context: selectedDeviceContext })
   @property({ attribute: false, type: Object })
   selectedDevice?: MediaDeviceInfo;
+
+  @provide({ context: debugDisplayAudioContext })
+  @property({ attribute: "debug-display-audio", type: Boolean })
+  debug_displayAudio?: boolean;
 
   @property({ type: Boolean })
   noWrapper: boolean = false;
