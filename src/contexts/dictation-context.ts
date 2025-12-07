@@ -3,7 +3,7 @@ import { createContext, provide } from "@lit/context";
 import { type CSSResultGroup, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import ComponentStyles from "../styles/ComponentStyles.js";
-import type { RecordingState } from "../types.js";
+import type { ProxyOptions, RecordingState } from "../types.js";
 import { getInitialToken } from "../utils/auth.js";
 import { commaSeparatedConverter } from "../utils/converters.js";
 import { errorEvent } from "../utils/events.js";
@@ -32,6 +32,10 @@ export const dictationConfigContext = createContext<
 >("dictationConfig");
 export const authConfigContext = createContext<Corti.BearerOptions | undefined>(
   "authConfig",
+);
+export const socketUrlContext = createContext<string | undefined>("socketUrl");
+export const socketProxyContext = createContext<ProxyOptions | undefined>(
+  "socketProxy",
 );
 
 @customElement("dictation-context-provider")
@@ -81,6 +85,14 @@ export class DictationContext extends LitElement {
   get authConfig(): Corti.BearerOptions | undefined {
     return this._authConfig;
   }
+
+  @provide({ context: socketUrlContext })
+  @property({ type: String })
+  socketUrl?: string;
+
+  @provide({ context: socketProxyContext })
+  @property({ attribute: false, type: Object })
+  socketProxy?: ProxyOptions;
 
   @provide({ context: dictationConfigContext })
   @property({ attribute: false, type: Object })

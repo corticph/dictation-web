@@ -9,6 +9,8 @@ import {
   recordingStateContext,
   regionContext,
   selectedDeviceContext,
+  socketProxyContext,
+  socketUrlContext,
   tenantNameContext,
 } from "../contexts/dictation-context.js";
 import {
@@ -18,7 +20,7 @@ import {
 import { MediaController } from "../controllers/MediaController.js";
 import ButtonStyles from "../styles/buttons.js";
 import RecordingButtonStyles from "../styles/recording-button.js";
-import type { RecordingState } from "../types.js";
+import type { ProxyOptions, RecordingState } from "../types.js";
 import {
   audioLevelChangedEvent,
   commandEvent,
@@ -62,6 +64,14 @@ export class RecordingButton extends LitElement {
   @consume({ context: dictationConfigContext, subscribe: true })
   @state()
   _dictationConfig?: Corti.TranscribeConfig;
+
+  @consume({ context: socketUrlContext, subscribe: true })
+  @state()
+  _socketUrl?: string;
+
+  @consume({ context: socketProxyContext, subscribe: true })
+  @state()
+  _socketProxy?: ProxyOptions;
 
   @property({ type: Boolean })
   preventFocus: boolean = false;

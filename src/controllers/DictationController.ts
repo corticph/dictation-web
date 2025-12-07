@@ -1,6 +1,7 @@
-import { type Corti, CortiClient } from "@corti/sdk";
+import { type Corti, CortiClient, CortiWebSocketProxyClient } from "@corti/sdk";
 import type { ReactiveController, ReactiveControllerHost } from "lit";
 import { DEFAULT_DICTATION_CONFIG } from "../constants.js";
+import type { ProxyOptions } from "../types.js";
 
 type TranscribeSocket = Awaited<
   ReturnType<CortiClient["transcribe"]["connect"]>
@@ -11,6 +12,8 @@ interface DictationControllerHost extends ReactiveControllerHost {
   _authConfig?: Corti.BearerOptions;
   _region?: string;
   _tenantName?: string;
+  _socketUrl?: string;
+  _socketProxy?: ProxyOptions;
 }
 
 export type TranscribeMessage =
@@ -51,18 +54,48 @@ export class DictationController implements ReactiveController {
     dictationConfig: Corti.TranscribeConfig = DEFAULT_DICTATION_CONFIG,
     callbacks: WebSocketCallbacks = {},
   ): Promise<void> {
-    if (!this.host._authConfig && !this.host._accessToken) {
-      throw new Error(
-        "Auth configuration or access token is required to connect",
-      );
-    }
-
     if (!mediaRecorder) {
       throw new Error("MediaRecorder is required to connect");
     }
 
     if (this._webSocket?.readyState === WebSocket.OPEN) {
       throw new Error("Already connected. Disconnect before reconnecting.");
+    }
+
+    this._webSocket =
+      this.host._socketUrl || this.host._socketProxy
+        ? await this.connectProxy(dictationConfig)
+        : await this.connectAuth(dictationConfig);
+
+    this._onNetworkActivity = callbacks.onNetworkActivity;
+    this.setupMediaRecorder(mediaRecorder);
+    this.setupWebSocketHandlers(callbacks);
+  }
+
+  private async connectProxy(
+    dictationConfig: Corti.TranscribeConfig,
+  ): Promise<TranscribeSocket> {
+    const proxyOptions = this.host._socketProxy || {
+      url: this.host._socketUrl || "",
+    };
+
+    if (!proxyOptions.url) {
+      throw new Error("Proxy URL is required when using proxy client");
+    }
+
+    return await CortiWebSocketProxyClient.transcribe.connect({
+      configuration: dictationConfig,
+      proxy: proxyOptions,
+    });
+  }
+
+  private async connectAuth(
+    dictationConfig: Corti.TranscribeConfig,
+  ): Promise<TranscribeSocket> {
+    if (!this.host._authConfig && !this.host._accessToken) {
+      throw new Error(
+        "Auth configuration or access token is required to connect",
+      );
     }
 
     // Use authConfig if available, otherwise create one from accessToken
@@ -79,12 +112,9 @@ export class DictationController implements ReactiveController {
       tenantName: this.host._tenantName,
     });
 
-    this._webSocket = await this._cortiClient.transcribe.connect({
+    return await this._cortiClient.transcribe.connect({
       configuration: dictationConfig,
     });
-    this._onNetworkActivity = callbacks.onNetworkActivity;
-    this.setupMediaRecorder(mediaRecorder);
-    this.setupWebSocketHandlers(callbacks);
   }
 
   private setupWebSocketHandlers(callbacks: WebSocketCallbacks): void {
@@ -92,7 +122,7 @@ export class DictationController implements ReactiveController {
       throw new Error("WebSocket not initialized");
     }
 
-    this._webSocket.on("message", (message) => {
+    this._webSocket.on("message", (message: TranscribeMessage) => {
       this._onNetworkActivity?.("received", message);
 
       if (callbacks.onMessage) {
@@ -100,13 +130,13 @@ export class DictationController implements ReactiveController {
       }
     });
 
-    this._webSocket.on("error", (event) => {
+    this._webSocket.on("error", (event: Error) => {
       if (callbacks.onError) {
         callbacks.onError(event);
       }
     });
 
-    this._webSocket.on("close", (event) => {
+    this._webSocket.on("close", (event: unknown) => {
       if (callbacks.onClose) {
         callbacks.onClose(event);
       }
@@ -170,5 +200,6 @@ export class DictationController implements ReactiveController {
     }
 
     this._webSocket = null;
+    this._cortiClient = null;
   }
 }

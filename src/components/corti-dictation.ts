@@ -5,7 +5,11 @@ import { classMap } from "lit/directives/class-map.js";
 import { createRef, type Ref, ref } from "lit/directives/ref.js";
 import { DEFAULT_DICTATION_CONFIG } from "../constants.js";
 import type { DictationContext } from "../contexts/dictation-context.js";
-import type { ConfigurableSettings, RecordingState } from "../types.js";
+import type {
+  ConfigurableSettings,
+  ProxyOptions,
+  RecordingState,
+} from "../types.js";
 import { commaSeparatedConverter } from "../utils/converters.js";
 import type { RecordingButton } from "./recording-button.js";
 
@@ -42,6 +46,18 @@ export class CortiDictation extends LitElement {
    */
   @property({ attribute: false, type: Object })
   authConfig?: Corti.BearerOptions;
+
+  /**
+   * WebSocket URL for proxy connection. When provided, uses CortiWebSocketProxyClient instead of CortiClient.
+   */
+  @property({ type: String })
+  socketUrl?: string;
+
+  /**
+   * Socket proxy configuration object. When provided, uses CortiWebSocketProxyClient instead of CortiClient.
+   */
+  @property({ attribute: false, type: Object })
+  socketProxy?: ProxyOptions;
 
   /**
    * List of all language codes available for use with the Web Component.
@@ -203,12 +219,20 @@ export class CortiDictation extends LitElement {
   // ─────────────────────────────────────────────────────────────────────────────
 
   render() {
+    const isHidden =
+      !this.accessToken &&
+      !this.authConfig &&
+      !this.socketUrl &&
+      !this.socketProxy;
+
     return html`
       <dictation-context-provider
         ${ref(this.contextProviderRef)}
-        class=${classMap({ hidden: !this.accessToken && !this.authConfig })}
+        class=${classMap({ hidden: isHidden })}
         .accessToken=${this.accessToken}
         .authConfig=${this.authConfig}
+        .socketUrl=${this.socketUrl}
+        .socketProxy=${this.socketProxy}
         .dictationConfig=${this._dictationConfig}
         .languages=${this._languagesSupported}
         .devices=${this._devices}
