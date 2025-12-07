@@ -4,202 +4,67 @@ NEVER EXPOSE CLIENT SECRET IN THE FRONTEND.
 THIS IS ONLY FOR DEMONSTRATION PURPOSES.
 -->
 
-<!doctype html>
-<html lang="en-GB">
+<!DOCTYPE html>
+<html>
   <head>
     <meta charset="utf-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <style>
-      body {
-        background: #fafafa;
-        font-family: Arial, sans-serif;
-        margin: 20px;
-      }
-      /* Dark mode support */
-      @media (prefers-color-scheme: dark) {
-        body {
-          background: #1c1e2b;
-          color: #fff;
-        }
-        textarea {
-          background: #333;
-          color: #fff;
-        }
-      }
-      textarea {
-        width: 100%;
-        max-width: 800px;
-        height: 150px;
-        margin-top: 20px;
-        padding: 10px;
-        font-size: 14px;
-      }
-
-      #commandOutput {
-        font-family: monospace;
-      }
-
-      #interimTranscript {
-        background: #333333aa;
-        color: #fff;
-        font-size: 24px;
-        margin-top: 10px;
-        position: fixed;
-        bottom: 40px;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 10px;
-        display: none;
-      }
-      :root {
-        color-scheme: only light !important;
-      }
-    </style>
+    <title>Automatic Token Refresh Demo</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css"
+    />
   </head>
   <body>
-    <corti-dictation></corti-dictation>
+    <header>
+      <nav><a href="index.html">← Back to Demo Index</a></nav>
+      <h1>Automatic Token Refresh Demo</h1>
+      <p>This demo demonstrates how to automatically refresh the access token when it is near expiration.</p>
+    </header>
+    <main>
+      <article id="componentPlaceholder">
+        <corti-dictation></corti-dictation>
+      </article>
 
-    <!-- Textarea to display transcript text -->
-    <textarea
-      id="transcript"
-      placeholder="Transcript will appear here..."
-    ></textarea>
-    <div id="commandOutput"></div>
-
-    <div id="interimTranscript"></div>
+      <textarea
+        id="transcript"
+        placeholder="Transcript will appear here..."
+      ></textarea>
+    </main>
 
     <script type="module">
       // Import the Corti Dictation SDK
       // import "@corti/dictation-web";
-      import '../dist/bundle.js';
+      import "../dist/bundle.js";
 
-      const CLIENT_ID = 'my-client-id';
-      const CLIENT_SECRET = 'my-client-secret';
-      const REALM_ID = 'my-tenant-id';
-      const environment = 'eu';
-      const TOKEN_URL = `https://keycloak.${environment}.corti.app/realms/${REALM_ID}/protocol/openid-connect/token`;
+      const dictation = document.querySelector("corti-dictation");
+      const componentPlaceholder = document.getElementById("componentPlaceholder");
+      const transcriptArea = document.getElementById("transcript");
 
-
-      async function getClientCredentialsToken() {
-        const params = new URLSearchParams();
-        params.append('grant_type', 'client_credentials');
-        params.append('client_id', CLIENT_ID);
-        params.append('client_secret', CLIENT_SECRET);
-        params.append('scope', 'openid');
-
-        try {
-          const response = await fetch(TOKEN_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: params.toString(),
+      dictation.setAuthConfig({
+        refreshAccessToken: async (refreshToken) => {
+          const response = await fetch("https://your-auth-server/token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refreshToken: refreshToken ?? undefined }),
           });
 
-          if (!response.ok) {
-            throw new Error(
-              `Failed to fetch token: ${response.status} ${response.statusText}`,
-            );
-          }
-
-          const data = await response.json();
-          return data;
-        } catch (error) {
-          console.error('Error fetching client credentials token:', error);
-          return null;
-        }
-      }
-
-      const dictation = document.querySelector('corti-dictation');
-      // Improved token management and refresh mechanism
-      (async function initDictation() {
-        async function refreshAccessToken() {
-          try {
-            const token = await getClientCredentialsToken();
-            if (!token) {
-              throw new Error('Token retrieval failed');
-            }
-            dictation.setAccessToken(token.access_token);
-            // Calculate refresh time (90% of token lifetime in milliseconds)
-            const refreshTime = token.expires_in * 1000 * 0.9;
-            setTimeout(refreshAccessToken, refreshTime);
-          } catch (error) {
-            console.error('Error setting access token:', error);
-          }
-        }
-
-        await refreshAccessToken();
-      })();
-
-      // Get the corti-dictation element and assign the server config
-
-      dictation.dictationConfig = {
-        primaryLanguage: 'en',
-        interimResults: true,
-        spokenPunctuation: true,
-        automaticPunctuation: true,
-        commands: [
-          { id: 'delete', phrases: ['delete that'] },
-          { id: 'next_section', phrases: ['go to next section'] },
-          { id: 'prev_section', phrases: ['go to previous section'] },
-          {
-            id: 'insert_template',
-            phrases: [
-              'insert my {template_name} template',
-              'insert {template_name} template',
-            ],
-            variables: [
-              {
-                key: 'template_name',
-                type: 'enum',
-                enum: ['new', 'existing'],
-              },
-            ],
-          },
-        ],
-      };
-
-      // Listen to events from the dictation component
-      dictation.addEventListener('recording-state-changed', e => {
-        console.log('Recording state:', e.detail.state);
-      });
-
-      dictation.addEventListener('recording-devices-changed', e => {
-        console.log('Recording Device Changed:', e.detail);
-      });
-
-      dictation.addEventListener('devices-changed', e => {
-        console.log('Device List Changed:', e.detail);
-      });
-
-      dictation.addEventListener('error', e => {
-        console.error(e.detail);
+          const result = await response.json();
+          return {
+            accessToken: result.accessToken,
+            refreshToken: result.refreshToken,
+          };
+        },
       });
 
       // Update the textarea with transcript text when received
-      dictation.addEventListener('transcript', e => {
+      dictation.addEventListener("transcript", (e) => {
         const { data } = e.detail;
-        const transcriptArea = document.getElementById('transcript');
-        const interimTranscript = document.getElementById('interimTranscript');
         if (data.isFinal) {
-          transcriptArea.value += data.text + ' ';
-          interimTranscript.style.display = 'none';
-        } else {
-          interimTranscript.style.display = 'block';
-          interimTranscript.innerText = data.rawTranscriptText;
-        }
-      });
-
-      // Update the command area with latest command when received
-      dictation.addEventListener('command', e => {
-        const { data } = e.detail;
-        const commandOutput = document.getElementById('commandOutput');
-        console.log('Command:', data);
-        if (data.id) {
-          commandOutput.innerHTML = `Command: ${data.id} (${JSON.stringify(Object.entries(data.variables))})`;
+          transcriptArea.value += data.text + " ";
         }
       });
     </script>

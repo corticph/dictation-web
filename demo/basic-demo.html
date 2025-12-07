@@ -1,162 +1,85 @@
-<!doctype html>
-<html lang="en-GB">
+<!DOCTYPE html>
+<html>
   <head>
     <meta charset="utf-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <style>
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        background: #fafafa;
-        color: #333;
-        font-family: Arial, sans-serif;
-        margin: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-      }
-
-      @media (prefers-color-scheme: dark) {
-        body {
-          background: #1c1e2b;
-          color: #eee;
-        }
-      }
-
-      textarea,
-      input,
-      .component-placeholder {
-        background: #333;
-        color: #fff;
-        width: 100%;
-        max-width: 800px;
-        padding: 10px;
-        font-size: 14px;
-        outline: none;
-        border: 1px solid #ccc;
-      }
-
-      @media (prefers-color-scheme: dark) {
-        textarea,
-        input,
-        .component-placeholder {
-          background: #2a2a2a;
-          color: #eee;
-          border: 1px solid #555;
-        }
-      }
-
-      #commandOutput {
-        font-family: monospace;
-      }
-
-      .component-placeholder {
-        border-style: dashed;
-        border-width: 2px;
-        border-radius: 8px;
-        padding: 40px;
-        text-align: center;
-      }
-
-      corti-dictation {
-        display: block;
-      }
-
-      corti-dictation:not([data-ready]) {
-        display: none;
-      }
-    </style>
+    <title>Basic Demo</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css"
+    />
   </head>
   <body>
-    <input
-      type="text"
-      id="accessToken"
-      placeholder="Paste your access token here"
-    />
+    <header>
+      <nav><a href="index.html">← Back to Demo Index</a></nav>
+      <h1>Basic Demo</h1>
+      <p>Paste your access token below to start the demo.</p>
+    </header>
 
-    <div id="componentPlaceholder" class="component-placeholder">
-      The dictation component will load once an auth token is provided.
-    </div>
+    <main>
+      <input
+        type="text"
+        id="accessToken"
+        placeholder="Paste your access token here"
+      />
 
-    <corti-dictation id="dictationComponent"></corti-dictation>
+      <article id="componentPlaceholder" aria-busy="true">
+        <corti-dictation></corti-dictation>
+      </article>
 
-    <!-- Textarea to display transcript text -->
-    <textarea
-      id="transcript"
-      rows="6"
-      placeholder="Transcript will appear here..."
-    ></textarea>
-    <div id="commandOutput"></div>
+      <!-- Textarea to display transcript text -->
+      <textarea
+        id="transcript"
+        rows="6"
+        placeholder="Transcript will appear here..."
+      ></textarea>
+      <div id="commandOutput"></div>
+    </main>
 
     <script type="module">
       // Import the Corti Dictation SDK
       // import "@corti/dictation-web";
-      import '../dist/bundle.js';
+      import "../dist/bundle.js";
 
       // Get the corti-dictation element and assign the server config
-      const dictation = document.querySelector('corti-dictation');
-      const accessTokenInput = document.getElementById('accessToken');
+      const dictation = document.querySelector("corti-dictation");
+      const accessTokenInput = document.getElementById("accessToken");
       const componentPlaceholder = document.getElementById(
-        'componentPlaceholder',
+        "componentPlaceholder"
       );
-      const dictationComponent = document.getElementById('dictationComponent');
+      const transcriptArea = document.getElementById("transcript");
+      const commandOutput = document.getElementById("commandOutput");
 
-      // Function to set the access token
-      function setToken() {
+      const setToken = () => {
         const token = accessTokenInput.value.trim();
-        if (token) {
-          try {
-            dictation.setAccessToken(token);
-            console.log('Access token set successfully');
-            // Hide placeholder and show component
-            componentPlaceholder.style.display = 'none';
-            dictationComponent.setAttribute('data-ready', 'true');
-          } catch (e) {
-            console.error('Error setting access token:', e);
-            // Show placeholder if token is invalid
-            componentPlaceholder.style.display = 'block';
-            dictationComponent.removeAttribute('data-ready');
-          }
-        } else {
-          // Show placeholder when token is cleared
-          componentPlaceholder.style.display = 'block';
-          dictationComponent.removeAttribute('data-ready');
-        }
+        componentPlaceholder.setAttribute("aria-busy", token ? "false" : "true");
+        if (token) dictation.setAccessToken(token);
       }
 
-      // Set token when input changes (debounced)
-      let tokenTimeout;
-      accessTokenInput.addEventListener('input', () => {
-        clearTimeout(tokenTimeout);
-        tokenTimeout = setTimeout(setToken, 500);
-      });
-
-      // Also set token on paste
-      accessTokenInput.addEventListener('paste', () => {
-        setTimeout(setToken, 100);
-      });
+      // Set token when input changes or paste
+      accessTokenInput.addEventListener("input", () => setToken())
+      accessTokenInput.addEventListener("paste", () => setToken())
 
       dictation.dictationConfig = {
-        primaryLanguage: 'en',
+        primaryLanguage: "en",
         spokenPunctuation: true,
         automaticPunctuation: true,
         commands: [
-          { id: 'delete', phrases: ['delete that'] },
+          { id: "delete", phrases: ["delete that"] },
           {
-            id: 'insert_template',
+            id: "insert_template",
             phrases: [
-              'insert my {template_name} template',
-              'insert {template_name} template',
+              "insert my {template_name} template",
+              "insert {template_name} template",
             ],
             variables: [
               {
-                key: 'template_name',
-                type: 'enum',
-                enum: ['new', 'existing'],
+                key: "template_name",
+                type: "enum",
+                enum: ["new", "existing"],
               },
             ],
           },
@@ -164,38 +87,38 @@
       };
 
       // Listen to events from the dictation component
-      dictation.addEventListener('recording-state-changed', e => {
-        console.log('Recording state:', e.detail.state);
+      dictation.addEventListener("recording-state-changed", (e) => {
+        console.log("Recording state:", e.detail.state);
       });
 
-      dictation.addEventListener('recording-devices-changed', e => {
-        console.log('Recording Device Changed:', e.detail);
+      dictation.addEventListener("recording-devices-changed", (e) => {
+        console.log("Recording Device Changed:", e.detail);
       });
 
-      dictation.addEventListener('devices-changed', e => {
-        console.log('Device List Changed:', e.detail);
+      dictation.addEventListener("devices-changed", (e) => {
+        console.log("Device List Changed:", e.detail);
       });
 
-      dictation.addEventListener('error', e => {
+      dictation.addEventListener("error", (e) => {
         console.error(e.detail);
       });
 
       // Update the textarea with transcript text when received
-      dictation.addEventListener('transcript', e => {
+      dictation.addEventListener("transcript", (e) => {
         const { data } = e.detail;
-        const transcriptArea = document.getElementById('transcript');
         if (data.isFinal) {
-          transcriptArea.value += data.text + ' ';
+          transcriptArea.value += data.text + " ";
         }
       });
 
-      // Update the textarea with transcript text when received
-      dictation.addEventListener('command', e => {
+      // Update the command output when command is received
+      dictation.addEventListener("command", (e) => {
         const { data } = e.detail;
-        const commandOutput = document.getElementById('commandOutput');
-        console.log('Command:', data);
+        console.log("Command:", data);
         if (data.id) {
-          commandOutput.innerHTML = `Command: ${data.id} (${JSON.stringify(Object.entries(data.variables))})`;
+          commandOutput.innerHTML = `Command: ${data.id} (${JSON.stringify(
+            Object.entries(data.variables)
+          )})`;
         }
       });
     </script>
