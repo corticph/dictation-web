@@ -51,18 +51,20 @@ export function decodeToken(token: string) {
     /^https:\/\/(keycloak|auth)\.([^.]+)\.corti\.app\/realms\/([^/]+)/;
   const match = issuerUrl.match(regex);
 
-  // If the issuer URL matches the expected pattern, return the extracted values along with the token
-  if (match) {
-    const expiresAt =
-      tokenDetails.exp && typeof tokenDetails.exp === "number"
-        ? tokenDetails.exp
-        : undefined;
-
-    return {
-      accessToken: token,
-      environment: match[2],
-      expiresAt,
-      tenant: match[3],
-    };
+  if (!match) {
+    throw new Error("Issuer URL does not match expected format");
   }
+
+  // If the issuer URL matches the expected pattern, return the extracted values along with the token
+  const expiresAt =
+    tokenDetails.exp && typeof tokenDetails.exp === "number"
+      ? tokenDetails.exp
+      : undefined;
+
+  return {
+    accessToken: token,
+    environment: match[2],
+    expiresAt,
+    tenant: match[3],
+  };
 }
