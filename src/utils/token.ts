@@ -52,7 +52,7 @@ export function decodeToken(token: string) {
   const match = issuerUrl.match(regex);
 
   if (!match) {
-    throw new Error("Issuer URL does not match expected format");
+    throw new Error("Access token does not match expected format");
   }
 
   // If the issuer URL matches the expected pattern, return the extracted values along with the token
