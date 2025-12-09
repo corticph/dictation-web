@@ -6,8 +6,9 @@ import type { DeviceSelector } from "../src/components/device-selector.js";
 import "../src/components/device-selector.js";
 import "../src/contexts/dictation-context.js";
 import type { DictationContext } from "../src/contexts/dictation-context.js";
+import { disableControls } from "./helpers.js";
 
-type DeviceSelectorStory = DeviceSelector &
+export type DeviceSelectorStory = DeviceSelector &
   Pick<DictationContext, "devices"> & { selectedDevice?: string | "none" };
 
 const meta = {
@@ -50,7 +51,7 @@ export const Default = {
   },
 } as StoryObj<DeviceSelectorStory>;
 
-const mockDevices: MediaDeviceInfo[] = [
+export const mockDevices: MediaDeviceInfo[] = [
   {
     deviceId: "device1",
     groupId: "group1",
@@ -85,5 +86,6 @@ export const WithCustomDevices = {
       description: "The currently selected audio input device.",
       options: mockDevices.map((device) => device.deviceId),
     },
+    ...disableControls(["devices"]),
   },
 } as StoryObj<DeviceSelectorStory>;

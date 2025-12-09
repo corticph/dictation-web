@@ -15,7 +15,7 @@ const languages = Array.from(
   new Set([...LANGUAGES_SUPPORTED_EU, ...LANGUAGES_SUPPORTED_US]),
 );
 
-type LanguageSelectorStory = LanguageSelector &
+export type LanguageSelectorStory = LanguageSelector &
   Pick<DictationContext, "languages">;
 
 const meta = {
