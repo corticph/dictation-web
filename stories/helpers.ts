@@ -5,3 +5,27 @@ export function disableControls(controls: string[]) {
   });
   return argTypes;
 }
+
+export const mockDevices: MediaDeviceInfo[] = [
+  {
+    deviceId: "device1",
+    groupId: "group1",
+    kind: "audioinput",
+    label: "Custom Microphone 1",
+    toJSON: () => ({}),
+  },
+  {
+    deviceId: "device2",
+    groupId: "group1",
+    kind: "audioinput",
+    label: "Custom Microphone 2",
+    toJSON: () => ({}),
+  },
+  {
+    deviceId: "device3",
+    groupId: "group1",
+    kind: "audioinput",
+    label: "Custom Microphone 3",
+    toJSON: () => ({}),
+  },
+];

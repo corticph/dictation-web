@@ -31,11 +31,12 @@ const meta = {
   },
   component: "language-selector",
 
-  render: ({ languages }) => {
+  render: ({ languages, disabled }) => {
     const languagesValue = languages?.length ? languages.join(",") : nothing;
     return html`
       <dictation-context-provider languages="${languagesValue}" ?noWrapper=${true}>
         <language-selector
+          ?disabled=${disabled}
           @languages-changed=${action("languages-changed")}
           @error=${action("error")}
         />
@@ -47,26 +48,20 @@ const meta = {
 
 export default meta;
 
-// interface Story<T> {
-//   (args: T): TemplateResult;
-//   args?: Partial<T>;
-//   argTypes?: Record<string, unknown>;
-// }
-
 export const Default = {
   args: {
     disabled: false,
   },
 } as StoryObj<LanguageSelectorStory>;
 
-export const WithCustomLanguages = {
-  args: {
-    languages: ["en", "es", "fr", "de", "it"],
-  },
-} as StoryObj<LanguageSelectorStory>;
-
 export const Disabled = {
   args: {
     disabled: true,
+  },
+} as StoryObj<LanguageSelectorStory>;
+
+export const WithCustomLanguages = {
+  args: {
+    languages: ["en", "es", "fr", "de", "it"],
   },
 } as StoryObj<LanguageSelectorStory>;

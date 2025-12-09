@@ -8,10 +8,9 @@ import "../src/contexts/dictation-context.js";
 import type { DictationContext } from "../src/contexts/dictation-context.js";
 import DeviceSelectorStoryMeta, {
   type DeviceSelectorStory,
-  mockDevices,
   WithCustomDevices as WithCustomDevicesDeviceSelectorStory,
 } from "./device-selector.stories.js";
-import { disableControls } from "./helpers.js";
+import { disableControls, mockDevices } from "./helpers.js";
 import LangaugeSelectorStoryMeta, {
   type LanguageSelectorStory,
 } from "./language-selector.stories.js";
@@ -98,21 +97,21 @@ export const OnlyDeviceSelector = {
   args: {
     settingsEnabled: ["device"],
   },
-  argTypes: disableControls(["settingsEnabled"]),
+  argTypes: disableControls(["settingsEnabled", "languages"]),
 } as StoryObj<SettingsMenuStory>;
 
 export const OnlyLanguageSelector = {
   args: {
     settingsEnabled: ["language"],
   },
-  argTypes: disableControls(["settingsEnabled"]),
+  argTypes: disableControls(["settingsEnabled", "devices"]),
 } as StoryObj<SettingsMenuStory>;
 
 export const NoSettings = {
   args: {
     settingsEnabled: [],
   },
-  argTypes: disableControls(["settingsEnabled"]),
+  argTypes: disableControls(["settingsEnabled", "devices", "languages"]),
 } as StoryObj<SettingsMenuStory>;
 
 export const WithCustomLanguages = {
@@ -141,34 +140,3 @@ export const BothWithCustomOptions = {
     ...WithCustomDevices.argTypes,
   },
 } as StoryObj<SettingsMenuStory>;
-
-// export const BothWithCustomOptions: Story<StoryArgs> = () => {
-//   const customDevices: MediaDeviceInfo[] = [
-//     {
-//       deviceId: "device1",
-//       groupId: "group1",
-//       kind: "audioinput",
-//       label: "Headset Microphone",
-//       toJSON: () => ({}),
-//     },
-//     {
-//       deviceId: "device2",
-//       groupId: "group2",
-//       kind: "audioinput",
-//       label: "Desk Microphone",
-//       toJSON: () => ({}),
-//     },
-//   ];
-
-//   return html`
-//     <dictation-context-provider languages="en,fr,de" .devices=${customDevices}>
-//       <settings-menu
-//         settingsEnabled="device,language"
-//         @languages-changed=${action("languages-changed")}
-//         @recording-devices-changed=${action("recording-devices-changed")}
-//         @ready=${action("ready")}
-//         @error=${action("error")}
-//       ></settings-menu>
-//     </dictation-context-provider>
-//   `;
-// };
