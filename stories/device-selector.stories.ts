@@ -1,6 +1,6 @@
-import { action } from "@storybook/addon-actions";
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { html, nothing } from "lit";
+import { action } from "storybook/actions";
 import type { DeviceSelector } from "../src/components/device-selector.js";
 
 import "../src/components/device-selector.js";

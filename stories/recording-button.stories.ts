@@ -1,6 +1,6 @@
-import { action } from "@storybook/addon-actions";
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { html } from "lit";
+import { action } from "storybook/actions";
 import type { RecordingButton } from "../src/components/recording-button.js";
 
 import "../src/components/recording-button.js";
