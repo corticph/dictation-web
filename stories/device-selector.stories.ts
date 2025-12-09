@@ -9,7 +9,7 @@ import type { DictationContext } from "../src/contexts/dictation-context.js";
 import { disableControls, mockDevices } from "./helpers.js";
 
 export type DeviceSelectorStory = DeviceSelector &
-  Pick<DictationContext, "devices"> & { selectedDevice?: string | "none" };
+  Pick<DictationContext, "devices"> & { selectedDevice?: string };
 
 const meta = {
   argTypes: {
