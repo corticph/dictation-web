@@ -226,15 +226,15 @@ export class RecordingButton extends LitElement {
       >
         ${
           isLoading
-            ? html`<icon-loading-spinner></icon-loading-spinner>`
+            ? html`<icon-loading-spinner/>`
             : isRecording
-              ? html`<icon-recording></icon-recording>`
-              : html`<icon-mic-on></icon-mic-on>`
+              ? html`<icon-recording/>`
+              : html`<icon-mic-on/>`
         }
         <audio-visualiser
           .level=${this._mediaController.audioLevel}
           ?active=${isRecording}
-        ></audio-visualiser>
+        />
       </button>
     `;
   }

@@ -31,7 +31,7 @@ export class SettingsMenu extends LitElement {
   ];
 
   render() {
-    if (!this.settingsEnabled || this.settingsEnabled.length === 0) {
+    if (this.settingsEnabled?.length === 0) {
       return nothing;
     }
 

@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { html } from "lit";
 import "../src/components/audio-visualiser.js";
-import "../src/contexts/dictation-context.js";
 
 import type { AudioVisualiser } from "../src/components/audio-visualiser.js";
 import { disableControls } from "./helpers.js";
@@ -40,7 +39,7 @@ export const Default = {
     active: true,
     level: 0.5,
   },
-} as StoryObj<AudioVisualiserArgTypes>;
+} as StoryObj<AudioVisualiser>;
 
 export const Inactive = {
   args: {
@@ -48,7 +47,7 @@ export const Inactive = {
     level: 0.5,
   },
   argTypes: disableControls(["active"]),
-} as StoryObj<AudioVisualiserArgTypes>;
+} as StoryObj<AudioVisualiser>;
 
 export const Low = {
   args: {
@@ -56,7 +55,7 @@ export const Low = {
     level: 0.2,
   },
   argTypes: disableControls(["active"]),
-} as StoryObj<AudioVisualiserArgTypes>;
+} as StoryObj<AudioVisualiser>;
 
 export const Medium = {
   args: {
@@ -64,7 +63,7 @@ export const Medium = {
     level: 0.5,
   },
   argTypes: disableControls(["active"]),
-} as StoryObj<AudioVisualiserArgTypes>;
+} as StoryObj<AudioVisualiser>;
 
 export const High = {
   args: {
@@ -72,7 +71,7 @@ export const High = {
     level: 0.8,
   },
   argTypes: disableControls(["active"]),
-} as StoryObj<AudioVisualiserArgTypes>;
+} as StoryObj<AudioVisualiser>;
 
 export const Full = {
   args: {
@@ -80,7 +79,7 @@ export const Full = {
     level: 1,
   },
   argTypes: disableControls(["active"]),
-} as StoryObj<AudioVisualiserArgTypes>;
+} as StoryObj<AudioVisualiser>;
 
 export const Silent = {
   args: {
@@ -88,4 +87,4 @@ export const Silent = {
     level: 0,
   },
   argTypes: disableControls(["active"]),
-} as StoryObj<AudioVisualiserArgTypes>;
+} as StoryObj<AudioVisualiser>;

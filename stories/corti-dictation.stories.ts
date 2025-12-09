@@ -1,13 +1,32 @@
 import { action } from "@storybook/addon-actions";
-import { html, type TemplateResult } from "lit";
+import { html, nothing, type TemplateResult } from "lit";
+import {
+  LANGUAGES_SUPPORTED_EU,
+  LANGUAGES_SUPPORTED_US,
+} from "../src/constants.js";
 
 import "../src/components/corti-dictation.js";
+import type { ConfigurableSettings } from "../src/types.js";
+import type { Corti } from "@corti/sdk";
+
+const languages = Array.from(
+  new Set([...LANGUAGES_SUPPORTED_EU, ...LANGUAGES_SUPPORTED_US]),
+);
 
 export default {
   argTypes: {
     accessToken: {
       control: "text",
       description: "Access token for authentication (required to render)",
+    },
+    settingsEnabled: {
+      control: "check",
+      description: "Which settings to enable in the settings menu",
+      options: ["device", "language"],
+    },
+    languagesSupported: {
+      control: "multi-select",
+      options: languages,
     },
   },
   component: "corti-dictation",
@@ -22,12 +41,24 @@ interface Story<T> {
 
 interface StoryArgs {
   accessToken?: string;
+  settingsEnabled?: ConfigurableSettings[];
+  languagesSupported?: Corti.TranscribeSupportedLanguage[];
 }
 
-export const DefaultValues: Story<StoryArgs> = ({ accessToken }: StoryArgs) => {
+export const DefaultValues: Story<StoryArgs> = ({
+  accessToken,
+  settingsEnabled,
+  languagesSupported,
+}: StoryArgs) => {
+  const settingsEnabledValue =
+    settingsEnabled === undefined ? nothing : settingsEnabled;
+  const languagesSupportedValue =
+    languagesSupported === undefined ? nothing : languagesSupported;
   return html`
     <corti-dictation
       .accessToken=${accessToken}
+      settingsEnabled=${settingsEnabledValue}
+      languagesSupported=${languagesSupportedValue}
       @languages-changed=${action("languages-changed")}
       @recording-devices-changed=${action("recording-devices-changed")}
       @stream-closed=${action("stream-closed")}
@@ -41,6 +72,12 @@ export const DefaultValues: Story<StoryArgs> = ({ accessToken }: StoryArgs) => {
       @error=${action("error")}
     ></corti-dictation>
   `;
+};
+
+DefaultValues.args = {
+  accessToken: "dummy_token",
+  languagesSupported: [],
+  settingsEnabled: ["device", "language"],
 };
 
 export const OnlyLanguageSettings: Story<StoryArgs> = ({

@@ -67,11 +67,13 @@ export class CortiDictation extends LitElement {
     converter: commaSeparatedConverter,
     type: Array,
   })
-  set languagesSupported(value: string[] | undefined) {
+  set languagesSupported(value:
+    | Corti.TranscribeSupportedLanguage[]
+    | undefined) {
     this._languagesSupported = value;
   }
 
-  get languagesSupported(): string[] {
+  get languagesSupported(): Corti.TranscribeSupportedLanguage[] {
     return (
       this.contextProviderRef.value?.languages || this._languagesSupported || []
     );
