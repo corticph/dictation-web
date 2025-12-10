@@ -31,7 +31,7 @@ export class LanguagesController implements ReactiveController {
     host.addController(this);
   }
 
-  hostConnected(): void {
+  initialize(): void {
     if (this.host.languages === undefined) {
       this._loadLanguages();
     }
@@ -65,8 +65,11 @@ export class LanguagesController implements ReactiveController {
       this._autoLoadedLanguages = true;
       this.host._languages = languages;
 
+      const previousLanguage = this.host.dictationConfig?.primaryLanguage;
       const selectedLanguage =
-        this.host.dictationConfig?.primaryLanguage || defaultLanguage;
+        (previousLanguage && languages.includes(previousLanguage))
+          ? previousLanguage
+          : defaultLanguage;
 
       this.host.dictationConfig = {
         ...this.host.dictationConfig,

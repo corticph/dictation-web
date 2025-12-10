@@ -1,5 +1,5 @@
 import type { Corti } from "@corti/sdk";
-import { createContext, provide } from "@lit/context";
+import { type ContextEvent, createContext, provide } from "@lit/context";
 import { type CSSResultGroup, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { LanguagesController } from "../controllers/languages-controller.js";
@@ -166,6 +166,7 @@ export class DictationRoot extends LitElement {
       "recording-state-changed",
       this._handleRecordingStateChanged,
     );
+    this.addEventListener("context-request", this._handleContextRequest);
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -259,6 +260,12 @@ export class DictationRoot extends LitElement {
     const event = e as CustomEvent;
 
     this.recordingState = event.detail.state;
+  };
+
+  private _handleContextRequest = (e: ContextEvent<any>) => {
+    if (e.context === languagesContext) {
+      this._languagesController.initialize();
+    }
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
