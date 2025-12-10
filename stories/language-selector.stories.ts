@@ -31,11 +31,14 @@ const meta = {
 
   render: ({ languages, disabled }) => {
     return html`
-      <dictation-root languages="${languages}" ?noWrapper=${true}>
+      <dictation-root
+        ?noWrapper=${true}
+        languages="${languages}"
+        @languages-changed=${action("languages-changed")}
+        @error=${action("error")}
+      >
         <dictation-language-selector
           ?disabled=${disabled}
-          @languages-changed=${action("languages-changed")}
-          @error=${action("error")}
         />
       </dictation-root>
     `;

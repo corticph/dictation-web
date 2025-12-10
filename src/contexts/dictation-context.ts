@@ -2,6 +2,7 @@ import type { Corti } from "@corti/sdk";
 import { createContext, provide } from "@lit/context";
 import { type CSSResultGroup, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { LanguagesController } from "../controllers/languages-controller.js";
 import ComponentStyles from "../styles/component-styles.js";
 import type { ProxyOptions, RecordingState } from "../types.js";
 import { getInitialToken } from "../utils/auth.js";
@@ -106,12 +107,28 @@ export class DictationRoot extends LitElement {
   @property({ attribute: false, type: Object })
   dictationConfig?: Corti.TranscribeConfig;
 
+  private _languagesController = new LanguagesController(this);
+
   @provide({ context: languagesContext })
+  @state()
+  _languages?: Corti.TranscribeSupportedLanguage[];
+
   @property({
     converter: commaSeparatedConverter,
     type: Array,
   })
-  languages?: Corti.TranscribeSupportedLanguage[];
+  set languages(value: Corti.TranscribeSupportedLanguage[] | undefined) {
+    this._languages = value;
+
+    // Clear auto-loaded flag when languages are set via property
+    if (value !== undefined) {
+      this._languagesController.clearAutoLoadedFlag();
+    }
+  }
+
+  get languages(): Corti.TranscribeSupportedLanguage[] | undefined {
+    return this._languages;
+  }
 
   @provide({ context: devicesContext })
   @property({ attribute: false, type: Array })
@@ -225,7 +242,6 @@ export class DictationRoot extends LitElement {
   private _handleLanguageChanged = (e: Event) => {
     const event = e as CustomEvent;
 
-    this.languages = event.detail.languages;
     this.dictationConfig = {
       ...this.dictationConfig,
       primaryLanguage: event.detail.selectedLanguage,

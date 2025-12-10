@@ -1,18 +1,17 @@
 import type { Corti } from "@corti/sdk";
 import { consume } from "@lit/context";
-import { html, LitElement, type PropertyValues } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import {
   dictationConfigContext,
   languagesContext,
-  regionContext,
 } from "../contexts/dictation-context.js";
 import SelectStyles from "../styles/select.js";
 import {
   languageChangedEvent,
   languagesChangedEvent,
 } from "../utils/events.js";
-import { getLanguageName, getLanguagesByRegion } from "../utils/languages.js";
+import { getLanguageName } from "../utils/languages.js";
 
 @customElement("dictation-language-selector")
 export class DictationLanguageSelector extends LitElement {
@@ -27,52 +26,7 @@ export class DictationLanguageSelector extends LitElement {
   @property({ type: Boolean })
   disabled: boolean = false;
 
-  @consume({ context: regionContext, subscribe: true })
-  @state()
-  _region?: string;
-
-  /**
-   * Internal cache of loaded languages to check if languages were auto-loaded or provided via property
-   * @private
-   */
-  private _loadedLanguages: Corti.TranscribeSupportedLanguage[] = [];
-
-  private _languagesAutoLoaded(): boolean {
-    return this._loadedLanguages === this._languages;
-  }
-
   static styles = SelectStyles;
-
-  async connectedCallback(): Promise<void> {
-    super.connectedCallback();
-
-    if (this._languages) {
-      return;
-    }
-
-    await this._loadLanguages();
-  }
-
-  updated(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has("_region") && this._languagesAutoLoaded()) {
-      this._loadLanguages();
-    }
-  }
-
-  private async _loadLanguages(): Promise<void> {
-    const { languages, defaultLanguage } = getLanguagesByRegion(this._region);
-    this._loadedLanguages = languages;
-
-    const selectedLanguage =
-      this._dictationConfig?.primaryLanguage ?? defaultLanguage;
-
-    this.dispatchEvent(languagesChangedEvent(languages, selectedLanguage));
-
-    // Dispatch backward compatible event
-    if (selectedLanguage) {
-      this.dispatchEvent(languageChangedEvent(selectedLanguage));
-    }
-  }
 
   private _handleSelectLanguage(e: Event): void {
     const language = (e.target as HTMLSelectElement).value;
