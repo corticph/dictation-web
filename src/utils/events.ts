@@ -2,7 +2,7 @@ import type { Corti } from "@corti/sdk";
 import type { RecordingState } from "../types.js";
 
 export type LanguagesChangedEventDetail = {
-  languages: string[];
+  languages: Corti.TranscribeSupportedLanguage[];
   selectedLanguage: string | undefined;
 };
 
@@ -32,7 +32,7 @@ export type ErrorEventDetail = {
 };
 
 export function languagesChangedEvent(
-  languages: string[],
+  languages: Corti.TranscribeSupportedLanguage[],
   selectedLanguage: string | undefined,
 ): CustomEvent<LanguagesChangedEventDetail> {
   return new CustomEvent("languages-changed", {

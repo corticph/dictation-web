@@ -18,7 +18,7 @@ import { getLanguageName, getLanguagesByRegion } from "../utils/languages.js";
 export class LanguageSelector extends LitElement {
   @consume({ context: languagesContext, subscribe: true })
   @state()
-  private _languages?: string[];
+  private _languages?: Corti.TranscribeSupportedLanguage[];
 
   @consume({ context: dictationConfigContext, subscribe: true })
   @state()
@@ -35,7 +35,7 @@ export class LanguageSelector extends LitElement {
    * Internal cache of loaded languages to check if languages were auto-loaded or provided via property
    * @private
    */
-  private _loadedLanguages: string[] = [];
+  private _loadedLanguages: Corti.TranscribeSupportedLanguage[] = [];
 
   private _languagesAutoLoaded(): boolean {
     return this._loadedLanguages === this._languages;

@@ -15,9 +15,9 @@ export const regionContext = createContext<string | undefined>(
 export const tenantNameContext = createContext<string | undefined>(
   Symbol("tenantName"),
 );
-export const languagesContext = createContext<string[] | undefined>(
-  Symbol("languages"),
-);
+export const languagesContext = createContext<
+  Corti.TranscribeSupportedLanguage[] | undefined
+>(Symbol("languages"));
 export const devicesContext = createContext<MediaDeviceInfo[] | undefined>(
   Symbol("devices"),
 );
@@ -111,7 +111,7 @@ export class DictationContext extends LitElement {
     converter: commaSeparatedConverter,
     type: Array,
   })
-  languages?: string[];
+  languages?: Corti.TranscribeSupportedLanguage[];
 
   @provide({ context: devicesContext })
   @property({ attribute: false, type: Array })

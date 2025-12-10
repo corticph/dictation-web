@@ -80,7 +80,7 @@ export class CortiDictation extends LitElement {
   }
 
   @state()
-  private _languagesSupported?: string[];
+  private _languagesSupported?: Corti.TranscribeSupportedLanguage[];
 
   /**
    * Which settings should be available in the UI.
