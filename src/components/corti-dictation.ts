@@ -250,7 +250,7 @@ export class CortiDictation extends LitElement {
       >
         <recording-button
           ${ref(this.recordingButtonRef)}
-          .preventFocus=${!this.allowButtonFocus}
+          ?allowButtonFocus=${this.allowButtonFocus}
         ></recording-button>
         <settings-menu .settingsEnabled=${this.settingsEnabled}></settings-menu>
       </dictation-context-provider>

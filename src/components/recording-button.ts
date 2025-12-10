@@ -80,7 +80,7 @@ export class RecordingButton extends LitElement {
   _debug_displayAudio?: boolean;
 
   @property({ type: Boolean })
-  preventFocus: boolean = false;
+  allowButtonFocus: boolean = false;
 
   private _mediaController = new MediaController(this);
   private _dictationController = new DictationController(this);
@@ -88,7 +88,7 @@ export class RecordingButton extends LitElement {
   static styles: CSSResultGroup = [RecordingButtonStyles, ButtonStyles];
 
   private _handleMouseDown(event: MouseEvent): void {
-    if (this.preventFocus) {
+    if (!this.allowButtonFocus) {
       event.preventDefault();
     }
   }

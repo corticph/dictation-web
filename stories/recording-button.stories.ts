@@ -13,13 +13,13 @@ export type RecordingButtonStory = RecordingButton &
 
 const meta = {
   args: {
-    preventFocus: true,
+    allowButtonFocus: false,
     recordingState: "stopped",
   },
   argTypes: {
-    preventFocus: {
+    allowButtonFocus: {
       control: "boolean",
-      description: "Prevent button from taking focus on click",
+      description: "Allow button to take focus on click",
     },
     recordingState: {
       control: "select",
@@ -28,11 +28,11 @@ const meta = {
     },
   },
   component: "recording-button",
-  render: ({ preventFocus, recordingState }) => {
+  render: ({ allowButtonFocus, recordingState }) => {
     return html`
     <dictation-context-provider ?noWrapper=${true} .recordingState=${recordingState}>
       <recording-button
-        ?preventFocus=${preventFocus}
+        ?allowButtonFocus=${allowButtonFocus}
         @recording-state-changed=${action("recording-state-changed")}
         @network-activity=${action("network-activity")}
         @error=${action("error")}
@@ -53,7 +53,7 @@ export const Stopped = {
 
 export const Initializing = {
   args: {
-    preventFocus: true,
+    allowButtonFocus: false,
     recordingState: "initializing",
   },
   argTypes: disableControls(["recordingState"]),
@@ -61,7 +61,7 @@ export const Initializing = {
 
 export const Recording = {
   args: {
-    preventFocus: true,
+    allowButtonFocus: false,
     recordingState: "recording",
   },
   argTypes: disableControls(["recordingState"]),
@@ -69,15 +69,15 @@ export const Recording = {
 
 export const Stopping = {
   args: {
-    preventFocus: true,
+    allowButtonFocus: false,
     recordingState: "stopping",
   },
   argTypes: disableControls(["recordingState"]),
 } as StoryObj<RecordingButtonStory>;
 
-export const PreventFocusDisabled = {
+export const AllowButtonFocusEnabled = {
   args: {
-    preventFocus: false,
+    allowButtonFocus: true,
   },
-  argTypes: disableControls(["preventFocus"]),
+  argTypes: disableControls(["allowButtonFocus"]),
 } as StoryObj<RecordingButtonStory>;
