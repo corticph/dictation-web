@@ -6,8 +6,6 @@ import { range } from "lit/directives/range.js";
 import AudioVisualiserStyles from "../styles/audio-visualiser.js";
 import { normalizeToRange } from "../utils/validation.js";
 
-const SEGMENT_COUNT = 5;
-
 @customElement("audio-visualiser")
 export class AudioVisualiser extends LitElement {
   @property({ type: Number })
@@ -15,6 +13,9 @@ export class AudioVisualiser extends LitElement {
 
   @property({ type: Boolean })
   active: boolean = false;
+
+  @property({ type: Number })
+  segmentCount: number = 5;
 
   static styles = AudioVisualiserStyles;
 
@@ -26,9 +27,9 @@ export class AudioVisualiser extends LitElement {
 
   render() {
     // Each segment represents 20%. Using Math.round to fill segments.
-    const activeSegments = Math.round(this.level * SEGMENT_COUNT);
+    const activeSegments = Math.round(this.level * this.segmentCount);
     const segments = map(
-      range(SEGMENT_COUNT),
+      range(this.segmentCount),
       (i) =>
         html`<div class=${classMap({
           active: i < activeSegments,
