@@ -42,7 +42,7 @@ export class SettingsMenu extends LitElement {
     return html`
       <div class="mic-selector">
         <button id="settings-popover-button" popovertarget="settings-popover">
-          <icon-settings></icon-settings>
+          <icon-settings />
         </button>
         <div id="settings-popover" popover>
           <div class="settings-wrapper">
@@ -59,14 +59,14 @@ export class SettingsMenu extends LitElement {
               showDeviceSelector
                 ? html`<device-selector
                   ?disabled=${isRecording}
-                ></device-selector>`
+                />`
                 : nothing
             }
             ${
               showLanguageSelector
                 ? html`<language-selector
                   ?disabled=${isRecording}
-                ></language-selector>`
+                />`
                 : nothing
             }
           </div>

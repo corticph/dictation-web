@@ -34,7 +34,7 @@ export class AudioVisualiser extends LitElement {
         html`<div class=${classMap({
           active: i < activeSegments,
           segment: true,
-        })}></div>`,
+        })} />`,
     );
 
     return html`
