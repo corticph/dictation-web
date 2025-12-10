@@ -2,6 +2,7 @@ import type { Corti } from "@corti/sdk";
 import { consume } from "@lit/context";
 import { type CSSResultGroup, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { AUDIO_CHUNK_INTERVAL_MS } from "../constants.js";
 import {
   accessTokenContext,
   authConfigContext,
@@ -95,7 +96,7 @@ export class RecordingButton extends LitElement {
   private _handleWebSocketMessage = (message: TranscribeMessage): void => {
     switch (message.type) {
       case "CONFIG_ACCEPTED":
-        this._mediaController.mediaRecorder?.start(250);
+        this._mediaController.mediaRecorder?.start(AUDIO_CHUNK_INTERVAL_MS);
         this._mediaController.startAudioLevelMonitoring((level) => {
           this.dispatchEvent(audioLevelChangedEvent(level));
         });

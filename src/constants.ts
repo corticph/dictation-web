@@ -36,3 +36,9 @@ export const DEFAULT_DICTATION_CONFIG: Corti.TranscribeConfig = {
   primaryLanguage: "en",
   spokenPunctuation: true,
 };
+
+/**
+ * Interval in milliseconds at which MediaRecorder fires dataavailable events.
+ * This controls how often audio chunks are sent to the WebSocket.
+ */
+export const AUDIO_CHUNK_INTERVAL_MS = 250;
