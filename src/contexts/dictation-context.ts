@@ -2,7 +2,7 @@ import type { Corti } from "@corti/sdk";
 import { createContext, provide } from "@lit/context";
 import { type CSSResultGroup, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import ComponentStyles from "../styles/ComponentStyles.js";
+import ComponentStyles from "../styles/component-styles.js";
 import type { ProxyOptions, RecordingState } from "../types.js";
 import { getInitialToken } from "../utils/auth.js";
 import { commaSeparatedConverter } from "../utils/converters.js";

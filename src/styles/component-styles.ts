@@ -1,4 +1,4 @@
-import { css } from 'lit';
+import { css } from "lit";
 
 const ComponentStyles = css`
   .wrapper {
@@ -17,4 +17,3 @@ const ComponentStyles = css`
 `;
 
 export default ComponentStyles;
-

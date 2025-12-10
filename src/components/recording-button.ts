@@ -18,8 +18,8 @@ import {
 import {
   DictationController,
   type TranscribeMessage,
-} from "../controllers/DictationController.js";
-import { MediaController } from "../controllers/MediaController.js";
+} from "../controllers/dictation-controller.js";
+import { MediaController } from "../controllers/media-controller.js";
 import ButtonStyles from "../styles/buttons.js";
 import RecordingButtonStyles from "../styles/recording-button.js";
 import type { ProxyOptions, RecordingState } from "../types.js";
