@@ -1,9 +1,15 @@
-import { html, type TemplateResult } from "lit";
-
+import type { Meta, StoryObj } from "@storybook/web-components-vite";
+import { html } from "lit";
 import "../src/components/audio-visualiser.js";
-import "../src/contexts/dictation-context.js";
 
-export default {
+import type { AudioVisualiser } from "../src/components/audio-visualiser.js";
+import { disableControls } from "./helpers.js";
+
+const meta = {
+  args: {
+    active: true,
+    level: 0.5,
+  },
   argTypes: {
     active: {
       control: "boolean",
@@ -15,81 +21,63 @@ export default {
     },
   },
   component: "audio-visualiser",
+  render: ({ level = 0, active = true }: AudioVisualiserArgTypes) => {
+    return html`
+    <div style="height: 100px;">
+      <audio-visualiser level=${level} ?active=${active}/>
+    </div>
+  `;
+  },
   title: "AudioVisualiser",
-};
+} satisfies Meta<AudioVisualiser>;
 
-interface Story<T> {
-  (args: T): TemplateResult;
-  args?: Partial<T>;
-  argTypes?: Record<string, unknown>;
-}
+export default meta;
 
 interface AudioVisualiserArgTypes {
   level?: number;
   active?: boolean;
 }
 
-const AudioVisualiserTemplate: Story<AudioVisualiserArgTypes> = ({
-  level = 0,
-  active = true,
-}: AudioVisualiserArgTypes) => {
-  if (!active) {
-    return html`
-      <dictation-context-provider ?noWrapper=${true}>
-        <div style="height: 100px;">
-          <audio-visualiser level=${level}></audio-visualiser>
-        </div>
-      </dictation-context-provider>
-    `;
-  }
+export const Default = {} as StoryObj<AudioVisualiser>;
 
-  return html`
-    <dictation-context-provider ?noWrapper=${true}>
-      <div style="height: 100px;">
-        <audio-visualiser level=${level} active></audio-visualiser>
-      </div>
-    </dictation-context-provider>
-  `;
-};
+export const Inactive = {
+  args: {
+    active: false,
+  },
+  argTypes: disableControls(["active"]),
+} as StoryObj<AudioVisualiser>;
 
-export const Default = AudioVisualiserTemplate.bind({});
-Default.args = {
-  active: true,
-  level: 0.5,
-};
+export const Low = {
+  args: {
+    level: 0.2,
+  },
+  argTypes: disableControls(["active"]),
+} as StoryObj<AudioVisualiser>;
 
-export const Inactive = AudioVisualiserTemplate.bind({});
-Inactive.args = {
-  active: false,
-  level: 0.5,
-};
+export const Medium = {
+  args: {
+    level: 0.5,
+  },
+  argTypes: disableControls(["active"]),
+} as StoryObj<AudioVisualiser>;
 
-export const Low = AudioVisualiserTemplate.bind({});
-Low.args = {
-  active: true,
-  level: 0.2,
-};
+export const High = {
+  args: {
+    level: 0.8,
+  },
+  argTypes: disableControls(["active"]),
+} as StoryObj<AudioVisualiser>;
 
-export const Medium = AudioVisualiserTemplate.bind({});
-Medium.args = {
-  active: true,
-  level: 0.5,
-};
+export const Full = {
+  args: {
+    level: 1,
+  },
+  argTypes: disableControls(["active"]),
+} as StoryObj<AudioVisualiser>;
 
-export const High = AudioVisualiserTemplate.bind({});
-High.args = {
-  active: true,
-  level: 0.8,
-};
-
-export const Full = AudioVisualiserTemplate.bind({});
-Full.args = {
-  active: true,
-  level: 1.0,
-};
-
-export const Silent = AudioVisualiserTemplate.bind({});
-Silent.args = {
-  active: true,
-  level: 0,
-};
+export const Silent = {
+  args: {
+    level: 0,
+  },
+  argTypes: disableControls(["active"]),
+} as StoryObj<AudioVisualiser>;

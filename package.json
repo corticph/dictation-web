@@ -54,7 +54,7 @@
     "prepare": "husky && husky install",
     "test": "tsc && wtr --coverage",
     "test:watch": "tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wtr --watch\"",
-    "storybook": "tsc && tsc -p tsconfig.stories.json && npm run analyze -- --exclude dist && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"tsc -p tsconfig.stories.json --watch --preserveWatchOutput\" \"storybook dev -p 8080\"",
+    "storybook": "npm run analyze -- --exclude dist && storybook dev -p 8080",
     "storybook:build": "tsc && tsc -p tsconfig.stories.json && npm run analyze -- --exclude dist && storybook build"
   },
   "dependencies": {
@@ -66,10 +66,11 @@
     "@biomejs/biome": "^2.3.6",
     "@custom-elements-manifest/analyzer": "^0.10.3",
     "@open-wc/testing": "^4.0.0",
-    "@storybook/addon-a11y": "^7.6.20",
-    "@storybook/addon-essentials": "^7.6.20",
-    "@storybook/addon-links": "^7.6.20",
-    "@storybook/web-components": "^7.6.20",
+    "@storybook/addon-a11y": "10.1.5",
+    "@storybook/addon-docs": "^10.1.5",
+    "@storybook/addon-links": "10.1.5",
+    "@storybook/web-components": "10.1.5",
+    "@storybook/web-components-vite": "^10.1.5",
     "@types/mocha": "^10.0.7",
     "@web/dev-server": "^0.4.6",
     "@web/storybook-builder": "^0.1.16",
@@ -80,7 +81,7 @@
     "husky": "^8.0.0",
     "lint-staged": "^15.2.7",
     "sinon": "^19.0.2",
-    "storybook": "^7.6.20",
+    "storybook": "10.1.5",
     "tslib": "^2.6.3",
     "typescript": "^5.5.3"
   },

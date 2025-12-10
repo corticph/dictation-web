@@ -1,176 +1,134 @@
-import { action } from "@storybook/addon-actions";
-import { html, type TemplateResult } from "lit";
+import type { Meta, StoryObj } from "@storybook/web-components-vite";
+import { html, nothing } from "lit";
+import { action } from "storybook/actions";
+import type { SettingsMenu } from "../src/components/settings-menu.js";
 
 import "../src/components/settings-menu.js";
 import "../src/contexts/dictation-context.js";
+import type { DictationContext } from "../src/contexts/dictation-context.js";
+import DeviceSelectorStoryMeta, {
+  type DeviceSelectorStory,
+  WithCustomDevices as WithCustomDevicesDeviceSelectorStory,
+} from "./device-selector.stories.js";
+import { disableControls, languages, mockDevices } from "./helpers.js";
+import LangaugeSelectorStoryMeta, {
+  type LanguageSelectorStory,
+} from "./language-selector.stories.js";
 
-export default {
+type SettingsMenuStory = SettingsMenu &
+  LanguageSelectorStory &
+  DeviceSelectorStory &
+  Pick<DictationContext, "recordingState">;
+
+const meta = {
+  args: {
+    disabled: false,
+    languages,
+    recordingState: "stopped",
+    settingsEnabled: ["device", "language"],
+  },
+  argTypes: {
+    ...DeviceSelectorStoryMeta.argTypes,
+    ...LangaugeSelectorStoryMeta.argTypes,
+    ...{
+      disabled: {
+        control: false,
+        table: { disable: true },
+      },
+      recordingState: {
+        control: false,
+        table: { disable: true },
+      },
+    },
+    settingsEnabled: {
+      control: "check",
+      description: "Which settings to enable in the settings menu",
+      options: ["device", "language"],
+    },
+  },
   component: "settings-menu",
+  render: ({
+    devices,
+    languages,
+    selectedDevice,
+    settingsEnabled,
+    recordingState,
+  }) => {
+    const selectedDeviceValue = selectedDevice
+      ? mockDevices.find((device) => device.deviceId === selectedDevice)
+      : nothing;
+
+    return html`
+      <dictation-context-provider
+        .devices=${devices}
+        .selectedDevice=${selectedDeviceValue}
+        languages=${languages}
+        .recordingState=${recordingState}>
+        <settings-menu
+          settingsEnabled=${settingsEnabled}
+          @languages-changed=${action("languages-changed")}
+          @recording-devices-changed=${action("recording-devices-changed")}
+          @ready=${action("ready")}
+          @error=${action("error")}
+        />
+      </dictation-context-provider>
+  `;
+  },
   title: "SettingsMenu",
-};
+} satisfies Meta<SettingsMenuStory>;
 
-interface Story<T> {
-  (args: T): TemplateResult;
-  args?: Partial<T>;
-  argTypes?: Record<string, unknown>;
-}
+export default meta;
 
-type StoryArgs = Record<string, never>;
+export const Default = {} as StoryObj<SettingsMenuStory>;
 
-export const DefaultValues: Story<StoryArgs> = () => {
-  return html`
-    <dictation-context-provider>
-      <settings-menu
-        @languages-changed=${action("languages-changed")}
-        @recording-devices-changed=${action("recording-devices-changed")}
-        @ready=${action("ready")}
-        @error=${action("error")}
-      ></settings-menu>
-    </dictation-context-provider>
-  `;
-};
+export const Recording = {
+  args: {
+    recordingState: "recording",
+  },
+} as StoryObj<SettingsMenuStory>;
 
-export const DisabledSettings: Story<StoryArgs> = () => {
-  return html`
-    <dictation-context-provider recordingState="recording">
-      <settings-menu
-        @languages-changed=${action("languages-changed")}
-        @recording-devices-changed=${action("recording-devices-changed")}
-        @ready=${action("ready")}
-        @error=${action("error")}
-      ></settings-menu>
-    </dictation-context-provider>
-  `;
-};
+export const OnlyDeviceSelector = {
+  args: {
+    settingsEnabled: ["device"],
+  },
+  argTypes: disableControls(["settingsEnabled", "languages"]),
+} as StoryObj<SettingsMenuStory>;
 
-export const OnlyDeviceSelector: Story<StoryArgs> = () => {
-  return html`
-    <dictation-context-provider>
-      <settings-menu
-        settingsEnabled="device"
-        @languages-changed=${action("languages-changed")}
-        @recording-devices-changed=${action("recording-devices-changed")}
-        @ready=${action("ready")}
-        @error=${action("error")}
-      ></settings-menu>
-    </dictation-context-provider>
-  `;
-};
+export const OnlyLanguageSelector = {
+  args: {
+    settingsEnabled: ["language"],
+  },
+  argTypes: disableControls(["settingsEnabled", "devices"]),
+} as StoryObj<SettingsMenuStory>;
 
-export const OnlyLanguageSelector: Story<StoryArgs> = () => {
-  return html`
-    <dictation-context-provider>
-      <settings-menu
-        .settingsEnabled=${["language"]}
-        @languages-changed=${action("languages-changed")}
-        @recording-devices-changed=${action("recording-devices-changed")}
-        @ready=${action("ready")}
-        @error=${action("error")}
-      ></settings-menu>
-    </dictation-context-provider>
-  `;
-};
+export const NoSettings = {
+  args: {
+    settingsEnabled: [],
+  },
+  argTypes: disableControls(["settingsEnabled", "devices", "languages"]),
+} as StoryObj<SettingsMenuStory>;
 
-export const NoSettings: Story<StoryArgs> = () => {
-  return html`
-    <dictation-context-provider>
-      <settings-menu
-        .settingsEnabled=${[]}
-        @languages-changed=${action("languages-changed")}
-        @recording-devices-changed=${action("recording-devices-changed")}
-        @ready=${action("ready")}
-        @error=${action("error")}
-      ></settings-menu>
-    </dictation-context-provider>
-  `;
-};
+export const WithCustomLanguages = {
+  args: {
+    languages: ["en", "es", "fr", "de", "it"],
+  },
+  argTypes: disableControls(["languages"]),
+} as StoryObj<SettingsMenuStory>;
 
-export const WithCustomLanguages: Story<StoryArgs> = () => {
-  return html`
-    <dictation-context-provider .languages=${["en", "es", "fr", "de", "it"]}>
-      <settings-menu
-        settingsEnabled="language"
-        @languages-changed=${action("languages-changed")}
-        @recording-devices-changed=${action("recording-devices-changed")}
-        @ready=${action("ready")}
-        @error=${action("error")}
-      ></settings-menu>
-    </dictation-context-provider>
-  `;
-};
+export const WithCustomDevices = {
+  args: {
+    devices: mockDevices,
+  },
+  argTypes: WithCustomDevicesDeviceSelectorStory.argTypes,
+} as StoryObj<SettingsMenuStory>;
 
-export const WithLanguagesAttribute: Story<StoryArgs> = () => {
-  return html`
-    <dictation-context-provider languages="en,da,es,fr">
-      <settings-menu
-        settingsEnabled="language"
-        @languages-changed=${action("languages-changed")}
-        @recording-devices-changed=${action("recording-devices-changed")}
-        @ready=${action("ready")}
-        @error=${action("error")}
-      ></settings-menu>
-    </dictation-context-provider>
-  `;
-};
-
-export const WithCustomDevices: Story<StoryArgs> = () => {
-  const customDevices: MediaDeviceInfo[] = [
-    {
-      deviceId: "device1",
-      groupId: "group1",
-      kind: "audioinput",
-      label: "Built-in Microphone",
-      toJSON: () => ({}),
-    },
-    {
-      deviceId: "device2",
-      groupId: "group2",
-      kind: "audioinput",
-      label: "External USB Microphone",
-      toJSON: () => ({}),
-    },
-  ];
-
-  return html`
-    <dictation-context-provider .devices=${customDevices}>
-      <settings-menu
-        settingsEnabled="device"
-        @languages-changed=${action("languages-changed")}
-        @recording-devices-changed=${action("recording-devices-changed")}
-        @ready=${action("ready")}
-        @error=${action("error")}
-      ></settings-menu>
-    </dictation-context-provider>
-  `;
-};
-
-export const BothWithCustomOptions: Story<StoryArgs> = () => {
-  const customDevices: MediaDeviceInfo[] = [
-    {
-      deviceId: "device1",
-      groupId: "group1",
-      kind: "audioinput",
-      label: "Headset Microphone",
-      toJSON: () => ({}),
-    },
-    {
-      deviceId: "device2",
-      groupId: "group2",
-      kind: "audioinput",
-      label: "Desk Microphone",
-      toJSON: () => ({}),
-    },
-  ];
-
-  return html`
-    <dictation-context-provider languages="en,fr,de" .devices=${customDevices}>
-      <settings-menu
-        settingsEnabled="device,language"
-        @languages-changed=${action("languages-changed")}
-        @recording-devices-changed=${action("recording-devices-changed")}
-        @ready=${action("ready")}
-        @error=${action("error")}
-      ></settings-menu>
-    </dictation-context-provider>
-  `;
-};
+export const BothWithCustomOptions = {
+  args: {
+    ...WithCustomLanguages.args,
+    ...WithCustomDevices.args,
+  },
+  argTypes: {
+    ...WithCustomLanguages.argTypes,
+    ...WithCustomDevices.argTypes,
+  },
+} as StoryObj<SettingsMenuStory>;

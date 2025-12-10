@@ -1,16 +1,12 @@
 export default {
-  stories: ['../dist/stories/**/*.stories.{js,md,mdx}'],
+  stories: ['../stories/**/*.stories.ts'],
   addons: [
+    '@storybook/addon-docs',
     '@storybook/addon-links',
-    '@storybook/addon-essentials',
-    '@storybook/addon-a11y',
+    '@storybook/addon-a11y'
   ],
-  framework: {
-    name: '@web/storybook-framework-web-components',
-  },
-  core: {
-    builder: '@web/storybook-builder',
-  },
+  framework:  '@storybook/web-components-vite',
+
   wdsFinal: async (config) => {
     return {
       ...config,

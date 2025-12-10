@@ -1,66 +1,60 @@
-import { action } from "@storybook/addon-actions";
-import { html, type TemplateResult } from "lit";
+import type { Meta, StoryObj } from "@storybook/web-components-vite";
+import { html, nothing } from "lit";
+import { action } from "storybook/actions";
+import type { LanguageSelector } from "../src/components/language-selector.js";
 
 import "../src/components/language-selector.js";
 import "../src/contexts/dictation-context.js";
 
-export default {
+import type { DictationContext } from "../src/contexts/dictation-context.js";
+import { languages } from "./helpers.js";
+
+export type LanguageSelectorStory = LanguageSelector &
+  Pick<DictationContext, "languages">;
+
+const meta = {
+  args: {
+    disabled: false,
+    languages,
+  },
+  argTypes: {
+    disabled: {
+      control: "boolean",
+      description: "Whether the language selector is disabled",
+    },
+    languages: {
+      control: "inline-check",
+      options: languages,
+    },
+  },
   component: "language-selector",
+
+  render: ({ languages, disabled }) => {
+    return html`
+      <dictation-context-provider languages="${languages}" ?noWrapper=${true}>
+        <language-selector
+          ?disabled=${disabled}
+          @languages-changed=${action("languages-changed")}
+          @error=${action("error")}
+        />
+      </dictation-context-provider>
+    `;
+  },
   title: "LanguageSelector",
-};
+} satisfies Meta<LanguageSelectorStory>;
 
-interface Story<T> {
-  (args: T): TemplateResult;
-  args?: Partial<T>;
-  argTypes?: Record<string, unknown>;
-}
+export default meta;
 
-type StoryArgs = Record<string, never>;
+export const Default = {} as StoryObj<LanguageSelectorStory>;
 
-export const DefaultValues: Story<StoryArgs> = () => {
-  return html`
-    <dictation-context-provider ?noWrapper=${true}>
-      <language-selector
-        @languages-changed=${action("languages-changed")}
-        @error=${action("error")}
-      ></language-selector>
-    </dictation-context-provider>
-  `;
-};
+export const Disabled = {
+  args: {
+    disabled: true,
+  },
+} as StoryObj<LanguageSelectorStory>;
 
-export const WithCustomLanguages: Story<StoryArgs> = () => {
-  return html`
-    <dictation-context-provider
-      .languages=${["en", "es", "fr", "de", "it"]}
-      ?noWrapper=${true}
-    >
-      <language-selector
-        @languages-changed=${action("languages-changed")}
-        @error=${action("error")}
-      ></language-selector>
-    </dictation-context-provider>
-  `;
-};
-
-export const WithLanguagesAttribute: Story<StoryArgs> = () => {
-  return html`
-    <dictation-context-provider languages="en,da,es,fr" ?noWrapper=${true}>
-      <language-selector
-        @languages-changed=${action("languages-changed")}
-        @error=${action("error")}
-      ></language-selector>
-    </dictation-context-provider>
-  `;
-};
-
-export const Disabled: Story<StoryArgs> = () => {
-  return html`
-    <dictation-context-provider ?noWrapper=${true}>
-      <language-selector
-        disabled
-        @languages-changed=${action("languages-changed")}
-        @error=${action("error")}
-      ></language-selector>
-    </dictation-context-provider>
-  `;
-};
+export const WithCustomLanguages = {
+  args: {
+    languages: ["en", "es", "fr", "de", "it"],
+  },
+} as StoryObj<LanguageSelectorStory>;
