@@ -143,7 +143,7 @@ export class RecordingButton extends LitElement {
     try {
       await this._mediaController.initialize(() => {
         if (this._recordingState === "recording") {
-          this.dispatchEvent(errorEvent("Microphone access was lost."));
+          this.dispatchEvent(errorEvent("Recording device access was lost."));
           this._handleStop();
         }
       });
