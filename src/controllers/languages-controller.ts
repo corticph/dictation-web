@@ -1,16 +1,13 @@
 import type { Corti } from "@corti/sdk";
 import type { ReactiveController, ReactiveControllerHost } from "lit";
-import {
-  type LanguagesChangedEventDetail,
-  languagesChangedEvent,
-} from "../utils/events.js";
+import { errorEvent, languagesChangedEvent } from "../utils/events.js";
 import { getLanguagesByRegion } from "../utils/languages.js";
 
 interface LanguagesControllerHost extends ReactiveControllerHost {
   region?: string;
   languages?: Corti.TranscribeSupportedLanguage[];
   dictationConfig?: Corti.TranscribeConfig;
-  dispatchEvent(event: CustomEvent<LanguagesChangedEventDetail>): boolean;
+  dispatchEvent(event: CustomEvent): boolean;
   requestUpdate(): void;
   _languages?: Corti.TranscribeSupportedLanguage[];
 }
@@ -25,6 +22,7 @@ export class LanguagesController implements ReactiveController {
   private _autoLoadedLanguages: boolean = false;
   private _loadingLanguages: boolean = false;
   private _previousRegion?: string;
+  private _initialized: boolean = false;
 
   constructor(host: LanguagesControllerHost) {
     this.host = host;
@@ -32,12 +30,18 @@ export class LanguagesController implements ReactiveController {
   }
 
   initialize(): void {
+    this._initialized = true;
     if (this.host.languages === undefined) {
       this._loadLanguages();
     }
   }
 
   hostUpdate(): void {
+    // Only react to updates after initialization
+    if (!this._initialized) {
+      return;
+    }
+
     // When region changes, reload languages if they were auto-loaded
     if (
       (this._previousRegion !== this.host.region &&
@@ -67,7 +71,7 @@ export class LanguagesController implements ReactiveController {
 
       const previousLanguage = this.host.dictationConfig?.primaryLanguage;
       const selectedLanguage =
-        (previousLanguage && languages.includes(previousLanguage))
+        previousLanguage && languages.includes(previousLanguage)
           ? previousLanguage
           : defaultLanguage;
 
@@ -80,6 +84,8 @@ export class LanguagesController implements ReactiveController {
       this.host.dispatchEvent(
         languagesChangedEvent(languages, selectedLanguage),
       );
+    } catch (error) {
+      this.host.dispatchEvent(errorEvent(error));
     } finally {
       this._loadingLanguages = false;
     }

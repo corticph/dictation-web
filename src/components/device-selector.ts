@@ -6,12 +6,7 @@ import {
   selectedDeviceContext,
 } from "../contexts/dictation-context.js";
 import SelectStyles from "../styles/select.js";
-import { getAudioDevices } from "../utils/devices.js";
-import {
-  errorEvent,
-  readyEvent,
-  recordingDevicesChangedEvent,
-} from "../utils/events.js";
+import { recordingDevicesChangedEvent } from "../utils/events.js";
 
 @customElement("dictation-device-selector")
 export class DictationDeviceSelector extends LitElement {
@@ -26,63 +21,7 @@ export class DictationDeviceSelector extends LitElement {
   @property({ type: Boolean })
   disabled: boolean = false;
 
-  /**
-   * Internal cache of loaded devices to check if devices were auto-loaded or provided via property
-   * @private
-   */
-  private _loadedDevices: MediaDeviceInfo[] = [];
-
-  private _devicesAutoLoaded(): boolean {
-    return this._loadedDevices === this._devices;
-  }
-
   static styles = SelectStyles;
-
-  async connectedCallback(): Promise<void> {
-    super.connectedCallback();
-
-    if (!this._devices) {
-      await this._loadDevices();
-
-      navigator.mediaDevices.addEventListener(
-        "devicechange",
-        this._handleDeviceChange,
-      );
-    }
-
-    this.dispatchEvent(readyEvent());
-  }
-
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-
-    navigator.mediaDevices.removeEventListener(
-      "devicechange",
-      this._handleDeviceChange,
-    );
-  }
-
-  private async _loadDevices(): Promise<void> {
-    try {
-      const { devices, defaultDevice } = await getAudioDevices();
-      this._loadedDevices = devices;
-
-      // Use selected device if it still exists, otherwise fall back to default
-      const selectedDevice =
-        devices.find((d) => d.deviceId === this._selectedDevice?.deviceId) ??
-        defaultDevice;
-
-      this.dispatchEvent(recordingDevicesChangedEvent(devices, selectedDevice));
-    } catch (error) {
-      this.dispatchEvent(errorEvent(error));
-    }
-  }
-
-  private _handleDeviceChange = async () => {
-    if (this._devicesAutoLoaded()) {
-      await this._loadDevices();
-    }
-  };
 
   private _handleSelectDevice(e: Event): void {
     const deviceId = (e.target as HTMLSelectElement).value;

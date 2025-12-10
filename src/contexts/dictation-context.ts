@@ -2,6 +2,7 @@ import type { Corti } from "@corti/sdk";
 import { type ContextEvent, createContext, provide } from "@lit/context";
 import { type CSSResultGroup, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { DevicesController } from "../controllers/devices-controller.js";
 import { LanguagesController } from "../controllers/languages-controller.js";
 import ComponentStyles from "../styles/component-styles.js";
 import type { ProxyOptions, RecordingState } from "../types.js";
@@ -108,6 +109,7 @@ export class DictationRoot extends LitElement {
   dictationConfig?: Corti.TranscribeConfig;
 
   private _languagesController = new LanguagesController(this);
+  private _devicesController = new DevicesController(this);
 
   @provide({ context: languagesContext })
   @state()
@@ -131,8 +133,22 @@ export class DictationRoot extends LitElement {
   }
 
   @provide({ context: devicesContext })
+  @state()
+  _devices?: MediaDeviceInfo[];
+
   @property({ attribute: false, type: Array })
-  devices?: MediaDeviceInfo[];
+  set devices(value: MediaDeviceInfo[] | undefined) {
+    this._devices = value;
+
+    // Clear auto-loaded flag when devices are set via property
+    if (value !== undefined) {
+      this._devicesController.clearAutoLoadedFlag();
+    }
+  }
+
+  get devices(): MediaDeviceInfo[] | undefined {
+    return this._devices;
+  }
 
   @provide({ context: selectedDeviceContext })
   @property({ attribute: false, type: Object })
@@ -252,7 +268,6 @@ export class DictationRoot extends LitElement {
   private _handleDeviceChanged = (e: Event) => {
     const event = e as CustomEvent;
 
-    this.devices = event.detail.devices;
     this.selectedDevice = event.detail.selectedDevice;
   };
 
@@ -265,6 +280,8 @@ export class DictationRoot extends LitElement {
   private _handleContextRequest = (e: ContextEvent<any>) => {
     if (e.context === languagesContext) {
       this._languagesController.initialize();
+    } else if (e.context === devicesContext) {
+      this._devicesController.initialize();
     }
   };
 
