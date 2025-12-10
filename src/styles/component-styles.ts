@@ -1,6 +1,10 @@
 import { css } from "lit";
 
 const ComponentStyles = css`
+  :host {
+    font-family: var(--component-font-family, -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, Cantarell, Ubuntu, roboto, noto, helvetica, arial, sans-serif);
+  }
+
   .wrapper {
     background-color: var(--card-background, light-dark(#fff, #333));
     border: 1px solid var(--card-border-color, light-dark(#ddd, #555));

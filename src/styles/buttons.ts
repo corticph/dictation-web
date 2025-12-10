@@ -1,4 +1,4 @@
-import { css } from 'lit';
+import { css } from "lit";
 
 const ButtonStyles = css`
   /* Default (plain) button styling */
@@ -15,7 +15,6 @@ const ButtonStyles = css`
     align-items: center;
     justify-content: center;
     transition: background 0.3s ease;
-    font-family: var(--component-font-family, -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, Cantarell, Ubuntu, roboto, noto, helvetica, arial, sans-serif);
   }
 
   button:hover {
