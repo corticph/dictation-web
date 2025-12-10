@@ -1,6 +1,10 @@
 export default {
   stories: ['../stories/**/*.stories.ts'],
-  addons: ['@storybook/addon-links', '@storybook/addon-a11y'],
+  addons: [
+    '@storybook/addon-docs',
+    '@storybook/addon-links',
+    '@storybook/addon-a11y'
+  ],
   framework:  '@storybook/web-components-vite',
 
   wdsFinal: async (config) => {

@@ -67,6 +67,7 @@
     "@custom-elements-manifest/analyzer": "^0.10.3",
     "@open-wc/testing": "^4.0.0",
     "@storybook/addon-a11y": "10.1.5",
+    "@storybook/addon-docs": "^10.1.5",
     "@storybook/addon-links": "10.1.5",
     "@storybook/web-components": "10.1.5",
     "@storybook/web-components-vite": "^10.1.5",
