@@ -9,36 +9,41 @@ import { commaSeparatedConverter } from "../utils/converters.js";
 import { errorEvent } from "../utils/events.js";
 import { decodeToken } from "../utils/token.js";
 
-export const regionContext = createContext<string | undefined>("region");
+export const regionContext = createContext<string | undefined>(
+  Symbol("region"),
+);
 export const tenantNameContext = createContext<string | undefined>(
-  "tenantName",
+  Symbol("tenantName"),
 );
 export const languagesContext = createContext<string[] | undefined>(
-  "languages",
+  Symbol("languages"),
 );
 export const devicesContext = createContext<MediaDeviceInfo[] | undefined>(
-  "devices",
+  Symbol("devices"),
 );
 export const selectedDeviceContext = createContext<MediaDeviceInfo | undefined>(
-  "selectedDevice",
+  Symbol("selectedDevice"),
 );
-export const recordingStateContext =
-  createContext<RecordingState>("recordingState");
+export const recordingStateContext = createContext<RecordingState>(
+  Symbol("recordingState"),
+);
 export const accessTokenContext = createContext<string | undefined>(
-  "accessToken",
+  Symbol("accessToken"),
 );
 export const dictationConfigContext = createContext<
   Corti.TranscribeConfig | undefined
->("dictationConfig");
+>(Symbol("dictationConfig"));
 export const authConfigContext = createContext<Corti.BearerOptions | undefined>(
-  "authConfig",
+  Symbol("authConfig"),
 );
-export const socketUrlContext = createContext<string | undefined>("socketUrl");
+export const socketUrlContext = createContext<string | undefined>(
+  Symbol("socketUrl"),
+);
 export const socketProxyContext = createContext<ProxyOptions | undefined>(
-  "socketProxy",
+  Symbol("socketProxy"),
 );
 export const debugDisplayAudioContext = createContext<boolean | undefined>(
-  "debugDisplayAudio",
+  Symbol("debugDisplayAudio"),
 );
 
 @customElement("dictation-context-provider")
