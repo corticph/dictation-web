@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/web-components";
+import type { Meta, StoryObj } from "@storybook/web-components-vite";
 import { html, nothing } from "lit";
 import { action } from "storybook/actions";
 import type { DeviceSelector } from "../src/components/device-selector.js";
@@ -12,6 +12,9 @@ export type DeviceSelectorStory = DeviceSelector &
   Pick<DictationContext, "devices"> & { selectedDevice?: string };
 
 const meta = {
+  args: {
+    disabled: false,
+  },
   argTypes: {
     devices: {
       control: "object",
@@ -37,7 +40,7 @@ const meta = {
           @recording-devices-changed=${action("recording-devices-changed")}
           @ready=${action("ready")}
           @error=${action("error")}
-        ></device-selector>
+        />
       </dictation-context-provider>
     `;
   },
@@ -45,11 +48,7 @@ const meta = {
 } satisfies Meta<DeviceSelectorStory>;
 export default meta;
 
-export const Default = {
-  args: {
-    disabled: false,
-  },
-} as StoryObj<DeviceSelectorStory>;
+export const Default = {} as StoryObj<DeviceSelectorStory>;
 
 export const Disabled = {
   args: {

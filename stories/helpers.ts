@@ -1,3 +1,8 @@
+import {
+  LANGUAGES_SUPPORTED_EU,
+  LANGUAGES_SUPPORTED_US,
+} from "../src/constants";
+
 export function disableControls(controls: string[]) {
   const argTypes: Record<string, unknown> = {};
   controls.forEach((control) => {
@@ -29,3 +34,7 @@ export const mockDevices: MediaDeviceInfo[] = [
     toJSON: () => ({}),
   },
 ];
+
+export const languages = Array.from(
+  new Set([...LANGUAGES_SUPPORTED_EU, ...LANGUAGES_SUPPORTED_US]),
+);

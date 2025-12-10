@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/web-components";
+import type { Meta, StoryObj } from "@storybook/web-components-vite";
 import { html } from "lit";
 import "../src/components/audio-visualiser.js";
 
@@ -6,6 +6,10 @@ import type { AudioVisualiser } from "../src/components/audio-visualiser.js";
 import { disableControls } from "./helpers.js";
 
 const meta = {
+  args: {
+    active: true,
+    level: 0.5,
+  },
   argTypes: {
     active: {
       control: "boolean",
@@ -20,7 +24,7 @@ const meta = {
   render: ({ level = 0, active = true }: AudioVisualiserArgTypes) => {
     return html`
     <div style="height: 100px;">
-      <audio-visualiser level=${level} ?active=${active}></audio-visualiser>
+      <audio-visualiser level=${level} ?active=${active}/>
     </div>
   `;
   },
@@ -34,24 +38,17 @@ interface AudioVisualiserArgTypes {
   active?: boolean;
 }
 
-export const Default = {
-  args: {
-    active: true,
-    level: 0.5,
-  },
-} as StoryObj<AudioVisualiser>;
+export const Default = {} as StoryObj<AudioVisualiser>;
 
 export const Inactive = {
   args: {
     active: false,
-    level: 0.5,
   },
   argTypes: disableControls(["active"]),
 } as StoryObj<AudioVisualiser>;
 
 export const Low = {
   args: {
-    active: true,
     level: 0.2,
   },
   argTypes: disableControls(["active"]),
@@ -59,7 +56,6 @@ export const Low = {
 
 export const Medium = {
   args: {
-    active: true,
     level: 0.5,
   },
   argTypes: disableControls(["active"]),
@@ -67,7 +63,6 @@ export const Medium = {
 
 export const High = {
   args: {
-    active: true,
     level: 0.8,
   },
   argTypes: disableControls(["active"]),
@@ -75,7 +70,6 @@ export const High = {
 
 export const Full = {
   args: {
-    active: true,
     level: 1,
   },
   argTypes: disableControls(["active"]),
@@ -83,7 +77,6 @@ export const Full = {
 
 export const Silent = {
   args: {
-    active: true,
     level: 0,
   },
   argTypes: disableControls(["active"]),

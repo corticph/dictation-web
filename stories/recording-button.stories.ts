@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/web-components";
+import type { Meta, StoryObj } from "@storybook/web-components-vite";
 import { html } from "lit";
 import { action } from "storybook/actions";
 import type { RecordingButton } from "../src/components/recording-button.js";
@@ -12,6 +12,10 @@ export type RecordingButtonStory = RecordingButton &
   Pick<DictationContext, "recordingState">;
 
 const meta = {
+  args: {
+    preventFocus: true,
+    recordingState: "stopped",
+  },
   argTypes: {
     preventFocus: {
       control: "boolean",
@@ -32,7 +36,7 @@ const meta = {
         @recording-state-changed=${action("recording-state-changed")}
         @network-activity=${action("network-activity")}
         @error=${action("error")}
-      ></recording-button>
+      />
     </dictation-context-provider>
   `;
   },
@@ -41,17 +45,9 @@ const meta = {
 
 export default meta;
 
-export const Default = {
-  args: {
-    preventFocus: true,
-  },
-} as StoryObj<RecordingButtonStory>;
+export const Default = {} as StoryObj<RecordingButtonStory>;
 
 export const Stopped = {
-  args: {
-    preventFocus: true,
-    recordingState: "stopped",
-  },
   argTypes: disableControls(["recordingState"]),
 } as StoryObj<RecordingButtonStory>;
 
@@ -83,4 +79,5 @@ export const PreventFocusDisabled = {
   args: {
     preventFocus: false,
   },
+  argTypes: disableControls(["preventFocus"]),
 } as StoryObj<RecordingButtonStory>;

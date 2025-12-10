@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/web-components";
+import type { Meta, StoryObj } from "@storybook/web-components-vite";
 import { html, nothing } from "lit";
 import { action } from "storybook/actions";
 import type { SettingsMenu } from "../src/components/settings-menu.js";
@@ -10,7 +10,7 @@ import DeviceSelectorStoryMeta, {
   type DeviceSelectorStory,
   WithCustomDevices as WithCustomDevicesDeviceSelectorStory,
 } from "./device-selector.stories.js";
-import { disableControls, mockDevices } from "./helpers.js";
+import { disableControls, languages, mockDevices } from "./helpers.js";
 import LangaugeSelectorStoryMeta, {
   type LanguageSelectorStory,
 } from "./language-selector.stories.js";
@@ -21,6 +21,12 @@ type SettingsMenuStory = SettingsMenu &
   Pick<DictationContext, "recordingState">;
 
 const meta = {
+  args: {
+    disabled: false,
+    languages,
+    recordingState: "stopped",
+    settingsEnabled: ["device", "language"],
+  },
   argTypes: {
     ...DeviceSelectorStoryMeta.argTypes,
     ...LangaugeSelectorStoryMeta.argTypes,
@@ -48,28 +54,23 @@ const meta = {
     settingsEnabled,
     recordingState,
   }) => {
-    const devicesValue = devices ?? nothing;
     const selectedDeviceValue = selectedDevice
       ? mockDevices.find((device) => device.deviceId === selectedDevice)
       : nothing;
 
-    const languagesValue = languages?.length ? languages.join(",") : nothing;
-    const settingsEnabledValue =
-      settingsEnabled === undefined ? nothing : settingsEnabled.join(",");
-
     return html`
       <dictation-context-provider
-        .devices=${devicesValue}
+        .devices=${devices}
         .selectedDevice=${selectedDeviceValue}
-        languages=${languagesValue}
+        languages=${languages}
         .recordingState=${recordingState}>
         <settings-menu
-          settingsEnabled=${settingsEnabledValue}
+          settingsEnabled=${settingsEnabled}
           @languages-changed=${action("languages-changed")}
           @recording-devices-changed=${action("recording-devices-changed")}
           @ready=${action("ready")}
           @error=${action("error")}
-        ></settings-menu>
+        />
       </dictation-context-provider>
   `;
   },
@@ -78,18 +79,11 @@ const meta = {
 
 export default meta;
 
-export const Default = {
-  args: {
-    disabled: false,
-    recordingState: "stopped",
-    settingsEnabled: ["device", "language"],
-  },
-} as StoryObj<SettingsMenuStory>;
+export const Default = {} as StoryObj<SettingsMenuStory>;
 
 export const Recording = {
   args: {
     recordingState: "recording",
-    settingsEnabled: ["device", "language"],
   },
 } as StoryObj<SettingsMenuStory>;
 
@@ -117,7 +111,6 @@ export const NoSettings = {
 export const WithCustomLanguages = {
   args: {
     languages: ["en", "es", "fr", "de", "it"],
-    settingsEnabled: ["language", "device"],
   },
   argTypes: disableControls(["languages"]),
 } as StoryObj<SettingsMenuStory>;
@@ -125,7 +118,6 @@ export const WithCustomLanguages = {
 export const WithCustomDevices = {
   args: {
     devices: mockDevices,
-    settingsEnabled: ["device", "language"],
   },
   argTypes: WithCustomDevicesDeviceSelectorStory.argTypes,
 } as StoryObj<SettingsMenuStory>;

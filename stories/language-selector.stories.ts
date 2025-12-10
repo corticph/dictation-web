@@ -1,24 +1,22 @@
-import type { Meta, StoryObj } from "@storybook/web-components";
+import type { Meta, StoryObj } from "@storybook/web-components-vite";
 import { html, nothing } from "lit";
 import { action } from "storybook/actions";
 import type { LanguageSelector } from "../src/components/language-selector.js";
 
 import "../src/components/language-selector.js";
 import "../src/contexts/dictation-context.js";
-import {
-  LANGUAGES_SUPPORTED_EU,
-  LANGUAGES_SUPPORTED_US,
-} from "../src/constants.js";
-import type { DictationContext } from "../src/contexts/dictation-context.js";
 
-const languages = Array.from(
-  new Set([...LANGUAGES_SUPPORTED_EU, ...LANGUAGES_SUPPORTED_US]),
-);
+import type { DictationContext } from "../src/contexts/dictation-context.js";
+import { languages } from "./helpers.js";
 
 export type LanguageSelectorStory = LanguageSelector &
   Pick<DictationContext, "languages">;
 
 const meta = {
+  args: {
+    disabled: false,
+    languages,
+  },
   argTypes: {
     disabled: {
       control: "boolean",
@@ -32,9 +30,8 @@ const meta = {
   component: "language-selector",
 
   render: ({ languages, disabled }) => {
-    const languagesValue = languages?.length ? languages.join(",") : nothing;
     return html`
-      <dictation-context-provider languages="${languagesValue}" ?noWrapper=${true}>
+      <dictation-context-provider languages="${languages}" ?noWrapper=${true}>
         <language-selector
           ?disabled=${disabled}
           @languages-changed=${action("languages-changed")}
@@ -48,11 +45,7 @@ const meta = {
 
 export default meta;
 
-export const Default = {
-  args: {
-    disabled: false,
-  },
-} as StoryObj<LanguageSelectorStory>;
+export const Default = {} as StoryObj<LanguageSelectorStory>;
 
 export const Disabled = {
   args: {
