@@ -6,8 +6,8 @@ import { range } from "lit/directives/range.js";
 import AudioVisualiserStyles from "../styles/audio-visualiser.js";
 import { normalizeToRange } from "../utils/validation.js";
 
-@customElement("audio-visualiser")
-export class AudioVisualiser extends LitElement {
+@customElement("dictation-audio-visualiser")
+export class DictationAudioVisualiser extends LitElement {
   @property({ type: Number })
   level: number = 0;
 
@@ -50,6 +50,6 @@ export class AudioVisualiser extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "audio-visualiser": AudioVisualiser;
+    "dictation-audio-visualiser": DictationAudioVisualiser;
   }
 }

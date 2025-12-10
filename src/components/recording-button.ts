@@ -37,8 +37,8 @@ import {
 import "./audio-visualiser.js";
 import "../icons/icons.js";
 
-@customElement("recording-button")
-export class RecordingButton extends LitElement {
+@customElement("dictation-recording-button")
+export class DictationRecordingButton extends LitElement {
   @consume({ context: recordingStateContext, subscribe: true })
   @state()
   private _recordingState: RecordingState = "stopped";
@@ -227,12 +227,12 @@ export class RecordingButton extends LitElement {
       >
         ${
           isLoading
-            ? html`<icon-loading-spinner/>`
+            ? html`<icon-loading-spinner />`
             : isRecording
-              ? html`<icon-recording/>`
-              : html`<icon-mic-on/>`
+              ? html`<icon-recording />`
+              : html`<icon-mic-on />`
         }
-        <audio-visualiser
+        <dictation-audio-visualiser
           .level=${this._mediaController.audioLevel}
           ?active=${isRecording}
         />
@@ -243,6 +243,6 @@ export class RecordingButton extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "recording-button": RecordingButton;
+    "dictation-recording-button": DictationRecordingButton;
   }
 }

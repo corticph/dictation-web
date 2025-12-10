@@ -1,16 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/web-components-vite";
 import { html, nothing } from "lit";
 import { action } from "storybook/actions";
-import type { LanguageSelector } from "../src/components/language-selector.js";
+import type { DictationLanguageSelector } from "../src/components/language-selector.js";
 
 import "../src/components/language-selector.js";
 import "../src/contexts/dictation-context.js";
 
-import type { DictationContext } from "../src/contexts/dictation-context.js";
+import type { DictationRoot } from "../src/contexts/dictation-context.js";
 import { languages } from "./helpers.js";
 
-export type LanguageSelectorStory = LanguageSelector &
-  Pick<DictationContext, "languages">;
+export type LanguageSelectorStory = DictationLanguageSelector &
+  Pick<DictationRoot, "languages">;
 
 const meta = {
   args: {
@@ -27,17 +27,17 @@ const meta = {
       options: languages,
     },
   },
-  component: "language-selector",
+  component: "dictation-language-selector",
 
   render: ({ languages, disabled }) => {
     return html`
-      <dictation-context-provider languages="${languages}" ?noWrapper=${true}>
-        <language-selector
+      <dictation-root languages="${languages}" ?noWrapper=${true}>
+        <dictation-language-selector
           ?disabled=${disabled}
           @languages-changed=${action("languages-changed")}
           @error=${action("error")}
         />
-      </dictation-context-provider>
+      </dictation-root>
     `;
   },
   title: "LanguageSelector",

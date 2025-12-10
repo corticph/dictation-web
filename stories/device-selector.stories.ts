@@ -1,15 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/web-components-vite";
 import { html, nothing } from "lit";
 import { action } from "storybook/actions";
-import type { DeviceSelector } from "../src/components/device-selector.js";
+import type { DictationDeviceSelector } from "../src/components/device-selector.js";
 
 import "../src/components/device-selector.js";
 import "../src/contexts/dictation-context.js";
-import type { DictationContext } from "../src/contexts/dictation-context.js";
+import type { DictationRoot } from "../src/contexts/dictation-context.js";
 import { disableControls, mockDevices } from "./helpers.js";
 
-export type DeviceSelectorStory = DeviceSelector &
-  Pick<DictationContext, "devices"> & { selectedDevice?: string };
+export type DeviceSelectorStory = DictationDeviceSelector &
+  Pick<DictationRoot, "devices"> & { selectedDevice?: string };
 
 const meta = {
   args: {
@@ -26,7 +26,7 @@ const meta = {
       description: "Whether the device selector is disabled",
     },
   },
-  component: "device-selector",
+  component: "dictation-device-selector",
   render: ({ devices, disabled, selectedDevice }) => {
     const devicesValue = devices ?? nothing;
     const selectedDeviceValue = selectedDevice
@@ -34,14 +34,14 @@ const meta = {
       : nothing;
 
     return html`
-      <dictation-context-provider .devices=${devicesValue} .selectedDevice=${selectedDeviceValue} ?noWrapper=${true}>
-        <device-selector
+      <dictation-root .devices=${devicesValue} .selectedDevice=${selectedDeviceValue} ?noWrapper=${true}>
+        <dictation-device-selector
           ?disabled=${disabled}
           @recording-devices-changed=${action("recording-devices-changed")}
           @ready=${action("ready")}
           @error=${action("error")}
         />
-      </dictation-context-provider>
+      </dictation-root>
     `;
   },
   title: "DeviceSelector",

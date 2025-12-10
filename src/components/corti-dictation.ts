@@ -4,14 +4,14 @@ import { customElement, property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { createRef, type Ref, ref } from "lit/directives/ref.js";
 import { DEFAULT_DICTATION_CONFIG } from "../constants.js";
-import type { DictationContext } from "../contexts/dictation-context.js";
+import type { DictationRoot } from "../contexts/dictation-context.js";
 import type {
   ConfigurableSettings,
   ProxyOptions,
   RecordingState,
 } from "../types.js";
 import { commaSeparatedConverter } from "../utils/converters.js";
-import type { RecordingButton } from "./recording-button.js";
+import type { DictationRecordingButton } from "./recording-button.js";
 
 import "../contexts/dictation-context.js";
 import "./recording-button.js";
@@ -28,8 +28,8 @@ export class CortiDictation extends LitElement {
   // Private refs
   // ─────────────────────────────────────────────────────────────────────────────
 
-  private recordingButtonRef: Ref<RecordingButton> = createRef();
-  private contextProviderRef: Ref<DictationContext> = createRef();
+  private recordingButtonRef: Ref<DictationRecordingButton> = createRef();
+  private contextProviderRef: Ref<DictationRoot> = createRef();
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Properties
@@ -235,7 +235,7 @@ export class CortiDictation extends LitElement {
       !this.socketProxy;
 
     return html`
-      <dictation-context-provider
+      <dictation-root
         ${ref(this.contextProviderRef)}
         class=${classMap({ hidden: isHidden })}
         .accessToken=${this.accessToken}
@@ -248,12 +248,12 @@ export class CortiDictation extends LitElement {
         .selectedDevice=${this._selectedDevice}
         .debug_displayAudio=${this.debug_displayAudio}
       >
-        <recording-button
+        <dictation-recording-button
           ${ref(this.recordingButtonRef)}
           ?allowButtonFocus=${this.allowButtonFocus}
-        ></recording-button>
-        <settings-menu .settingsEnabled=${this.settingsEnabled}></settings-menu>
-      </dictation-context-provider>
+        ></dictation-recording-button>
+        <dictation-settings-menu .settingsEnabled=${this.settingsEnabled}></dictation-settings-menu>
+      </dictation-root>
     `;
   }
 }

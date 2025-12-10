@@ -1,40 +1,43 @@
 import { CortiDictation } from "./components/corti-dictation.js";
-import { DeviceSelector } from "./components/device-selector.js";
-import { LanguageSelector } from "./components/language-selector.js";
-import { RecordingButton } from "./components/recording-button.js";
-import { SettingsMenu } from "./components/settings-menu.js";
-import { DictationContext } from "./contexts/dictation-context.js";
+import { DictationDeviceSelector } from "./components/device-selector.js";
+import { DictationLanguageSelector } from "./components/language-selector.js";
+import { DictationRecordingButton } from "./components/recording-button.js";
+import { DictationSettingsMenu } from "./components/settings-menu.js";
+import { DictationRoot } from "./contexts/dictation-context.js";
 
 if (!customElements.get("corti-dictation")) {
   customElements.define("corti-dictation", CortiDictation);
 }
 
-if (!customElements.get("recording-button")) {
-  customElements.define("recording-button", RecordingButton);
+if (!customElements.get("dictation-recording-button")) {
+  customElements.define("dictation-recording-button", DictationRecordingButton);
 }
 
-if (!customElements.get("device-selector")) {
-  customElements.define("device-selector", DeviceSelector);
+if (!customElements.get("dictation-device-selector")) {
+  customElements.define("dictation-device-selector", DictationDeviceSelector);
 }
 
-if (!customElements.get("language-selector")) {
-  customElements.define("language-selector", LanguageSelector);
+if (!customElements.get("dictation-language-selector")) {
+  customElements.define(
+    "dictation-language-selector",
+    DictationLanguageSelector,
+  );
 }
 
-if (!customElements.get("settings-menu")) {
-  customElements.define("settings-menu", SettingsMenu);
+if (!customElements.get("dictation-settings-menu")) {
+  customElements.define("dictation-settings-menu", DictationSettingsMenu);
 }
 
-if (!customElements.get("dictation-context-provider")) {
-  customElements.define("dictation-context-provider", DictationContext);
+if (!customElements.get("dictation-root")) {
+  customElements.define("dictation-root", DictationRoot);
 }
 
 export { CortiDictation } from "./components/corti-dictation.js";
-export { DeviceSelector } from "./components/device-selector.js";
-export { LanguageSelector } from "./components/language-selector.js";
-export { RecordingButton } from "./components/recording-button.js";
-export { SettingsMenu } from "./components/settings-menu.js";
-export { DictationContext } from "./contexts/dictation-context.js";
+export { DictationDeviceSelector } from "./components/device-selector.js";
+export { DictationLanguageSelector } from "./components/language-selector.js";
+export { DictationRecordingButton } from "./components/recording-button.js";
+export { DictationSettingsMenu } from "./components/settings-menu.js";
+export { DictationRoot } from "./contexts/dictation-context.js";
 
 export type { ConfigurableSettings, RecordingState } from "./types.js";
 export type {

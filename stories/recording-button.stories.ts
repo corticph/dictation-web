@@ -1,15 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/web-components-vite";
 import { html } from "lit";
 import { action } from "storybook/actions";
-import type { RecordingButton } from "../src/components/recording-button.js";
+import type { DictationRecordingButton } from "../src/components/recording-button.js";
 
 import "../src/components/recording-button.js";
 import "../src/contexts/dictation-context.js";
-import type { DictationContext } from "../src/contexts/dictation-context.js";
+import type { DictationRoot } from "../src/contexts/dictation-context.js";
 import { disableControls } from "./helpers.js";
 
-export type RecordingButtonStory = RecordingButton &
-  Pick<DictationContext, "recordingState">;
+export type RecordingButtonStory = DictationRecordingButton &
+  Pick<DictationRoot, "recordingState">;
 
 const meta = {
   args: {
@@ -27,17 +27,17 @@ const meta = {
       options: ["stopped", "initializing", "recording", "stopping"],
     },
   },
-  component: "recording-button",
+  component: "dictation-recording-button",
   render: ({ allowButtonFocus, recordingState }) => {
     return html`
-    <dictation-context-provider ?noWrapper=${true} .recordingState=${recordingState}>
-      <recording-button
+    <dictation-root ?noWrapper=${true} .recordingState=${recordingState}>
+      <dictation-recording-button
         ?allowButtonFocus=${allowButtonFocus}
         @recording-state-changed=${action("recording-state-changed")}
         @network-activity=${action("network-activity")}
         @error=${action("error")}
       />
-    </dictation-context-provider>
+    </dictation-root>
   `;
   },
   title: "RecordingButton",

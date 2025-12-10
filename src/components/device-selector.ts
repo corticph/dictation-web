@@ -13,8 +13,8 @@ import {
   recordingDevicesChangedEvent,
 } from "../utils/events.js";
 
-@customElement("device-selector")
-export class DeviceSelector extends LitElement {
+@customElement("dictation-device-selector")
+export class DictationDeviceSelector extends LitElement {
   @consume({ context: devicesContext, subscribe: true })
   @state()
   private _devices?: MediaDeviceInfo[];
@@ -72,9 +72,7 @@ export class DeviceSelector extends LitElement {
         devices.find((d) => d.deviceId === this._selectedDevice?.deviceId) ??
         defaultDevice;
 
-      this.dispatchEvent(
-        recordingDevicesChangedEvent(devices, selectedDevice),
-      );
+      this.dispatchEvent(recordingDevicesChangedEvent(devices, selectedDevice));
     } catch (error) {
       this.dispatchEvent(errorEvent(error));
     }
@@ -129,6 +127,6 @@ export class DeviceSelector extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "device-selector": DeviceSelector;
+    "dictation-device-selector": DictationDeviceSelector;
   }
 }

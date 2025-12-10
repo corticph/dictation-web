@@ -46,8 +46,8 @@ export const debugDisplayAudioContext = createContext<boolean | undefined>(
   Symbol("debugDisplayAudio"),
 );
 
-@customElement("dictation-context-provider")
-export class DictationContext extends LitElement {
+@customElement("dictation-root")
+export class DictationRoot extends LitElement {
   // ─────────────────────────────────────────────────────────────────────────────
   // Context state
   // ─────────────────────────────────────────────────────────────────────────────
@@ -262,6 +262,6 @@ export class DictationContext extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "dictation-context-provider": DictationContext;
+    "dictation-root": DictationRoot;
   }
 }

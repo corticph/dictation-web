@@ -12,8 +12,8 @@ import "./device-selector.js";
 import "./language-selector.js";
 import "../icons/icons.js";
 
-@customElement("settings-menu")
-export class SettingsMenu extends LitElement {
+@customElement("dictation-settings-menu")
+export class DictationSettingsMenu extends LitElement {
   @consume({ context: recordingStateContext, subscribe: true })
   @state()
   _recordingState: RecordingState = "stopped";
@@ -57,14 +57,14 @@ export class SettingsMenu extends LitElement {
             }
             ${
               showDeviceSelector
-                ? html`<device-selector
+                ? html`<dictation-device-selector
                   ?disabled=${isRecording}
                 />`
                 : nothing
             }
             ${
               showLanguageSelector
-                ? html`<language-selector
+                ? html`<dictation-language-selector
                   ?disabled=${isRecording}
                 />`
                 : nothing
@@ -78,6 +78,6 @@ export class SettingsMenu extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "settings-menu": SettingsMenu;
+    "dictation-settings-menu": DictationSettingsMenu;
   }
 }

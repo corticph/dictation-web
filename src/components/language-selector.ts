@@ -14,8 +14,8 @@ import {
 } from "../utils/events.js";
 import { getLanguageName, getLanguagesByRegion } from "../utils/languages.js";
 
-@customElement("language-selector")
-export class LanguageSelector extends LitElement {
+@customElement("dictation-language-selector")
+export class DictationLanguageSelector extends LitElement {
   @consume({ context: languagesContext, subscribe: true })
   @state()
   private _languages?: Corti.TranscribeSupportedLanguage[];
@@ -113,6 +113,6 @@ export class LanguageSelector extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "language-selector": LanguageSelector;
+    "dictation-language-selector": DictationLanguageSelector;
   }
 }

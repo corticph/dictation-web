@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/web-components-vite";
 import { html, nothing } from "lit";
 import { action } from "storybook/actions";
-import type { SettingsMenu } from "../src/components/settings-menu.js";
+import type { DictationSettingsMenu } from "../src/components/settings-menu.js";
 
 import "../src/components/settings-menu.js";
 import "../src/contexts/dictation-context.js";
-import type { DictationContext } from "../src/contexts/dictation-context.js";
+import type { DictationRoot } from "../src/contexts/dictation-context.js";
 import DeviceSelectorStoryMeta, {
   type DeviceSelectorStory,
   WithCustomDevices as WithCustomDevicesDeviceSelectorStory,
@@ -15,10 +15,10 @@ import LangaugeSelectorStoryMeta, {
   type LanguageSelectorStory,
 } from "./language-selector.stories.js";
 
-type SettingsMenuStory = SettingsMenu &
+type SettingsMenuStory = DictationSettingsMenu &
   LanguageSelectorStory &
   DeviceSelectorStory &
-  Pick<DictationContext, "recordingState">;
+  Pick<DictationRoot, "recordingState">;
 
 const meta = {
   args: {
@@ -46,7 +46,7 @@ const meta = {
       options: ["device", "language"],
     },
   },
-  component: "settings-menu",
+  component: "dictation-settings-menu",
   render: ({
     devices,
     languages,
@@ -59,19 +59,20 @@ const meta = {
       : nothing;
 
     return html`
-      <dictation-context-provider
+      <dictation-root
         .devices=${devices}
         .selectedDevice=${selectedDeviceValue}
         languages=${languages}
-        .recordingState=${recordingState}>
-        <settings-menu
+        .recordingState=${recordingState}
+      >
+        <dictation-settings-menu
           settingsEnabled=${settingsEnabled}
           @languages-changed=${action("languages-changed")}
           @recording-devices-changed=${action("recording-devices-changed")}
           @ready=${action("ready")}
           @error=${action("error")}
         />
-      </dictation-context-provider>
+      </dictation-root>
   `;
   },
   title: "SettingsMenu",
