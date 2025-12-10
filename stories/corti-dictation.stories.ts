@@ -121,6 +121,7 @@ export const WithCustomLanguages = {
   },
   argTypes: disableControls(["languagesSupported", "settingsEnabled"]),
 };
+
 export const WithCustomDevices = {
   args: {
     accessToken: "dummy_token",
