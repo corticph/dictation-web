@@ -1,5 +1,5 @@
 import type { Corti } from "@corti/sdk";
-import { css, html, LitElement } from "lit";
+import { css, html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { createRef, type Ref, ref } from "lit/directives/ref.js";
@@ -254,7 +254,13 @@ export class CortiDictation extends LitElement {
           ${ref(this.#recordingButtonRef)}
           ?allowButtonFocus=${this.allowButtonFocus}
         ></dictation-recording-button>
-        <dictation-settings-menu .settingsEnabled=${this.settingsEnabled}></dictation-settings-menu>
+        ${
+          this.settingsEnabled?.length > 0
+            ? html`<dictation-settings-menu
+                .settingsEnabled=${this.settingsEnabled}
+              ></dictation-settings-menu>`
+            : nothing
+        }
       </dictation-root>
     `;
   }
