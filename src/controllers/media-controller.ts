@@ -13,14 +13,14 @@ interface MediaControllerHost extends ReactiveControllerHost {
 export class MediaController implements ReactiveController {
   host: MediaControllerHost;
 
-  private _mediaStream: MediaStream | null = null;
-  private _audioContext: AudioContext | null = null;
-  private _analyser: AnalyserNode | null = null;
-  private _mediaRecorder: MediaRecorder | null = null;
-  private _visualiserInterval?: number;
-  private _audioLevel: number = 0;
-  private _onTrackEnded?: () => void;
-  private _onAudioLevelChange?: (level: number) => void;
+  #mediaStream: MediaStream | null = null;
+  #audioContext: AudioContext | null = null;
+  #analyser: AnalyserNode | null = null;
+  #mediaRecorder: MediaRecorder | null = null;
+  #visualiserInterval?: number;
+  #audioLevel: number = 0;
+  #onTrackEnded?: () => void;
+  #onAudioLevelChange?: (level: number) => void;
 
   constructor(host: MediaControllerHost) {
     this.host = host;
@@ -34,30 +34,30 @@ export class MediaController implements ReactiveController {
   async initialize(onTrackEnded?: () => void): Promise<void> {
     await this.cleanup();
 
-    this._onTrackEnded = onTrackEnded;
-    this._mediaStream = await getMediaStream(
+    this.#onTrackEnded = onTrackEnded;
+    this.#mediaStream = await getMediaStream(
       this.host._selectedDevice?.deviceId,
       this.host._debug_displayAudio,
     );
 
-    this._mediaStream.getTracks().forEach((track: MediaStreamTrack) => {
+    this.#mediaStream.getTracks().forEach((track: MediaStreamTrack) => {
       track.addEventListener("ended", () => {
-        if (this._onTrackEnded) {
-          this._onTrackEnded();
+        if (this.#onTrackEnded) {
+          this.#onTrackEnded();
         }
       });
     });
 
-    const { audioContext, analyser } = createAudioAnalyzer(this._mediaStream);
+    const { audioContext, analyser } = createAudioAnalyzer(this.#mediaStream);
 
-    this._audioContext = audioContext;
-    this._analyser = analyser;
+    this.#audioContext = audioContext;
+    this.#analyser = analyser;
 
-    this._mediaRecorder = new MediaRecorder(this._mediaStream);
+    this.#mediaRecorder = new MediaRecorder(this.#mediaStream);
   }
 
   getAudioLevel(): number {
-    return this._analyser ? calculateAudioLevel(this._analyser) : 0;
+    return this.#analyser ? calculateAudioLevel(this.#analyser) : 0;
   }
 
   startAudioLevelMonitoring(
@@ -65,56 +65,56 @@ export class MediaController implements ReactiveController {
   ): void {
     this.stopAudioLevelMonitoring();
 
-    this._onAudioLevelChange = onAudioLevelChange;
+    this.#onAudioLevelChange = onAudioLevelChange;
 
-    this._visualiserInterval = window.setInterval(() => {
-      this._audioLevel = this.getAudioLevel() * 3;
+    this.#visualiserInterval = window.setInterval(() => {
+      this.#audioLevel = this.getAudioLevel() * 3;
       this.host.requestUpdate();
 
-      if (this._onAudioLevelChange) {
-        this._onAudioLevelChange(this._audioLevel);
+      if (this.#onAudioLevelChange) {
+        this.#onAudioLevelChange(this.#audioLevel);
       }
     }, 150);
   }
 
   stopAudioLevelMonitoring(): void {
-    if (this._visualiserInterval) {
-      clearInterval(this._visualiserInterval);
-      this._visualiserInterval = undefined;
+    if (this.#visualiserInterval) {
+      clearInterval(this.#visualiserInterval);
+      this.#visualiserInterval = undefined;
     }
 
-    this._audioLevel = 0;
+    this.#audioLevel = 0;
     this.host.requestUpdate();
 
-    if (this._onAudioLevelChange) {
-      this._onAudioLevelChange(this._audioLevel);
+    if (this.#onAudioLevelChange) {
+      this.#onAudioLevelChange(this.#audioLevel);
     }
   }
 
   async cleanup(): Promise<void> {
     this.stopAudioLevelMonitoring();
 
-    if (this._mediaRecorder?.state === "recording") {
-      this._mediaRecorder.stop();
+    if (this.#mediaRecorder?.state === "recording") {
+      this.#mediaRecorder.stop();
     }
 
-    if (this._mediaStream) {
-      this._mediaStream.getTracks().forEach((track) => {
+    if (this.#mediaStream) {
+      this.#mediaStream.getTracks().forEach((track) => {
         track.stop();
       });
-      this._mediaStream = null;
+      this.#mediaStream = null;
     }
 
-    if (this._audioContext && this._audioContext.state !== "closed") {
-      await this._audioContext.close();
+    if (this.#audioContext && this.#audioContext.state !== "closed") {
+      await this.#audioContext.close();
     }
 
-    this._audioContext = null;
+    this.#audioContext = null;
 
-    this._analyser = null;
-    this._mediaRecorder = null;
-    this._onTrackEnded = undefined;
-    this._onAudioLevelChange = undefined;
+    this.#analyser = null;
+    this.#mediaRecorder = null;
+    this.#onTrackEnded = undefined;
+    this.#onAudioLevelChange = undefined;
   }
 
   /**
@@ -123,24 +123,24 @@ export class MediaController implements ReactiveController {
    */
   async stopRecording(): Promise<void> {
     return new Promise<void>((resolve) => {
-      if (!this._mediaRecorder || this._mediaRecorder.state !== "recording") {
+      if (!this.#mediaRecorder || this.#mediaRecorder.state !== "recording") {
         resolve();
         return;
       }
 
-      this._mediaRecorder.onstop = () => {
+      this.#mediaRecorder.onstop = () => {
         resolve();
       };
 
-      this._mediaRecorder.stop();
+      this.#mediaRecorder.stop();
     });
   }
 
   get mediaRecorder(): MediaRecorder | null {
-    return this._mediaRecorder;
+    return this.#mediaRecorder;
   }
 
   get audioLevel(): number {
-    return this._audioLevel;
+    return this.#audioLevel;
   }
 }

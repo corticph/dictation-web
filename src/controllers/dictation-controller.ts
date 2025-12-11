@@ -35,10 +35,10 @@ interface WebSocketCallbacks {
 export class DictationController implements ReactiveController {
   host: DictationControllerHost;
 
-  private _cortiClient: CortiClient | null = null;
-  private _webSocket: TranscribeSocket | null = null;
-  private _closeTimeout?: number;
-  private _onNetworkActivity?: WebSocketCallbacks["onNetworkActivity"];
+  #cortiClient: CortiClient | null = null;
+  #webSocket: TranscribeSocket | null = null;
+  #closeTimeout?: number;
+  #onNetworkActivity?: WebSocketCallbacks["onNetworkActivity"];
 
   constructor(host: DictationControllerHost) {
     this.host = host;
@@ -58,21 +58,21 @@ export class DictationController implements ReactiveController {
       throw new Error("MediaRecorder is required to connect");
     }
 
-    if (this._webSocket?.readyState === WebSocket.OPEN) {
+    if (this.#webSocket?.readyState === WebSocket.OPEN) {
       throw new Error("Already connected. Disconnect before reconnecting.");
     }
 
-    this._webSocket =
+    this.#webSocket =
       this.host._socketUrl || this.host._socketProxy
-        ? await this.connectProxy(dictationConfig)
-        : await this.connectAuth(dictationConfig);
+        ? await this.#connectProxy(dictationConfig)
+        : await this.#connectAuth(dictationConfig);
 
-    this._onNetworkActivity = callbacks.onNetworkActivity;
-    this.setupMediaRecorder(mediaRecorder);
-    this.setupWebSocketHandlers(callbacks);
+    this.#onNetworkActivity = callbacks.onNetworkActivity;
+    this.#setupMediaRecorder(mediaRecorder);
+    this.#setupWebSocketHandlers(callbacks);
   }
 
-  private async connectProxy(
+  async #connectProxy(
     dictationConfig: Corti.TranscribeConfig,
   ): Promise<TranscribeSocket> {
     const proxyOptions = this.host._socketProxy || {
@@ -89,7 +89,7 @@ export class DictationController implements ReactiveController {
     });
   }
 
-  private async connectAuth(
+  async #connectAuth(
     dictationConfig: Corti.TranscribeConfig,
   ): Promise<TranscribeSocket> {
     if (!this.host._authConfig && !this.host._accessToken) {
@@ -106,47 +106,47 @@ export class DictationController implements ReactiveController {
       }),
     };
 
-    this._cortiClient = new CortiClient({
+    this.#cortiClient = new CortiClient({
       auth,
       environment: this.host._region,
       tenantName: this.host._tenantName,
     });
 
-    return await this._cortiClient.transcribe.connect({
+    return await this.#cortiClient.transcribe.connect({
       configuration: dictationConfig,
     });
   }
 
-  private setupWebSocketHandlers(callbacks: WebSocketCallbacks): void {
-    if (!this._webSocket) {
+  #setupWebSocketHandlers(callbacks: WebSocketCallbacks): void {
+    if (!this.#webSocket) {
       throw new Error("WebSocket not initialized");
     }
 
-    this._webSocket.on("message", (message: TranscribeMessage) => {
-      this._onNetworkActivity?.("received", message);
+    this.#webSocket.on("message", (message: TranscribeMessage) => {
+      this.#onNetworkActivity?.("received", message);
 
       if (callbacks.onMessage) {
         callbacks.onMessage(message);
       }
     });
 
-    this._webSocket.on("error", (event: Error) => {
+    this.#webSocket.on("error", (event: Error) => {
       if (callbacks.onError) {
         callbacks.onError(event);
       }
     });
 
-    this._webSocket.on("close", (event: unknown) => {
+    this.#webSocket.on("close", (event: unknown) => {
       if (callbacks.onClose) {
         callbacks.onClose(event);
       }
     });
   }
 
-  private setupMediaRecorder(mediaRecorder: MediaRecorder): void {
+  #setupMediaRecorder(mediaRecorder: MediaRecorder): void {
     mediaRecorder.ondataavailable = (event) => {
-      this._webSocket?.sendAudio(event.data);
-      this._onNetworkActivity?.("sent", {
+      this.#webSocket?.sendAudio(event.data);
+      this.#onNetworkActivity?.("sent", {
         size: event.data.size,
         type: "audio",
       });
@@ -155,15 +155,15 @@ export class DictationController implements ReactiveController {
 
   async disconnect(onClose?: (event: unknown) => void): Promise<void> {
     await new Promise<void>((resolve, reject) => {
-      if (!this._webSocket || this._webSocket.readyState !== WebSocket.OPEN) {
+      if (!this.#webSocket || this.#webSocket.readyState !== WebSocket.OPEN) {
         resolve();
         return;
       }
 
-      this._webSocket.on("close", (event) => {
-        if (this._closeTimeout) {
-          clearTimeout(this._closeTimeout);
-          this._closeTimeout = undefined;
+      this.#webSocket.on("close", (event) => {
+        if (this.#closeTimeout) {
+          clearTimeout(this.#closeTimeout);
+          this.#closeTimeout = undefined;
         }
 
         if (onClose) {
@@ -173,15 +173,15 @@ export class DictationController implements ReactiveController {
         resolve();
       });
 
-      this._webSocket.sendEnd({ type: "end" });
-      this._onNetworkActivity?.("sent", { type: "end" });
+      this.#webSocket.sendEnd({ type: "end" });
+      this.#onNetworkActivity?.("sent", { type: "end" });
 
-      this._closeTimeout = window.setTimeout(() => {
+      this.#closeTimeout = window.setTimeout(() => {
         // Reject the promise before closing the web socket, so the promise rejects before close event fires
         reject(new Error("WebSocket close timeout"));
 
-        if (this._webSocket?.readyState === WebSocket.OPEN) {
-          this._webSocket.close();
+        if (this.#webSocket?.readyState === WebSocket.OPEN) {
+          this.#webSocket.close();
         }
       }, 10000);
     });
@@ -190,16 +190,16 @@ export class DictationController implements ReactiveController {
   }
 
   cleanup(): void {
-    if (this._closeTimeout) {
-      clearTimeout(this._closeTimeout);
-      this._closeTimeout = undefined;
+    if (this.#closeTimeout) {
+      clearTimeout(this.#closeTimeout);
+      this.#closeTimeout = undefined;
     }
 
-    if (this._webSocket?.readyState === WebSocket.OPEN) {
-      this._webSocket.close();
+    if (this.#webSocket?.readyState === WebSocket.OPEN) {
+      this.#webSocket.close();
     }
 
-    this._webSocket = null;
-    this._cortiClient = null;
+    this.#webSocket = null;
+    this.#cortiClient = null;
   }
 }

@@ -17,18 +17,18 @@ import { getLanguageName } from "../utils/languages.js";
 export class DictationLanguageSelector extends LitElement {
   @consume({ context: languagesContext, subscribe: true })
   @state()
-  private _languages?: Corti.TranscribeSupportedLanguage[];
+  _languages?: Corti.TranscribeSupportedLanguage[];
 
   @consume({ context: dictationConfigContext, subscribe: true })
   @state()
-  private _dictationConfig?: Corti.TranscribeConfig;
+  _dictationConfig?: Corti.TranscribeConfig;
 
   @property({ type: Boolean })
   disabled: boolean = false;
 
   static styles = SelectStyles;
 
-  private _handleSelectLanguage(e: Event): void {
+  #handleSelectLanguage(e: Event): void {
     const language = (e.target as HTMLSelectElement).value;
 
     this.dispatchEvent(languagesChangedEvent(this._languages || [], language));
@@ -46,7 +46,7 @@ export class DictationLanguageSelector extends LitElement {
         <select
           id="language-select"
           aria-labelledby="language-select-label"
-          @change=${this._handleSelectLanguage}
+          @change=${this.#handleSelectLanguage}
           ?disabled=${this.disabled || !this._languages || this._languages.length === 0}
         >
           ${this._languages?.map(

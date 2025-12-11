@@ -18,10 +18,10 @@ interface LanguagesControllerHost extends ReactiveControllerHost {
  */
 export class LanguagesController implements ReactiveController {
   host: LanguagesControllerHost;
-  private _autoLoadedLanguages: boolean = false;
-  private _loadingLanguages: boolean = false;
-  private _previousRegion?: string;
-  private _initialized: boolean = false;
+  #autoLoadedLanguages: boolean = false;
+  #loadingLanguages: boolean = false;
+  #previousRegion?: string;
+  #initialized: boolean = false;
 
   constructor(host: LanguagesControllerHost) {
     this.host = host;
@@ -29,45 +29,44 @@ export class LanguagesController implements ReactiveController {
   }
 
   initialize(): void {
-    this._initialized = true;
+    this.#initialized = true;
 
     if (this.host._languages === undefined) {
-      this._loadLanguages();
+      this.#loadLanguages();
     }
   }
 
   hostUpdate(): void {
     // Only react to updates after initialization
-    if (!this._initialized) {
+    if (!this.#initialized) {
       return;
     }
 
     // When region changes, reload languages if they were auto-loaded
     if (
-      (this._previousRegion !== this.host.region &&
-        this._autoLoadedLanguages) ||
+      (this.#previousRegion !== this.host.region &&
+        this.#autoLoadedLanguages) ||
       this.host._languages === undefined
     ) {
-      this._loadLanguages();
+      this.#loadLanguages();
     }
 
-    this._previousRegion = this.host.region;
+    this.#previousRegion = this.host.region;
   }
 
-  private async _loadLanguages(): Promise<void> {
-    console.log(`Loading languages from ${this._previousRegion}`);
-    if (this._loadingLanguages) {
+  async #loadLanguages(): Promise<void> {
+    if (this.#loadingLanguages) {
       return;
     }
 
-    this._loadingLanguages = true;
+    this.#loadingLanguages = true;
 
     try {
       const { languages, defaultLanguage } = getLanguagesByRegion(
         this.host.region,
       );
 
-      this._autoLoadedLanguages = true;
+      this.#autoLoadedLanguages = true;
       this.host._languages = languages;
 
       const previousLanguage = this.host.dictationConfig?.primaryLanguage;
@@ -88,7 +87,7 @@ export class LanguagesController implements ReactiveController {
     } catch (error) {
       this.host.dispatchEvent(errorEvent(error));
     } finally {
-      this._loadingLanguages = false;
+      this.#loadingLanguages = false;
     }
   }
 
@@ -96,6 +95,6 @@ export class LanguagesController implements ReactiveController {
    * Clear the auto-loaded flag (when languages are set externally)
    */
   clearAutoLoadedFlag(): void {
-    this._autoLoadedLanguages = false;
+    this.#autoLoadedLanguages = false;
   }
 }

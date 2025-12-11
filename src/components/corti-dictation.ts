@@ -28,8 +28,8 @@ export class CortiDictation extends LitElement {
   // Private refs
   // ─────────────────────────────────────────────────────────────────────────────
 
-  private recordingButtonRef: Ref<DictationRecordingButton> = createRef();
-  private contextProviderRef: Ref<DictationRoot> = createRef();
+  #recordingButtonRef: Ref<DictationRecordingButton> = createRef();
+  #contextProviderRef: Ref<DictationRoot> = createRef();
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Properties
@@ -75,12 +75,14 @@ export class CortiDictation extends LitElement {
 
   get languagesSupported(): Corti.TranscribeSupportedLanguage[] {
     return (
-      this.contextProviderRef.value?.languages || this._languagesSupported || []
+      this.#contextProviderRef.value?.languages ||
+      this._languagesSupported ||
+      []
     );
   }
 
   @state()
-  private _languagesSupported?: Corti.TranscribeSupportedLanguage[];
+  _languagesSupported?: Corti.TranscribeSupportedLanguage[];
 
   /**
    * Which settings should be available in the UI.
@@ -118,12 +120,12 @@ export class CortiDictation extends LitElement {
 
   get dictationConfig(): Corti.TranscribeConfig {
     return (
-      this.contextProviderRef.value?.dictationConfig || this._dictationConfig
+      this.#contextProviderRef.value?.dictationConfig || this._dictationConfig
     );
   }
 
   @state()
-  private _dictationConfig: Corti.TranscribeConfig = DEFAULT_DICTATION_CONFIG;
+  _dictationConfig: Corti.TranscribeConfig = DEFAULT_DICTATION_CONFIG;
 
   /**
    * List of available recording devices
@@ -134,11 +136,11 @@ export class CortiDictation extends LitElement {
   }
 
   get devices(): MediaDeviceInfo[] {
-    return this.contextProviderRef.value?.devices || this._devices || [];
+    return this.#contextProviderRef.value?.devices || this._devices || [];
   }
 
   @state()
-  private _devices?: MediaDeviceInfo[];
+  _devices?: MediaDeviceInfo[];
 
   /**
    * The selected device used for recording (MediaDeviceInfo).
@@ -150,18 +152,18 @@ export class CortiDictation extends LitElement {
 
   get selectedDevice(): MediaDeviceInfo | undefined {
     return (
-      this.contextProviderRef.value?.selectedDevice || this._selectedDevice
+      this.#contextProviderRef.value?.selectedDevice || this._selectedDevice
     );
   }
 
   @state()
-  private _selectedDevice?: MediaDeviceInfo;
+  _selectedDevice?: MediaDeviceInfo;
 
   /**
    * Current state of recording (stopped, recording, initializing and stopping, ).
    */
   get recordingState(): RecordingState {
-    return this.contextProviderRef.value?.recordingState || "stopped";
+    return this.#contextProviderRef.value?.recordingState || "stopped";
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -177,7 +179,7 @@ export class CortiDictation extends LitElement {
     this.accessToken = token;
 
     return (
-      this.contextProviderRef.value?.setAccessToken(token) ?? {
+      this.#contextProviderRef.value?.setAccessToken(token) ?? {
         accessToken: token,
         environment: undefined,
         tenant: undefined,
@@ -194,7 +196,7 @@ export class CortiDictation extends LitElement {
     this.authConfig = config;
 
     return (
-      this.contextProviderRef.value?.setAuthConfig(config) ?? {
+      this.#contextProviderRef.value?.setAuthConfig(config) ?? {
         accessToken: undefined,
         environment: undefined,
         tenant: undefined,
@@ -206,21 +208,21 @@ export class CortiDictation extends LitElement {
    * Starts a recording.
    */
   public startRecording(): void {
-    this.recordingButtonRef.value?.startRecording();
+    this.#recordingButtonRef.value?.startRecording();
   }
 
   /**
    * Stops a recording.
    */
   public stopRecording(): void {
-    this.recordingButtonRef.value?.stopRecording();
+    this.#recordingButtonRef.value?.stopRecording();
   }
 
   /**
    * Starts or stops recording. Convenience layer on top of the start/stop methods.
    */
   public toggleRecording(): void {
-    this.recordingButtonRef.value?.toggleRecording();
+    this.#recordingButtonRef.value?.toggleRecording();
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -236,7 +238,7 @@ export class CortiDictation extends LitElement {
 
     return html`
       <dictation-root
-        ${ref(this.contextProviderRef)}
+        ${ref(this.#contextProviderRef)}
         class=${classMap({ hidden: isHidden })}
         .accessToken=${this.accessToken}
         .authConfig=${this.authConfig}
@@ -249,7 +251,7 @@ export class CortiDictation extends LitElement {
         .debug_displayAudio=${this.debug_displayAudio}
       >
         <dictation-recording-button
-          ${ref(this.recordingButtonRef)}
+          ${ref(this.#recordingButtonRef)}
           ?allowButtonFocus=${this.allowButtonFocus}
         ></dictation-recording-button>
         <dictation-settings-menu .settingsEnabled=${this.settingsEnabled}></dictation-settings-menu>

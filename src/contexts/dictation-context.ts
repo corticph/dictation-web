@@ -72,7 +72,7 @@ export class DictationRoot extends LitElement {
 
   @provide({ context: accessTokenContext })
   @state()
-  private _accessToken?: string;
+  _accessToken?: string;
 
   @property({ type: String })
   set accessToken(token: string | undefined) {
@@ -85,7 +85,7 @@ export class DictationRoot extends LitElement {
 
   @provide({ context: authConfigContext })
   @state()
-  private _authConfig?: Corti.BearerOptions;
+  _authConfig?: Corti.BearerOptions;
 
   @property({ attribute: false, type: Object })
   set authConfig(config: Corti.BearerOptions | undefined) {
@@ -108,8 +108,8 @@ export class DictationRoot extends LitElement {
   @property({ attribute: false, type: Object })
   dictationConfig?: Corti.TranscribeConfig;
 
-  private _languagesController = new LanguagesController(this);
-  private _devicesController = new DevicesController(this);
+  #languagesController = new LanguagesController(this);
+  #devicesController = new DevicesController(this);
 
   @provide({ context: languagesContext })
   @state()
@@ -124,7 +124,7 @@ export class DictationRoot extends LitElement {
 
     // Clear auto-loaded flag when languages are set via property
     if (value !== undefined) {
-      this._languagesController.clearAutoLoadedFlag();
+      this.#languagesController.clearAutoLoadedFlag();
     }
   }
 
@@ -142,7 +142,7 @@ export class DictationRoot extends LitElement {
 
     // Clear auto-loaded flag when devices are set via property
     if (value !== undefined) {
-      this._devicesController.clearAutoLoadedFlag();
+      this.#devicesController.clearAutoLoadedFlag();
     }
   }
 
@@ -173,16 +173,16 @@ export class DictationRoot extends LitElement {
 
   constructor() {
     super();
-    this.addEventListener("languages-changed", this._handleLanguageChanged);
+    this.addEventListener("languages-changed", this.#handleLanguageChanged);
     this.addEventListener(
       "recording-devices-changed",
-      this._handleDeviceChanged,
+      this.#handleDeviceChanged,
     );
     this.addEventListener(
       "recording-state-changed",
-      this._handleRecordingStateChanged,
+      this.#handleRecordingStateChanged,
     );
-    this.addEventListener("context-request", this._handleContextRequest);
+    this.addEventListener("context-request", this.#handleContextRequest);
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -256,7 +256,7 @@ export class DictationRoot extends LitElement {
   // Private event handlers
   // ─────────────────────────────────────────────────────────────────────────────
 
-  private _handleLanguageChanged = (e: Event) => {
+  #handleLanguageChanged = (e: Event) => {
     const event = e as CustomEvent;
 
     this.dictationConfig = {
@@ -265,23 +265,23 @@ export class DictationRoot extends LitElement {
     };
   };
 
-  private _handleDeviceChanged = (e: Event) => {
+  #handleDeviceChanged = (e: Event) => {
     const event = e as CustomEvent;
 
     this.selectedDevice = event.detail.selectedDevice;
   };
 
-  private _handleRecordingStateChanged = (e: Event) => {
+  #handleRecordingStateChanged = (e: Event) => {
     const event = e as CustomEvent;
 
     this.recordingState = event.detail.state;
   };
 
-  private _handleContextRequest = (e: ContextEvent<any>) => {
+  #handleContextRequest = (e: ContextEvent<any>) => {
     if (e.context === languagesContext) {
-      this._languagesController.initialize();
+      this.#languagesController.initialize();
     } else if (e.context === devicesContext) {
-      this._devicesController.initialize();
+      this.#devicesController.initialize();
     }
   };
 

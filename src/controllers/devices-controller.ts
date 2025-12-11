@@ -21,10 +21,10 @@ interface DevicesControllerHost extends ReactiveControllerHost {
  */
 export class DevicesController implements ReactiveController {
   host: DevicesControllerHost;
-  private _autoLoadedDevices: boolean = false;
-  private _loadingDevices: boolean = false;
-  private _deviceChangeHandler?: () => void;
-  private _initialized: boolean = false;
+  #autoLoadedDevices: boolean = false;
+  #loadingDevices: boolean = false;
+  #deviceChangeHandler?: () => void;
+  #initialized: boolean = false;
 
   constructor(host: DevicesControllerHost) {
     this.host = host;
@@ -32,69 +32,69 @@ export class DevicesController implements ReactiveController {
   }
 
   initialize(): void {
-    this._initialized = true;
+    this.#initialized = true;
     if (this.host.devices === undefined) {
-      this._loadDevices();
-      this._setupDeviceChangeListener();
+      this.#loadDevices();
+      this.#setupDeviceChangeListener();
     }
   }
 
   hostDisconnected(): void {
-    this._removeDeviceChangeListener();
+    this.#removeDeviceChangeListener();
   }
 
   hostUpdate(): void {
     // Only react to updates after initialization
-    if (!this._initialized) {
+    if (!this.#initialized) {
       return;
     }
 
     // When devices are accessed but not present, load them
     if (this.host.devices === undefined) {
-      this._loadDevices();
+      this.#loadDevices();
     }
   }
 
-  private _setupDeviceChangeListener(): void {
-    if (this._deviceChangeHandler) {
+  #setupDeviceChangeListener(): void {
+    if (this.#deviceChangeHandler) {
       return;
     }
 
-    this._deviceChangeHandler = () => {
-      if (this._autoLoadedDevices) {
-        this._loadDevices();
+    this.#deviceChangeHandler = () => {
+      if (this.#autoLoadedDevices) {
+        this.#loadDevices();
       }
     };
 
     navigator.mediaDevices.addEventListener(
       "devicechange",
-      this._deviceChangeHandler,
+      this.#deviceChangeHandler,
     );
   }
 
-  private _removeDeviceChangeListener(): void {
-    if (!this._deviceChangeHandler) {
+  #removeDeviceChangeListener(): void {
+    if (!this.#deviceChangeHandler) {
       return;
     }
 
     navigator.mediaDevices.removeEventListener(
       "devicechange",
-      this._deviceChangeHandler,
+      this.#deviceChangeHandler,
     );
-    this._deviceChangeHandler = undefined;
+    this.#deviceChangeHandler = undefined;
   }
 
-  private async _loadDevices(): Promise<void> {
-    if (this._loadingDevices) {
+  async #loadDevices(): Promise<void> {
+    if (this.#loadingDevices) {
       return;
     }
 
-    this._loadingDevices = true;
+    this.#loadingDevices = true;
 
     try {
       const { devices, defaultDevice } = await getAudioDevices();
 
-      this._autoLoadedDevices = true;
+      this.#autoLoadedDevices = true;
       this.host._devices = devices;
 
       // Use selected device if it still exists, otherwise fall back to default
@@ -114,7 +114,7 @@ export class DevicesController implements ReactiveController {
     } catch (error) {
       this.host.dispatchEvent(errorEvent(error));
     } finally {
-      this._loadingDevices = false;
+      this.#loadingDevices = false;
     }
   }
 
@@ -122,6 +122,6 @@ export class DevicesController implements ReactiveController {
    * Clear the auto-loaded flag (when devices are set externally)
    */
   clearAutoLoadedFlag(): void {
-    this._autoLoadedDevices = false;
+    this.#autoLoadedDevices = false;
   }
 }

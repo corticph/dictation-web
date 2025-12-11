@@ -12,18 +12,18 @@ import { recordingDevicesChangedEvent } from "../utils/events.js";
 export class DictationDeviceSelector extends LitElement {
   @consume({ context: devicesContext, subscribe: true })
   @state()
-  private _devices?: MediaDeviceInfo[];
+  _devices?: MediaDeviceInfo[];
 
   @consume({ context: selectedDeviceContext, subscribe: true })
   @state()
-  private _selectedDevice?: MediaDeviceInfo;
+  _selectedDevice?: MediaDeviceInfo;
 
   @property({ type: Boolean })
   disabled: boolean = false;
 
   static styles = SelectStyles;
 
-  private _handleSelectDevice(e: Event): void {
+  #handleSelectDevice(e: Event): void {
     const deviceId = (e.target as HTMLSelectElement).value;
     const device = this._devices?.find((d) => d.deviceId === deviceId);
 
@@ -45,7 +45,7 @@ export class DictationDeviceSelector extends LitElement {
         <select
           id="device-select"
           aria-labelledby="device-select-label"
-          @change=${this._handleSelectDevice}
+          @change=${this.#handleSelectDevice}
           ?disabled=${this.disabled || !this._devices || this._devices.length === 0}
         >
           ${this._devices?.map(

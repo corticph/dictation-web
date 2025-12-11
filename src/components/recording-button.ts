@@ -41,7 +41,7 @@ import "../icons/icons.js";
 export class DictationRecordingButton extends LitElement {
   @consume({ context: recordingStateContext, subscribe: true })
   @state()
-  private _recordingState: RecordingState = "stopped";
+  _recordingState: RecordingState = "stopped";
 
   @consume({ context: selectedDeviceContext, subscribe: true })
   @state()
@@ -82,22 +82,22 @@ export class DictationRecordingButton extends LitElement {
   @property({ type: Boolean })
   allowButtonFocus: boolean = false;
 
-  private _mediaController = new MediaController(this);
-  private _dictationController = new DictationController(this);
+  #mediaController = new MediaController(this);
+  #dictationController = new DictationController(this);
 
   static styles: CSSResultGroup = [RecordingButtonStyles, ButtonStyles];
 
-  private _handleMouseDown(event: MouseEvent): void {
+  #handleMouseDown(event: MouseEvent): void {
     if (!this.allowButtonFocus) {
       event.preventDefault();
     }
   }
 
-  private _handleWebSocketMessage = (message: TranscribeMessage): void => {
+  #handleWebSocketMessage = (message: TranscribeMessage): void => {
     switch (message.type) {
       case "CONFIG_ACCEPTED":
-        this._mediaController.mediaRecorder?.start(AUDIO_CHUNK_INTERVAL_MS);
-        this._mediaController.startAudioLevelMonitoring((level) => {
+        this.#mediaController.mediaRecorder?.start(AUDIO_CHUNK_INTERVAL_MS);
+        this.#mediaController.startAudioLevelMonitoring((level) => {
           this.dispatchEvent(audioLevelChangedEvent(level));
         });
         this.dispatchEvent(recordingStateChangedEvent("recording"));
@@ -106,11 +106,11 @@ export class DictationRecordingButton extends LitElement {
         this.dispatchEvent(
           errorEvent(`Config denied: ${message.reason ?? "Unknown reason"}`),
         );
-        this._handleStop();
+        this.#handleStop();
         break;
       case "CONFIG_TIMEOUT":
         this.dispatchEvent(errorEvent("Config timeout"));
-        this._handleStop();
+        this.#handleStop();
         break;
       case "transcript":
         this.dispatchEvent(transcriptEvent(message));
@@ -123,38 +123,38 @@ export class DictationRecordingButton extends LitElement {
         break;
       case "error":
         this.dispatchEvent(errorEvent(message.error));
-        this._handleStop();
+        this.#handleStop();
         break;
     }
   };
 
-  private _handleWebSocketError = (error: Error): void => {
+  #handleWebSocketError = (error: Error): void => {
     this.dispatchEvent(errorEvent("Socket error: " + error.message));
-    this._handleStop();
+    this.#handleStop();
   };
 
-  private _handleWebSocketClose = (event: unknown): void => {
+  #handleWebSocketClose = (event: unknown): void => {
     this.dispatchEvent(streamClosedEvent(event));
   };
 
-  private async _handleStart(): Promise<void> {
+  async #handleStart(): Promise<void> {
     this.dispatchEvent(recordingStateChangedEvent("initializing"));
 
     try {
-      await this._mediaController.initialize(() => {
+      await this.#mediaController.initialize(() => {
         if (this._recordingState === "recording") {
           this.dispatchEvent(errorEvent("Recording device access was lost."));
-          this._handleStop();
+          this.#handleStop();
         }
       });
 
-      await this._dictationController.connect(
-        this._mediaController.mediaRecorder,
+      await this.#dictationController.connect(
+        this.#mediaController.mediaRecorder,
         this._dictationConfig,
         {
-          onClose: this._handleWebSocketClose,
-          onError: this._handleWebSocketError,
-          onMessage: this._handleWebSocketMessage,
+          onClose: this.#handleWebSocketClose,
+          onError: this.#handleWebSocketError,
+          onMessage: this.#handleWebSocketMessage,
           onNetworkActivity: (direction, data) => {
             this.dispatchEvent(networkActivityEvent(direction, data));
           },
@@ -162,19 +162,19 @@ export class DictationRecordingButton extends LitElement {
       );
     } catch (error) {
       this.dispatchEvent(errorEvent(error));
-      await this._handleStop();
+      await this.#handleStop();
     }
   }
 
-  private async _handleStop(): Promise<void> {
+  async #handleStop(): Promise<void> {
     this.dispatchEvent(recordingStateChangedEvent("stopping"));
 
     try {
-      this._mediaController.stopAudioLevelMonitoring();
-      await this._mediaController.stopRecording();
+      this.#mediaController.stopAudioLevelMonitoring();
+      await this.#mediaController.stopRecording();
 
-      await this._dictationController.disconnect(this._handleWebSocketClose);
-      await this._mediaController.cleanup();
+      await this.#dictationController.disconnect(this.#handleWebSocketClose);
+      await this.#mediaController.cleanup();
     } catch (error) {
       this.dispatchEvent(errorEvent(error));
     }
@@ -182,11 +182,11 @@ export class DictationRecordingButton extends LitElement {
     this.dispatchEvent(recordingStateChangedEvent("stopped"));
   }
 
-  private _handleClick(): void {
+  #handleClick(): void {
     if (this._recordingState === "stopped") {
-      this._handleStart();
+      this.#handleStart();
     } else if (this._recordingState === "recording") {
-      this._handleStop();
+      this.#handleStop();
     }
   }
 
@@ -195,7 +195,7 @@ export class DictationRecordingButton extends LitElement {
       return;
     }
 
-    this._handleStart();
+    this.#handleStart();
   }
 
   public stopRecording(): void {
@@ -203,11 +203,11 @@ export class DictationRecordingButton extends LitElement {
       return;
     }
 
-    this._handleStop();
+    this.#handleStop();
   }
 
   public toggleRecording(): void {
-    this._handleClick();
+    this.#handleClick();
   }
 
   render() {
@@ -218,8 +218,8 @@ export class DictationRecordingButton extends LitElement {
 
     return html`
       <button
-        @mousedown=${this._handleMouseDown}
-        @click=${this._handleClick}
+        @mousedown=${this.#handleMouseDown}
+        @click=${this.#handleClick}
         ?disabled=${isLoading}
         class=${isRecording ? "red" : "accent"}
         aria-label=${isRecording ? "Stop recording" : "Start recording"}
@@ -233,7 +233,7 @@ export class DictationRecordingButton extends LitElement {
               : html`<icon-mic-on />`
         }
         <dictation-audio-visualiser
-          .level=${this._mediaController.audioLevel}
+          .level=${this.#mediaController.audioLevel}
           ?active=${isRecording}
         />
       </button>
