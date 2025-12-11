@@ -30,12 +30,15 @@ const meta = {
   component: "dictation-recording-button",
   render: ({ allowButtonFocus, recordingState }) => {
     return html`
-    <dictation-root ?noWrapper=${true} .recordingState=${recordingState}>
+    <dictation-root
+      ?noWrapper=${true}
+      .recordingState=${recordingState}
+      @recording-state-changed=${action("recording-state-changed")}
+      @network-activity=${action("network-activity")}
+      @error=${action("error")}
+    >
       <dictation-recording-button
         ?allowButtonFocus=${allowButtonFocus}
-        @recording-state-changed=${action("recording-state-changed")}
-        @network-activity=${action("network-activity")}
-        @error=${action("error")}
       />
     </dictation-root>
   `;

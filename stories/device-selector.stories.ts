@@ -34,13 +34,15 @@ const meta = {
       : nothing;
 
     return html`
-      <dictation-root .devices=${devicesValue} .selectedDevice=${selectedDeviceValue} ?noWrapper=${true}>
-        <dictation-device-selector
-          ?disabled=${disabled}
-          @recording-devices-changed=${action("recording-devices-changed")}
-          @ready=${action("ready")}
-          @error=${action("error")}
-        />
+      <dictation-root
+        .devices=${devicesValue}
+        .selectedDevice=${selectedDeviceValue}
+        ?noWrapper=${true}
+        @recording-devices-changed=${action("recording-devices-changed")}
+        @ready=${action("ready")}
+        @error=${action("error")}
+      >
+        <dictation-device-selector ?disabled=${disabled} />
       </dictation-root>
     `;
   },

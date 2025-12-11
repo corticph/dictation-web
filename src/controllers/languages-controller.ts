@@ -5,7 +5,6 @@ import { getLanguagesByRegion } from "../utils/languages.js";
 
 interface LanguagesControllerHost extends ReactiveControllerHost {
   region?: string;
-  languages?: Corti.TranscribeSupportedLanguage[];
   dictationConfig?: Corti.TranscribeConfig;
   dispatchEvent(event: CustomEvent): boolean;
   requestUpdate(): void;
@@ -31,7 +30,8 @@ export class LanguagesController implements ReactiveController {
 
   initialize(): void {
     this._initialized = true;
-    if (this.host.languages === undefined) {
+
+    if (this.host._languages === undefined) {
       this._loadLanguages();
     }
   }
@@ -46,7 +46,7 @@ export class LanguagesController implements ReactiveController {
     if (
       (this._previousRegion !== this.host.region &&
         this._autoLoadedLanguages) ||
-      this.host.languages === undefined
+      this.host._languages === undefined
     ) {
       this._loadLanguages();
     }
@@ -55,6 +55,7 @@ export class LanguagesController implements ReactiveController {
   }
 
   private async _loadLanguages(): Promise<void> {
+    console.log(`Loading languages from ${this._previousRegion}`);
     if (this._loadingLanguages) {
       return;
     }
