@@ -1,140 +1,166 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Corti Dictation Example</title>
-    <style>
-      /* Hide the built-in UI of corti-dictation */
-      corti-dictation {
-        display: none;
-      }
-      /* Basic styling for custom UI */
-      #controls {
-        margin-bottom: 1rem;
-      }
-      #audioVisualizer {
-        border: 1px solid #ccc;
-        width: 300px;
-        height: 50px;
-        display: block;
-        margin-bottom: 1rem;
-      }
-      textarea {
-        width: 100%;
-        height: 150px;
-      }
-    </style>
+    <title>Custom UI Demo</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css"
+    />
   </head>
   <body>
-    <!-- The hidden Corti Dictation component -->
-    <corti-dictation id="dictation"></corti-dictation>
+    <header>
+      <nav><a href="index.html">← Back to Demo Index</a></nav>
+      <h1>Custom UI Demo</h1>
+      <p>Set your access token in the code to start the demo.</p>
+    </header>
 
-    <!-- Custom UI Elements -->
-    <div id="controls">
-      <button id="toggleButton">Start</button>
-      <select id="micSelector"></select>
-    </div>
-    <canvas id="audioVisualizer" width="300" height="50"></canvas>
-    <textarea
-      id="transcriptArea"
-      placeholder="Transcript will appear here..."
-    ></textarea>
+    <main>
+      <!-- Hidden Corti Dictation component -->
+      <corti-dictation style="display: none"></corti-dictation>
+
+      <!-- Custom UI -->
+      <div role="group">
+        <button id="recordingButton">Start</button>
+        <select id="micSelector"></select>
+        <select id="languageSelector"></select>
+      </div>
+
+      <progress
+        id="progress"
+        value="0"
+        max="1"
+      ></progress>
+
+      <textarea
+        id="transcriptArea"
+        placeholder="Transcript will appear here..."
+      ></textarea>
+    </main>
 
     <script type="module">
       // Import the Corti Dictation SDK
       // import "@corti/dictation-web";
-      import '../dist/bundle.js';
+      import "../dist/bundle.js";
 
-      window.addEventListener('DOMContentLoaded', () => {
-        const dictation = document.getElementById('dictation');
-        const toggleButton = document.getElementById('toggleButton');
-        const micSelector = document.getElementById('micSelector');
-        const transcriptArea = document.getElementById('transcriptArea');
-        const audioVisualizer = document.getElementById('audioVisualizer');
-        const canvasCtx = audioVisualizer.getContext('2d');
+      window.addEventListener("DOMContentLoaded", () => {
+        const dictation = document.querySelector("corti-dictation");
+        const recordingButton = document.getElementById("recordingButton");
+        const micSelector = document.getElementById("micSelector");
+        const languageSelector = document.getElementById("languageSelector");
+        const transcriptArea = document.getElementById("transcriptArea");
+        const progress = document.getElementById("progress");
 
-        // Set your authentication token here
+        // Set your access token
+        dictation.accessToken = "YOUR_ACCESS_TOKEN";
+
+        const userLocale = navigator.language || "en";
+        let languageDisplayNames;
         try {
-          dictation.setAccessToken('YOUR_AUTH_TOKEN');
-        } catch (e) {
-          console.error('Error setting access token:', e);
+          languageDisplayNames = new Intl.DisplayNames([userLocale], {
+            type: "language",
+          });
+        } catch {
+          languageDisplayNames = null;
         }
 
-        // Populate available microphone devices when they become available.
-        function populateDevices(devices, selectedDevice) {
-          if (Array.isArray(devices) && devices.length > 0) {
-            micSelector.innerHTML = '';
-            devices.forEach(device => {
-              const option = document.createElement('option');
-              option.value = device.deviceId;
-              option.textContent = device.label || `Device ${device.deviceId}`;
-              micSelector.appendChild(option);
-            });
-            // set the selected device if provided
-            if (selectedDevice) {
-              micSelector.value = selectedDevice.deviceId;
-            }
-          } else {
-            console.log('No devices available yet.');
+        const getLanguageName = (code) =>
+          languageDisplayNames?.of(code) || code;
+
+        function populateDevices(devices = [], selectedDevice) {
+          if (!devices.length) return;
+
+          micSelector.innerHTML = "";
+          devices.forEach((device) => {
+            const option = document.createElement("option");
+            option.value = device.deviceId;
+            option.textContent = device.label || `Device ${device.deviceId}`;
+            micSelector.appendChild(option);
+          });
+
+          if (selectedDevice) {
+            micSelector.value = selectedDevice.deviceId;
           }
         }
 
-        // wait until the dictation component is ready
-        dictation.addEventListener('ready', async e => {
+        function populateLanguages(languages = [], selectedLanguage) {
+          if (!languages.length) return;
+
+          languageSelector.innerHTML = "";
+          languages.forEach((language) => {
+            const option = document.createElement("option");
+            option.value = language;
+            option.textContent = getLanguageName(language);
+            languageSelector.appendChild(option);
+          });
+
+          if (selectedLanguage) {
+            languageSelector.value = selectedLanguage;
+          }
+        }
+
+        dictation.addEventListener("ready", () => {
           populateDevices(dictation.devices, dictation.selectedDevice);
+          populateLanguages(
+            dictation.languagesSupported,
+            dictation.dictationConfig?.primaryLanguage
+          );
         });
 
-        // Listen for recording state changes.
-        dictation.addEventListener('recording-state-changed', e => {
-          const state = e.detail.state;
-          toggleButton.textContent = state === 'recording' ? 'Stop' : 'Start';
-          // Refresh the mic list when recording starts.
-          if (state === 'recording') {
-            // populateDevices();
-          }
+        dictation.addEventListener("recording-state-changed", (e) => {
+          const { state } = e.detail;
+
+          const labels = {
+            recording: "Stop",
+            stopped: "Start",
+            initializing: "Initializing...",
+            stopping: "Stopping...",
+          };
+
+          recordingButton.textContent = labels[state] || "Start";
+          const busy = state === "initializing" || state === "stopping";
+          recordingButton.toggleAttribute("aria-busy", busy);
+          recordingButton.disabled = busy;
         });
 
-        // Listen for device change events (if fired) to update the selector.
-        dictation.addEventListener('recording-devices-changed', e => {
-          console.log('Recording device changed:', e.detail);
-          populateDevices(e.detail.devices, e.detail.selectedDevice);
+        dictation.addEventListener("recording-devices-changed", (e) => {
+          const { devices, selectedDevice } = e.detail;
+          populateDevices(devices, selectedDevice);
         });
 
-        // Append new transcript text to the textarea.
-        dictation.addEventListener('transcript', e => {
-          console.log('Transcript:', e.detail.data);
-          transcriptArea.value += e.detail.data.text + ' ';
+        dictation.addEventListener("transcript", (e) => {
+          const { text } = e.detail.data;
+          transcriptArea.value += text + " ";
+          transcriptArea.scrollTop = transcriptArea.scrollHeight;
         });
 
-        // Draw audio level visualisation.
-        dictation.addEventListener('audio-level-changed', e => {
-          const level = e.detail.audioLevel; // assumed to be between 0 and 1
-          drawAudioLevel(level);
+        dictation.addEventListener("audio-level-changed", (e) => {
+          progress.value = e.detail.audioLevel;
         });
 
-        // Draw audio level visualisation.
-        dictation.addEventListener('error', e => {
-          console.error('Error:', e.detail);
+        dictation.addEventListener("error", (e) => {
+          console.error("Corti dictation error:", e.detail);
         });
 
-        // Toggle recording on button click.
-        toggleButton.addEventListener('click', () => {
-          console.log('Toggling recording...');
+        recordingButton.addEventListener("click", () => {
           dictation.toggleRecording();
         });
 
-        // Update selected microphone when the dropdown changes.
-        micSelector.addEventListener('change', () => {
-          dictation.selectedDeviceId = micSelector.value;
+        micSelector.addEventListener("change", () => {
+          const selected = dictation.devices.find(
+            (device) => device.deviceId === micSelector.value
+          );
+          if (selected) {
+            dictation.selectedDevice = selected;
+          }
         });
 
-        function drawAudioLevel(level) {
-          const width = audioVisualizer.width;
-          const height = audioVisualizer.height;
-          canvasCtx.clearRect(0, 0, width, height);
-          // A simple bar proportional to the level
-          canvasCtx.fillRect(0, 0, width * level, height);
-        }
+        languageSelector.addEventListener("change", () => {
+          if (!dictation.dictationConfig) {
+            dictation.dictationConfig = {};
+          }
+          dictation.dictationConfig.primaryLanguage = languageSelector.value;
+        });
       });
     </script>
   </body>

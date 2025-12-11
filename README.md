@@ -9,157 +9,159 @@
 
 The **Corti Dictation Web Component** is a web component that enables real-time speech-to-text dictation using Corti's Dictation API. It provides a simple interface for capturing audio, streaming it to the API, and handling transcripts.
 
-> **Note:** OAuth 2.0 authentication is not handled by this library. The client must provide an API key or authorization token before using the component.
+This library offers two approaches:
+- **Opinionated Component**: Use `<corti-dictation>` for a complete, ready-to-use solution with built-in UI
+- **Modular Components**: Use individual components for maximum flexibility and custom UI implementations
+
+> **Note:** OAuth 2.0 authentication is not handled by this library. The client must provide an authorization token or token refresh function while using the component.
+
+## Component Architecture
+
+### Opinionated Component
+
+**`<corti-dictation>`** - A complete, ready-to-use component that includes:
+- Recording button with visual feedback
+- Settings menu for device and language selection
+- Automatic state management
+- Built-in styling and theming
+
+This is the easiest way to get started and works out of the box.
+
+### Modular Components
+
+For more control and flexibility, you can use individual components:
+
+- **`<dictation-root>`** - Context provider that manages authentication, configuration, and shared state
+- **`<dictation-recording-button>`** - Standalone recording button with audio visualization
+- **`<dictation-settings-menu>`** - Settings menu with device and language selectors
+- **`<dictation-device-selector>`** - Device selection dropdown
+- **`<dictation-language-selector>`** - Language selection dropdown
+
+These components share state through a context system, allowing you to build custom UIs while leveraging the same underlying functionality.
 
 ## Installation
 
-Include the Web Component in your project by importing the JavaScript module:
+Install the package using your preferred package manager:
 
-```html
+```bash
+# npm
 npm i @corti/dictation-web
+
+# yarn
+yarn add @corti/dictation-web
+
+# pnpm
+pnpm add @corti/dictation-web
+
+# bun
+bun add @corti/dictation-web
 ```
 
-Then import the module like so:
+Then import the module in your code. You can either use a side-effect import to auto-register the component:
 
 ```js
-// Import the Corti Dictation Web Component
+// Side-effect import - automatically registers the component
 import '@corti/dictation-web';
 ```
 
-Alternatively, use a CDN to start quickly (not recommended).
+Or import the component class directly:
+
+```js
+// Named import - register the component manually if needed
+import { CortiDictation } from '@corti/dictation-web';
+```
+
+Alternatively, use a CDN to start quickly (not recommended for production):
 
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/@corti/dictation-web/dist/bundle.min.js"
-  preload
+  src="https://cdn.jsdelivr.net/npm/@corti/dictation-web/dist/bundle.js"
   type="module"
 ></script>
 ```
 
-## Usage
-
-### Demo
+## Demo
 
 🚀 [Hosted Demo](https://codepen.io/hccullen/pen/OPJmxQR)
 
-### Basic Example
+## Quick Start
+
+Here's a simple example to get you started:
 
 ```html
 <!DOCTYPE html>
 <html lang="en">
-  <body>
-    <corti-dictation id="dictation"></corti-dictation>
-    <textarea
-      id="transcript"
-      placeholder="Transcript will appear here..."
-    ></textarea>
+<body>
+<corti-dictation id="dictation"></corti-dictation>
+<textarea
+  id="transcript"
+  placeholder="Transcript will appear here..."
+></textarea>
 
-    <script>
-      import '@corti/dictation-web';
-      const dictationEl = document.getElementById('dictation');
-      dictationEl.addEventListener('ready', () => {
-        dictationEl.setAccessToken('YOUR_AUTH_TOKEN'); // Note: Never hardcode tokens
-      });
-      dictationEl.addEventListener('transcript', e => {
-        document.getElementById('transcript').value += e.detail.data.text + ' ';
-      });
-    </script>
-  </body>
+<script type="module">
+  import '@corti/dictation-web';
+
+  const dictationEl = document.getElementById('dictation');
+  const transcriptEl = document.getElementById('transcript');
+
+  dictationEl.addEventListener('ready', () => {
+    dictationEl.accessToken = 'YOUR_AUTH_TOKEN'; // Note: Never hardcode tokens
+  });
+
+  dictationEl.addEventListener('transcript', (e) => {
+    if (e.detail.data.isFinal) {
+      transcriptEl.value += e.detail.data.text + ' ';
+    }
+  });
+</script>
+</body>
 </html>
 ```
 
-## API Reference
+### Modular Example
 
-### Properties
+For more control, use individual components to build a custom UI:
 
-| Property             | Type    | Description                                                                                                               |
-| -------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `devices`            | Array   | List of available recording devices.                                                                                      |
-| `selectedDevice`     | Object  | The selected device used for recording (MediaDeviceInfo).                                                                 |
-| `recordingState`     | String  | Current state of recording (`stopped`, `recording`, `initializing` and `stopping`, ).                                     |
-| `dictationConfig`    | Object  | Configuration settings for dictation.                                                                                     |
-| `settingsEnabled`    | Array   | Which settings should be available in the UI. If an empty array is passed, the settings will be disabled entirely. Options are `language` and `devices` |
-| `languagesSupported`    | String[]  | List of all language codes available for use with the Web Component.                                                                                     |
-| `debug_displayAudio` | Boolean | Overrides any device selection and instead uses getDisplayMedia to stream system audio. Should only be used for debugging |
-| `preventButtonFocus` | Boolean | When `true` (default), prevents the start/stop button from taking focus when clicked, allowing textareas or other input elements to maintain focus. Set to `false` to allow the button to receive focus on click. |
+```html
+<!DOCTYPE html>
+<html lang="en">
+<body>
+<dictation-root id="dictationRoot">
+  <dictation-recording-button></dictation-recording-button>
+  <dictation-settings-menu settingsEnabled="device,language"></dictation-settings-menu>
+</dictation-root>
 
-### Methods
+<textarea
+  id="transcript"
+  placeholder="Transcript will appear here..."
+></textarea>
 
-| Method                                 | Description                                                      |
-| -------------------------------------- | ---------------------------------------------------------------- |
-| `startRecording()`                     | Starts a recording.                                              |
-| `stopRecording()`                      | Stops a recording.                                               |
-| `toggleRecording()`                    | Starts or stops recording. Convenience layer on top of the start/stop methods. |
-| `setAccessToken(access_token: string)` | Set the latest access token. This will return the server config. |
-| `setAuthConfig(config: AuthConfig)`    | Set authentication configuration with optional refresh mechanism. |
+<script type="module">
+  import '@corti/dictation-web';
 
-### Events
+  const root = document.getElementById('dictationRoot');
+  const transcriptEl = document.getElementById('transcript');
 
-| Event                       | Description                                                                                                                                                                                             |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ready`                     | Fired once the component is ready.                                                                                                                                                                      |
-| `recording-state-changed`   | Fired when the recording state changes. `detail.state` contains the new state.                                                                                                                          |
-| `recording-devices-changed` | Fired when the user switches recording devices or the list of recording devices changes. `detail.devices` contains the full devices list. `detail.selectedDevice` contains the current selected device. |
-| `transcript`                | Fired when a new transcript is received. `detail.data.text` contains the transcribed text.                                                                                                              |
-| `command`                   | Fired whenever a new command is detected.                                                                                                                                                               |
-| `audio-level-changed`       | Fired when the input audio level changes. `detail.audioLevel` contains the new level.                                                                                                                   |
-| `usage`                     | Fired when usage information is received from the server. `detail.credits` contains the usage data.                                                                                                             |
-| `stream-closed`             | Fired when the WebSocket stream is closed. `detail` contains the close event data.                                                                                                                     |
-| `error`                     | Fired on error. `detail` contains the full error.                                                                                                                                                       |
+  root.addEventListener('ready', () => {
+    root.accessToken = 'YOUR_AUTH_TOKEN'; // Note: Never hardcode tokens
+  });
 
-## Authentication
-
-This library supports multiple authentication methods:
-
-### Basic Bearer Token
-```javascript
-dictation.setAccessToken('YOUR_JWT_TOKEN');
+  root.addEventListener('transcript', (e) => {
+    if (e.detail.data.isFinal) {
+      transcriptEl.value += e.detail.data.text + ' ';
+    }
+  });
+</script>
+</body>
+</html>
 ```
 
-### With Refresh Token Support
+## Documentation
 
-The library can automatically refresh tokens when they expire:
+For more detailed information, see:
 
-```javascript
-dictation.setAuthConfig({
-  // This function runs before any API call when the access_token is near expiration
-  refreshAccessToken: async (refreshToken?: string) => {
-      // Custom refresh logic -- get new access_token from server
-      // if accessToken is not passed to AuthConfig, refreshToken will be `undefined` for the first call,
-      //   then it will be the refreshToken returned from the previous token request
-      const response = await fetch("https://your-auth-server/token", {
-          method: "POST", 
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refreshToken }),
-      });
-      
-      const result = await response.json();
-      
-      // Return in the expected format
-      return {
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
-      };
-  }
-});
-```
-
-The refresh mechanism automatically handles token renewal when the access token is near expiration, ensuring uninterrupted dictation sessions.
-
-## Usage Examples
-
-Explore practical implementations and usage examples in the [Demo Folder](https://github.com/corticph/dictation-web/tree/main/demo). These demos can also be run locally.
-
-## Styling
-
-![UI Overview](https://github.com/corticph/dictation-web/blob/main/docs/ui.png)
-
-The default UI is designed to be slotted into existing applications seamlessly, however, it also supports custom styling as well as theming. The UI can be fully customized using CSS properties. Refer to our [Styling Guide](https://github.com/corticph/dictation-web/blob/main/docs/styling.md) for detailed instructions.
-
-## License
-
-This Web Component library is licensed under MIT.
-
-## Support
-
-For issues or questions, contact **Corti Support** at [help@corti.ai](mailto:help@corti.ai) or [join our Discord](https://discord.com/invite/zXeXHgnZXX).
+- **[API Reference](docs/API_REFERENCE.md)** - Complete API documentation for properties, methods, and events
+- **[Authentication Guide](docs/AUTHENTICATION.md)** - How to set up authentication with tokens and refresh mechanisms
+- **[Styling Guide](docs/styling.md)** - Customize the component's appearance with CSS variables and themes
+- **[Examples](demo/README.md)** - Practical usage examples and demos
+- **[Development Guide](docs/DEV_README.md)** - Information for contributors and developers

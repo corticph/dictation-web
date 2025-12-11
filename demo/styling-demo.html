@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Styling Demo</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css"
+    />
+    <style>
+      corti-dictation {
+        color-scheme: light;
+        --card-background: light-dark(#fbfcfc, #1c212c);
+      }
+
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav><a href="index.html">← Back to Demo Index</a></nav>
+      <h1>Styling Demo</h1>
+      <p>
+        This demo demonstrates how to style the Corti Dictation Web Component,
+        for example:
+      </p>
+      <ul>
+        <li>forcing theme (e.g. dark or light mode)</li>
+        <li>customizing the settings panel</li>
+        <li>adapting colors to your design system</li>
+      </ul>
+      <p>Refer to the <a href="https://github.com/corticph/dictation-web-sdk/blob/main/docs/styling.md">Styling Guide</a> for detailed instructions.</p>
+    </header>
+
+    <main>
+      <div class="theme-picker">
+        <label for="themeToggle">
+          <input type="checkbox" id="themeToggle" role="switch" />
+          Dark mode
+        </label>
+      </div>
+
+      <input
+        type="text"
+        id="accessToken"
+        placeholder="Paste your access token here"
+      />
+
+      <article id="componentPlaceholder" aria-busy="true">
+        <corti-dictation settingsEnabled=""></corti-dictation>
+      </article>
+
+      <!-- Textarea to display transcript text -->
+      <textarea
+        id="transcript"
+        rows="6"
+        placeholder="Transcript will appear here..."
+      ></textarea>
+    </main>
+
+    <script type="module">
+      // Import the Corti Dictation SDK
+      // import "@corti/dictation-web";
+      import "../dist/bundle.js";
+
+      // Get the corti-dictation element and assign the server config
+      const dictation = document.querySelector("corti-dictation");
+      const accessTokenInput = document.getElementById("accessToken");
+      const componentPlaceholder = document.getElementById(
+        "componentPlaceholder"
+      );
+      const transcriptArea = document.getElementById("transcript");
+      const themeToggle = document.getElementById("themeToggle");
+
+      // Theme management (default to light)
+      const applyTheme = (isDark) => {
+        const theme = isDark ? "dark" : "light";
+        // Update Pico CSS theme
+        document.documentElement.setAttribute("data-theme", theme);
+        themeToggle.checked = isDark;
+        if (dictation) {
+          dictation.style.colorScheme = theme;
+        }
+
+      };
+      // Detect user's system preference for dark mode
+      const prefersDarkScheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyTheme(prefersDarkScheme);
+      themeToggle.addEventListener("change", (e) => {
+        applyTheme(e.target.checked);
+      });
+
+      const setToken = () => {
+        const token = accessTokenInput.value.trim();
+        componentPlaceholder.setAttribute(
+          "aria-busy",
+          token ? "false" : "true"
+        );
+        if (token) dictation.accessToken = token;
+      };
+
+      // Set token when input changes or paste
+      accessTokenInput.addEventListener("input", () => setToken());
+      accessTokenInput.addEventListener("paste", () => setToken());
+
+      // Update the textarea with transcript text when received
+      dictation.addEventListener("transcript", (e) => {
+        const { data } = e.detail;
+        if (data.isFinal) {
+          transcriptArea.value += data.text + " ";
+        }
+      });
+    </script>
+  </body>
+</html>
