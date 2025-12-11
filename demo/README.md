@@ -26,13 +26,23 @@ A more advanced example where:
 
 ---
 
-### 3. OAuth Demo ([oauth-demo.html](oauth-demo.html))
+### 3. Styling Demo ([styling-demo.html](styling-demo.html))
 This example demonstrates:
-- How to configure OAuth authentication using `authConfig`.
+- How to customize the appearance of the `<corti-dictation>` component.
+- Using CSS custom properties for theming.
+- Applying custom color schemes and styling.
+
+🔹 Best for: Understanding how to style and theme the component to match your application.
+
+---
+
+### 4. Automatic Token Refresh Demo ([refresh-demo.html](refresh-demo.html))
+This example demonstrates:
+- How to configure authentication using `authConfig`.
 - Automatic token refresh handled by the SDK.
 - Using the `refreshAccessToken` callback for seamless session continuity.
 
-🔹 Best for: Understanding how to integrate OAuth authentication with the SDK.
+🔹 Best for: Understanding how to integrate token refresh authentication with the SDK.
 
 ---
 

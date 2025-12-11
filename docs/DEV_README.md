@@ -5,14 +5,14 @@ This webcomponent follows the [open-wc](https://github.com/open-wc/open-wc) reco
 ## Installation
 
 ```bash
-npm i corti-dictation
+npm i @corti/dictation-web
 ```
 
 ## Usage
 
 ```html
 <script type="module">
-  import 'corti-dictation/corti-dictation.js';
+  import '@corti/dictation-web';
 </script>
 
 <corti-dictation></corti-dictation>
