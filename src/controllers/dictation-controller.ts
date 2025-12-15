@@ -68,6 +68,12 @@ export class DictationController implements ReactiveController {
         : await this.#connectAuth(dictationConfig);
 
     this.#onNetworkActivity = callbacks.onNetworkActivity;
+
+    this.#onNetworkActivity?.("sent", {
+      configuration: dictationConfig,
+      type: "config",
+    });
+
     this.#setupMediaRecorder(mediaRecorder);
     this.#setupWebSocketHandlers(callbacks);
   }
