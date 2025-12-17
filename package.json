@@ -58,7 +58,7 @@
     "storybook:build": "tsc && tsc -p tsconfig.stories.json && npm run analyze -- --exclude dist && storybook build"
   },
   "dependencies": {
-    "@corti/sdk": "^0.8.0-rc",
+    "@corti/sdk": "^0.8.0",
     "@lit/context": "^1.1.6",
     "lit": "^3.3.1"
   },
