@@ -1,7 +1,56 @@
-import CortiDictation from './CortiDictation.js';
+import { CortiDictation } from "./components/corti-dictation.js";
+import { DictationDeviceSelector } from "./components/device-selector.js";
+import { DictationLanguageSelector } from "./components/language-selector.js";
+import { DictationRecordingButton } from "./components/recording-button.js";
+import { DictationSettingsMenu } from "./components/settings-menu.js";
+import { DictationRoot } from "./contexts/dictation-context.js";
 
-if (!customElements.get('corti-dictation')) {
-  customElements.define('corti-dictation', CortiDictation);
+if (!customElements.get("corti-dictation")) {
+  customElements.define("corti-dictation", CortiDictation);
 }
+
+if (!customElements.get("dictation-recording-button")) {
+  customElements.define("dictation-recording-button", DictationRecordingButton);
+}
+
+if (!customElements.get("dictation-device-selector")) {
+  customElements.define("dictation-device-selector", DictationDeviceSelector);
+}
+
+if (!customElements.get("dictation-language-selector")) {
+  customElements.define(
+    "dictation-language-selector",
+    DictationLanguageSelector,
+  );
+}
+
+if (!customElements.get("dictation-settings-menu")) {
+  customElements.define("dictation-settings-menu", DictationSettingsMenu);
+}
+
+if (!customElements.get("dictation-root")) {
+  customElements.define("dictation-root", DictationRoot);
+}
+
+export { CortiDictation } from "./components/corti-dictation.js";
+export { DictationDeviceSelector } from "./components/device-selector.js";
+export { DictationLanguageSelector } from "./components/language-selector.js";
+export { DictationRecordingButton } from "./components/recording-button.js";
+export { DictationSettingsMenu } from "./components/settings-menu.js";
+export { DictationRoot } from "./contexts/dictation-context.js";
+
+export type { ConfigurableSettings, RecordingState } from "./types.js";
+export type {
+  AudioLevelChangedEventDetail,
+  CommandEventDetail,
+  ErrorEventDetail,
+  LanguageChangedEventDetail,
+  LanguagesChangedEventDetail,
+  NetworkActivityEventDetail,
+  RecordingDevicesChangedEventDetail,
+  RecordingStateChangedEventDetail,
+  TranscriptEventDetail,
+  UsageEventDetail,
+} from "./utils/events.js";
 
 export default CortiDictation;

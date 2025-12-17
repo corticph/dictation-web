@@ -26,19 +26,29 @@ A more advanced example where:
 
 ---
 
-### 3. OAuth Demo ([oauth-demo.html](oauth-demo.html))
+### 3. Styling Demo ([styling-demo.html](styling-demo.html))
 This example demonstrates:
-- How to obtain an OAuth token via **client credentials** (⚠️ Not for production use).
-- Automatic token refresh.
-- Securely passing authentication tokens to the SDK.
+- How to customize the appearance of the `<corti-dictation>` component.
+- Using CSS custom properties for theming.
+- Applying custom color schemes and styling.
 
-🔹 Best for: Understanding how to integrate authentication with the SDK.
+🔹 Best for: Understanding how to style and theme the component to match your application.
+
+---
+
+### 4. Automatic Token Refresh Demo ([refresh-demo.html](refresh-demo.html))
+This example demonstrates:
+- How to configure authentication using `authConfig`.
+- Automatic token refresh handled by the SDK.
+- Using the `refreshAccessToken` callback for seamless session continuity.
+
+🔹 Best for: Understanding how to integrate token refresh authentication with the SDK.
 
 ---
 
 ## Running the Demos
 These examples use the **Corti Dictation SDK** and require an access token to function. To run them:
-1. Clone the [repository](https://github.com/corticph/dictation-web-sdk).
+1. Clone the [repository](https://github.com/corticph/dictation-web).
 2. Install dependencies:
    ```sh
    npm install
@@ -51,4 +61,4 @@ These examples use the **Corti Dictation SDK** and require an access token to fu
 5. Open your browser and go to: http://localhost:8000/demo/
 
 
-For more information, visit the [Corti Dictation SDK](https://github.com/corticph/dictation-web-sdk).
+For more information, visit the [Corti Dictation SDK documentation](https://docs.corti.ai/stt/dictation-web).

@@ -1,56 +1,55 @@
-import { LitElement, html, css } from 'lit';
-import { property, customElement } from 'lit/decorators.js';
+import { html, LitElement, type PropertyValues } from "lit";
+import { customElement, property } from "lit/decorators.js";
+import { classMap } from "lit/directives/class-map.js";
+import { map } from "lit/directives/map.js";
+import { range } from "lit/directives/range.js";
+import AudioVisualiserStyles from "../styles/audio-visualiser.js";
+import { normalizeToRange } from "../utils/validation.js";
 
-@customElement('audio-visualiser')
-export class AudioVisualiser extends LitElement {
-  @property({ type: Number }) level = 0; // expects a value from 0 to 100
+@customElement("dictation-audio-visualiser")
+export class DictationAudioVisualiser extends LitElement {
+  @property({ type: Number })
+  level: number = 0;
 
-  @property({ type: Boolean }) active = true;
+  @property({ type: Boolean })
+  active: boolean = false;
 
-  static styles = css`
-    :host {
-      height: 100%;
+  @property({ type: Number })
+  segmentCount: number = 5;
+
+  static styles = AudioVisualiserStyles;
+
+  willUpdate(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has("level")) {
+      this.level = normalizeToRange(this.level);
     }
-    .container {
-      display: flex;
-      width: 8px;
-      flex-direction: column-reverse; /* Bottom-up stacking */
-      height: 100%;
-      gap: 1px;
-      opacity: 0.5;
-      &.active {
-        opacity: 1;
-      }
-    }
-    .segment {
-      flex: 1;
-      background-color: var(--action-accent-text-color);
-      transition: background-color 0.25s;
-      border-radius: 1px;
-      opacity: 0.5;
-    }
-    .segment.active {
-      opacity: 1;
-    }
-  `;
+  }
 
   render() {
-    // Each segment represents 20%. Using Math.ceil to fill segments optimistically.
-    const activeSegments = Math.round(this.level * 5);
-    const segments = [];
-    for (let i = 0; i < 5; i += 1) {
-      segments.push(html`
-        <div class="segment ${i < activeSegments ? 'active' : ''}"></div>
-      `);
-    }
+    // Each segment represents 20%. Using Math.round to fill segments.
+    const activeSegments = Math.round(this.level * this.segmentCount);
+    const segments = map(
+      range(this.segmentCount),
+      (i) =>
+        html`<div class=${classMap({
+          active: i < activeSegments,
+          segment: true,
+        })} />`,
+    );
+
     return html`
-      <div class="container ${this.active ? 'active' : ''}">${segments}</div>
+      <div class=${classMap({
+        active: this.active,
+        container: true,
+      })}>
+        ${segments}
+      </div>
     `;
   }
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'audio-visualiser': AudioVisualiser;
+    "dictation-audio-visualiser": DictationAudioVisualiser;
   }
 }
