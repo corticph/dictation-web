@@ -1,6 +1,8 @@
 import { CortiDictation } from "./components/corti-dictation.js";
 import { DictationDeviceSelector } from "./components/device-selector.js";
+import { DictationKeybindingSelector } from "./components/keybinding-selector.js";
 import { DictationLanguageSelector } from "./components/language-selector.js";
+import { DictationModeSelector } from "./components/mode-selector.js";
 import { DictationRecordingButton } from "./components/recording-button.js";
 import { DictationSettingsMenu } from "./components/settings-menu.js";
 import { DictationRoot } from "./contexts/dictation-context.js";
@@ -24,6 +26,17 @@ if (!customElements.get("dictation-language-selector")) {
   );
 }
 
+if (!customElements.get("dictation-mode-selector")) {
+  customElements.define("dictation-mode-selector", DictationModeSelector);
+}
+
+if (!customElements.get("dictation-keybinding-selector")) {
+  customElements.define(
+    "dictation-keybinding-selector",
+    DictationKeybindingSelector,
+  );
+}
+
 if (!customElements.get("dictation-settings-menu")) {
   customElements.define("dictation-settings-menu", DictationSettingsMenu);
 }
@@ -34,18 +47,27 @@ if (!customElements.get("dictation-root")) {
 
 export { CortiDictation } from "./components/corti-dictation.js";
 export { DictationDeviceSelector } from "./components/device-selector.js";
+export { DictationKeybindingSelector } from "./components/keybinding-selector.js";
 export { DictationLanguageSelector } from "./components/language-selector.js";
+export { DictationModeSelector } from "./components/mode-selector.js";
 export { DictationRecordingButton } from "./components/recording-button.js";
 export { DictationSettingsMenu } from "./components/settings-menu.js";
 export { DictationRoot } from "./contexts/dictation-context.js";
 
-export type { ConfigurableSettings, RecordingState } from "./types.js";
+export type {
+  ConfigurableSettings,
+  DictationMode,
+  Keybinding,
+  RecordingState,
+} from "./types.js";
 export type {
   AudioLevelChangedEventDetail,
   CommandEventDetail,
   ErrorEventDetail,
+  KeybindingChangedEventDetail,
   LanguageChangedEventDetail,
   LanguagesChangedEventDetail,
+  ModeChangedEventDetail,
   NetworkActivityEventDetail,
   RecordingDevicesChangedEventDetail,
   RecordingStateChangedEventDetail,

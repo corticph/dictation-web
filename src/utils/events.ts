@@ -1,5 +1,5 @@
 import type { Corti } from "@corti/sdk";
-import type { RecordingState } from "../types.js";
+import type { DictationMode, RecordingState } from "../types.js";
 
 export type LanguagesChangedEventDetail = {
   languages: Corti.TranscribeSupportedLanguage[];
@@ -155,5 +155,33 @@ export function networkActivityEvent(
     bubbles: true,
     composed: true,
     detail: { data, direction },
+  });
+}
+
+export type ModeChangedEventDetail = {
+  mode: DictationMode;
+};
+
+export type KeybindingChangedEventDetail = {
+  keybinding: string | null | undefined;
+};
+
+export function modeChangedEvent(
+  mode: DictationMode,
+): CustomEvent<ModeChangedEventDetail> {
+  return new CustomEvent("mode-changed", {
+    bubbles: true,
+    composed: true,
+    detail: { mode },
+  });
+}
+
+export function keybindingChangedEvent(
+  keybinding: string | null | undefined,
+): CustomEvent<KeybindingChangedEventDetail> {
+  return new CustomEvent("keybinding-changed", {
+    bubbles: true,
+    composed: true,
+    detail: { keybinding },
   });
 }

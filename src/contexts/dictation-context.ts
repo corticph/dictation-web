@@ -5,7 +5,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { DevicesController } from "../controllers/devices-controller.js";
 import { LanguagesController } from "../controllers/languages-controller.js";
 import ComponentStyles from "../styles/component-styles.js";
-import type { ProxyOptions, RecordingState } from "../types.js";
+import type { DictationMode, ProxyOptions, RecordingState } from "../types.js";
 import { getInitialToken } from "../utils/auth.js";
 import { commaSeparatedConverter } from "../utils/converters.js";
 import { errorEvent } from "../utils/events.js";
@@ -46,6 +46,10 @@ export const socketProxyContext = createContext<ProxyOptions | undefined>(
 );
 export const debugDisplayAudioContext = createContext<boolean | undefined>(
   Symbol("debugDisplayAudio"),
+);
+export const modeContext = createContext<DictationMode>(Symbol("mode"));
+export const keybindingContext = createContext<string | null | undefined>(
+  Symbol("keybinding"),
 );
 
 @customElement("dictation-root")
@@ -158,6 +162,14 @@ export class DictationRoot extends LitElement {
   @property({ attribute: "debug-display-audio", type: Boolean })
   debug_displayAudio?: boolean;
 
+  @provide({ context: modeContext })
+  @property({ type: String })
+  mode: DictationMode = "toggle-to-talk";
+
+  @provide({ context: keybindingContext })
+  @property({ type: String })
+  keybinding?: string | null;
+
   @property({ type: Boolean })
   noWrapper: boolean = false;
 
@@ -183,6 +195,8 @@ export class DictationRoot extends LitElement {
       this.#handleRecordingStateChanged,
     );
     this.addEventListener("context-request", this.#handleContextRequest);
+    this.addEventListener("mode-changed", this.#handleModeChanged);
+    this.addEventListener("keybinding-changed", this.#handleKeybindingChanged);
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -282,7 +296,24 @@ export class DictationRoot extends LitElement {
       this.#languagesController.initialize();
     } else if (e.context === devicesContext) {
       this.#devicesController.initialize();
+    } else if (e.context === keybindingContext) {
+      // Initialize keybinding to default "`" when setting first mounts
+      if (this.keybinding === undefined) {
+        this.keybinding = "`";
+      }
     }
+  };
+
+  #handleModeChanged = (e: Event) => {
+    const event = e as CustomEvent;
+
+    this.mode = event.detail.mode;
+  };
+
+  #handleKeybindingChanged = (e: Event) => {
+    const event = e as CustomEvent;
+
+    this.keybinding = event.detail.keybinding;
   };
 
   // ─────────────────────────────────────────────────────────────────────────────

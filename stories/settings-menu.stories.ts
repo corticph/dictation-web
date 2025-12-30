@@ -43,7 +43,7 @@ const meta = {
     settingsEnabled: {
       control: "check",
       description: "Which settings to enable in the settings menu",
-      options: ["device", "language"],
+      options: ["device", "language", "mode", "keybinding"],
     },
   },
   component: "dictation-settings-menu",

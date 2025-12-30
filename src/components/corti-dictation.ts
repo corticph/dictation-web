@@ -7,6 +7,7 @@ import { DEFAULT_DICTATION_CONFIG } from "../constants.js";
 import type { DictationRoot } from "../contexts/dictation-context.js";
 import type {
   ConfigurableSettings,
+  DictationMode,
   ProxyOptions,
   RecordingState,
 } from "../types.js";
@@ -166,6 +167,39 @@ export class CortiDictation extends LitElement {
     return this.#contextProviderRef.value?.recordingState || "stopped";
   }
 
+  /**
+   * Dictation mode: "toggle-to-talk" or "push-to-talk"
+   */
+  @property({ type: String })
+  set mode(value: DictationMode) {
+    this._mode = value;
+  }
+
+  get mode(): DictationMode {
+    return (
+      this.#contextProviderRef.value?.mode || this._mode || "toggle-to-talk"
+    );
+  }
+
+  @state()
+  _mode?: DictationMode;
+
+  /**
+   * Keybinding for keyboard shortcut (e.g., "`", "meta+`", "ctrl+shift+k")
+   * Defaults to "`" if keybinding is in settingsEnabled, otherwise undefined
+   */
+  @property({ type: String })
+  set keybinding(value: string | null | undefined) {
+    this._keybinding = value;
+  }
+
+  get keybinding(): string | null | undefined {
+    return this.#contextProviderRef.value?.keybinding || this._keybinding;
+  }
+
+  @state()
+  _keybinding?: string | null;
+
   // ─────────────────────────────────────────────────────────────────────────────
   // Public methods
   // ─────────────────────────────────────────────────────────────────────────────
@@ -249,6 +283,8 @@ export class CortiDictation extends LitElement {
         .devices=${this._devices}
         .selectedDevice=${this._selectedDevice}
         .debug_displayAudio=${this.debug_displayAudio}
+        .mode=${this._mode}
+        .keybinding=${this._keybinding}
       >
         <dictation-recording-button
           ${ref(this.#recordingButtonRef)}
