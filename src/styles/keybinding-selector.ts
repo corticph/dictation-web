@@ -12,24 +12,38 @@ const KeybindingSelectorStyles = css`
     color: var(--component-text-color, light-dark(#333, #eee));
     pointer-events: none;
   }
-  .keybinding-selector-input {
+  .keybinding-selector-wrapper {
     display: flex;
     align-items: center;
     gap: 12px;
     height: 36px;
-    padding: 4px 12px 4px 8px;
+    padding: 4px 8px 4px 8px;
     background: var(--card-background, light-dark(#fff, #333));
     border: 1px solid var(--card-border-color, light-dark(#ddd, #555));
     border-radius: var(--card-inner-border-radius, 6px);
-    cursor: text;
-    outline: none;
   }
-  .keybinding-selector-input:has(.keybinding-placeholder) {
-    padding: 4px 12px 4px 8px;
-  }
-  .keybinding-selector-input:focus {
+  .keybinding-selector-wrapper:focus-within {
     border-color: var(--action-accent-background, light-dark(#007bff, #0056b3));
     outline: 2px solid var(--action-accent-background, light-dark(#007bff, #0056b3));
+  }
+  .keybinding-selector-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    line-height: 24px;
+    color: var(--component-text-color, light-dark(#333, #eee));
+    outline: none;
+    padding: 0;
+    cursor: text;
+  }
+  .keybinding-selector-input::placeholder {
+    opacity: 0.6;
+    color: var(--component-text-color, light-dark(#333, #eee));
+  }
+  .keybinding-selector-input:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
   .keybinding-key {
     display: flex;
@@ -47,19 +61,6 @@ const KeybindingSelectorStyles = css`
     opacity: 0.6;
     text-align: center;
     flex-shrink: 0;
-  }
-  .keybinding-display {
-    font-size: 14px;
-    line-height: 24px;
-    color: var(--component-text-color, light-dark(#333, #eee));
-    flex: 1;
-  }
-  .keybinding-placeholder {
-    font-size: 14px;
-    line-height: 24px;
-    color: var(--component-text-color, light-dark(#333, #eee));
-    opacity: 0.6;
-    flex: 1;
   }
   .keybinding-clear {
     margin-left: auto;

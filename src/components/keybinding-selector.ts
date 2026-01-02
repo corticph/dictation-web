@@ -1,5 +1,5 @@
 import { consume } from "@lit/context";
-import { html, LitElement, nothing } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { keybindingContext } from "../contexts/dictation-context.js";
 import KeybindingSelectorStyles from "../styles/keybinding-selector.js";
@@ -88,29 +88,26 @@ export class DictationKeybindingSelector extends LitElement {
     return html`
       <div>
         <label>Keybinding</label>
-        <div
-          class="keybinding-selector-input"
-          @focusin=${this.#handleKeybindingInputFocus}
-          @keydown=${this.#handleKeybindingKeyDown}
-          tabindex="0"
-        >
+        <div class="keybinding-selector-wrapper">
           ${
             this._keybinding
               ? html`
                 <div class="keybinding-key">${this.#formatKeybindingDisplay(
                   this._keybinding,
                 )}</div>
-                <div class="keybinding-display">${this.#formatKeybinding(
-                  this._keybinding,
-                )}</div>
               `
-              : html`
-                <div class="keybinding-key">${"`"}</div>
-                <div class="keybinding-placeholder">
-                  Click and press a key...
-                </div>
-              `
+              : html`<div class="keybinding-key">${"`"}</div>`
           }
+          <input
+            type="text"
+            class="keybinding-selector-input"
+            .value=${this._keybinding ? this.#formatKeybinding(this._keybinding) : ""}
+            placeholder="Click and press a key..."
+            readonly
+            @focusin=${this.#handleKeybindingInputFocus}
+            @keydown=${this.#handleKeybindingKeyDown}
+            ?disabled=${this.disabled}
+          />
         </div>
         <p class="keybinding-help">
           ${

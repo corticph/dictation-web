@@ -8,6 +8,7 @@ import {
   authConfigContext,
   debugDisplayAudioContext,
   dictationConfigContext,
+  keybindingContext,
   recordingStateContext,
   regionContext,
   selectedDeviceContext,
@@ -19,6 +20,7 @@ import {
   DictationController,
   type TranscribeMessage,
 } from "../controllers/dictation-controller.js";
+import { KeybindingController } from "../controllers/keybinding-controller.js";
 import { MediaController } from "../controllers/media-controller.js";
 import ButtonStyles from "../styles/buttons.js";
 import RecordingButtonStyles from "../styles/recording-button.js";
@@ -79,11 +81,16 @@ export class DictationRecordingButton extends LitElement {
   @state()
   _debug_displayAudio?: boolean;
 
+  @consume({ context: keybindingContext, subscribe: true })
+  @state()
+  _keybinding?: string | null;
+
   @property({ type: Boolean })
   allowButtonFocus: boolean = false;
 
   #mediaController = new MediaController(this);
   #dictationController = new DictationController(this);
+  #keybindingController = new KeybindingController(this);
 
   static styles: CSSResultGroup = [RecordingButtonStyles, ButtonStyles];
 
