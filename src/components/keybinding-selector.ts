@@ -4,6 +4,10 @@ import { customElement, property, state } from "lit/decorators.js";
 import { keybindingContext } from "../contexts/dictation-context.js";
 import KeybindingSelectorStyles from "../styles/keybinding-selector.js";
 import { keybindingChangedEvent } from "../utils/events.js";
+import {
+  getPressedKeyFromEvent,
+  pressedKeysToKeybinding,
+} from "../utils/keybinding.js";
 
 @customElement("dictation-keybinding-selector")
 export class DictationKeybindingSelector extends LitElement {
@@ -17,71 +21,51 @@ export class DictationKeybindingSelector extends LitElement {
   @state()
   _isCapturingKeybinding: boolean = false;
 
+  #pressedKeys: Set<string> = new Set();
+
   static styles = KeybindingSelectorStyles;
 
   #handleKeybindingInputFocus(): void {
     this._isCapturingKeybinding = true;
+    this.#pressedKeys.clear();
+  }
+
+  #handleKeybindingInputBlur(): void {
+    console.log("Blur keybinding input");
+    this._isCapturingKeybinding = false;
+    this.#pressedKeys.clear();
   }
 
   #handleKeybindingKeyDown(event: KeyboardEvent): void {
-    if (!this._isCapturingKeybinding) return;
+    if (!this._isCapturingKeybinding) {
+      return;
+    }
 
     event.preventDefault();
     event.stopPropagation();
 
-    const modifiers: string[] = [];
-    if (event.metaKey) modifiers.push("meta");
-    if (event.ctrlKey) modifiers.push("ctrl");
-    if (event.altKey) modifiers.push("alt");
-    if (event.shiftKey) modifiers.push("shift");
+    const pressedKey = getPressedKeyFromEvent(event);
+    this.#pressedKeys.add(pressedKey);
 
-    const key = event.key;
-    let keybinding: string;
+    this.#commitKeybinding();
+  }
 
-    if (modifiers.length > 0) {
-      keybinding = `${modifiers.join("+")}+${key}`;
-    } else {
-      keybinding = key;
+  #handleKeybindingKeyUp(event: KeyboardEvent): void {
+    console.log("Keybinding keyup event", event);
+
+    if (!this._isCapturingKeybinding) {
+      return;
     }
 
-    this._isCapturingKeybinding = false;
-    this.dispatchEvent(keybindingChangedEvent(keybinding));
+    const pressedKey = getPressedKeyFromEvent(event);
+    this.#pressedKeys.delete(pressedKey);
   }
 
-  #handleKeybindingClear(): void {
-    this.dispatchEvent(keybindingChangedEvent(null));
-  }
-
-  #formatKeybinding(keybinding: string | null | undefined): string {
-    if (!keybinding) return "";
-    const parts = keybinding.split("+");
-    if (parts.length === 1) return parts[0];
-    const modifiers = parts.slice(0, -1);
-    const key = parts[parts.length - 1];
-    const formattedModifiers = modifiers.map((m) => {
-      switch (m.toLowerCase()) {
-        case "meta":
-          return navigator.platform.toLowerCase().includes("mac")
-            ? "Cmd"
-            : "Meta";
-        case "ctrl":
-          return "Ctrl";
-        case "alt":
-          return "Alt";
-        case "shift":
-          return "Shift";
-        default:
-          return m;
-      }
-    });
-    return `${formattedModifiers.join(" + ")} + ${key}`;
-  }
-
-  #formatKeybindingDisplay(keybinding: string | null | undefined): string {
-    if (!keybinding) return "";
-    const parts = keybinding.split("+");
-    const key = parts[parts.length - 1];
-    return key;
+  #commitKeybinding(): void {
+    if (this.#pressedKeys.size > 0) {
+      const keybinding = pressedKeysToKeybinding(this.#pressedKeys);
+      this.dispatchEvent(keybindingChangedEvent(keybinding));
+    }
   }
 
   render() {
@@ -89,32 +73,22 @@ export class DictationKeybindingSelector extends LitElement {
       <div>
         <label>Keybinding</label>
         <div class="keybinding-selector-wrapper">
-          ${
-            this._keybinding
-              ? html`
-                <div class="keybinding-key">${this.#formatKeybindingDisplay(
-                  this._keybinding,
-                )}</div>
-              `
-              : html`<div class="keybinding-key">${"`"}</div>`
-          }
+          <div class="keybinding-key">${this._keybinding}</div>
           <input
             type="text"
             class="keybinding-selector-input"
-            .value=${this._keybinding ? this.#formatKeybinding(this._keybinding) : ""}
+            .value=""
             placeholder="Click and press a key..."
             readonly
             @focusin=${this.#handleKeybindingInputFocus}
+            @focusout=${this.#handleKeybindingInputBlur}
             @keydown=${this.#handleKeybindingKeyDown}
+            @keyup=${this.#handleKeybindingKeyUp}
             ?disabled=${this.disabled}
           />
         </div>
         <p class="keybinding-help">
-          ${
-            this._keybinding
-              ? `Press ${this.#formatKeybinding(this._keybinding)} to start/stop recording`
-              : "Press ` to start/stop recording"
-          }
+          Press ${this._keybinding} to start/stop recording
         </p>
       </div>
     `;

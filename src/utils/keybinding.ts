@@ -1,30 +1,82 @@
 /**
- * Normalizes a key from KeyboardEvent to match keybinding format.
- * Converts to lowercase and handles special cases.
+ * Checks if the current platform is macOS.
+ * Uses userAgent string for reliable cross-browser detection.
  *
- * @param key - Key string from KeyboardEvent
- * @returns Normalized key string in lowercase
+ * @returns true if running on macOS
+ */
+function isMac(): boolean {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+
+  // Check user agent for Mac patterns (most reliable method)
+  return /Mac|iPhone|iPad|iPod/.test(navigator.userAgent);
+}
+
+/**
+ * Capitalizes the first letter of a string.
+ *
+ * @param str - String to capitalize
+ * @returns String with first letter capitalized
+ */
+function capitalize(str: string): string {
+  if (str.length === 0) {
+    return str;
+  }
+
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
+ * Normalizes a key string to the keybinding format.
+ * Handles platform-specific mappings and capitalization.
+ *
+ * @param key - Key string to normalize (will be trimmed and lowercased)
+ * @returns Formatted key string for keybinding
  *
  * @example
- * normalizeKey("Meta") // "meta"
- * normalizeKey("K") // "k"
- * normalizeKey("`") // "`"
+ * normalizeKeyForKeybinding("Control") // "Ctrl"
+ * normalizeKeyForKeybinding("META") // "Cmd" on Mac, "Meta" elsewhere
+ * normalizeKeyForKeybinding(" alt ") // "Opt" on Mac, "Alt" elsewhere
+ * normalizeKeyForKeybinding("shift") // "Shift"
+ * normalizeKeyForKeybinding("k") // "k"
  */
-function normalizeKey(key: string): string {
-  return key.toLowerCase();
+function normalizeKeyForKeybinding(key: string): string {
+  if (key === " ") {
+    return "Space";
+  }
+
+  const normalized = key.trim().toLowerCase();
+
+  if (normalized === "control") {
+    return "Ctrl";
+  }
+  if (normalized === "meta" || normalized === "cmd") {
+    return isMac() ? "Cmd" : "Meta";
+  }
+  if (normalized === "alt" || normalized === "opt") {
+    return isMac() ? "Opt" : "Alt";
+  }
+  if (normalized === "space") {
+    return "Space";
+  }
+
+  return normalized.length > 1 ? capitalize(normalized) : normalized;
 }
 
 /**
  * Parses a keybinding string into an array of keys.
  * Supports any combination of keys, not limited to modifier keys.
+ * Normalizes keys to match the format from getPressedKeyFromEvent.
+ * Platform-specific: "meta"/"cmd" -> "Cmd" on Mac, "alt"/"opt" -> "Opt" on Mac.
  *
- * @param keybinding - Keybinding string (e.g., "`", "meta+`", "ctrl+shift+k", "a+b")
- * @returns Array of keys in lowercase, or null if keybinding is null/undefined/empty
+ * @param keybinding - Keybinding string (e.g., "`", "Cmd+`", "Opt+Shift+k", "a+b")
+ * @returns Array of normalized keys, or null if keybinding is null/undefined/empty
  *
  * @example
- * parseKeybinding("meta+k") // ["meta", "k"]
- * parseKeybinding("a+b") // ["a", "b"]
- * parseKeybinding("ctrl+shift+a") // ["ctrl", "shift", "a"]
+ * parseKeybinding("Cmd+k") // ["Cmd", "k"] on Mac
+ * parseKeybinding("opt+a") // ["Opt", "a"] on Mac
+ * parseKeybinding("ctrl+shift+a") // ["Ctrl", "Shift", "a"]
  * parseKeybinding("`") // ["`"]
  */
 export function parseKeybinding(
@@ -40,19 +92,19 @@ export function parseKeybinding(
     return null;
   }
 
-  return trimmed.split("+").map((key) => key.toLowerCase().trim());
+  return trimmed.split("+").map(normalizeKeyForKeybinding);
 }
 
 /**
  * Checks if all keys in the keybinding are currently pressed.
  *
- * @param pressedKeys - Set of currently pressed keys (in lowercase)
+ * @param pressedKeys - Set of currently pressed keys (normalized with capitalization)
  * @param keybinding - Keybinding string to match against
  * @returns true if all keys in keybinding are in pressedKeys set
  *
  * @example
- * const pressed = new Set(["meta", "k"]);
- * matchesKeybinding(pressed, "meta+k") // true
+ * const pressed = new Set(["Cmd", "k"]);
+ * matchesKeybinding(pressed, "Cmd+k") // true
  * matchesKeybinding(pressed, "a+b") // false
  */
 export function matchesKeybinding(
@@ -71,21 +123,38 @@ export function matchesKeybinding(
 /**
  * Gets the pressed key from a KeyboardEvent.
  * Treats modifier keys the same as any other key - they generate their own events.
+ * Keys longer than 1 character are capitalized (e.g., "Cmd", "Ctrl", "Space").
+ * Platform-specific: "Meta" -> "Cmd" on Mac, "Alt" -> "Opt" on Mac.
  *
  * @param event - KeyboardEvent to extract the pressed key from
- * @returns Normalized key string in keybinding format (e.g., "meta", "ctrl", "k")
+ * @returns Normalized key string in keybinding format (e.g., "Cmd", "Opt", "Ctrl", "k")
  *
  * @example
- * getPressedKeyFromEvent(event) // "meta" when Meta key is pressed, "k" when K is pressed
+ * getPressedKeyFromEvent(event) // "Cmd" when Meta key is pressed on Mac, "Opt" when Alt is pressed on Mac
  */
 export function getPressedKeyFromEvent(event: KeyboardEvent): string {
-  const normalized = normalizeKey(event.key);
+  return normalizeKeyForKeybinding(event.key);
+}
 
-  if (normalized === "control") {
-    return "ctrl";
+/**
+ * Converts a set of pressed keys to a keybinding string format.
+ * Keys longer than 1 character should be capitalized.
+ *
+ * @param pressedKeys - Set of pressed keys (e.g., Set(["Cmd", "k"]))
+ * @returns Keybinding string (e.g., "Cmd+k") or empty string if no keys
+ *
+ * @example
+ * pressedKeysToKeybinding(new Set(["Cmd", "k"])) // "Cmd+k"
+ * pressedKeysToKeybinding(new Set(["a", "b"])) // "a+b"
+ * pressedKeysToKeybinding(new Set(["k"])) // "k"
+ */
+export function pressedKeysToKeybinding(pressedKeys: Set<string>): string {
+  if (pressedKeys.size === 0) {
+    return "";
   }
 
-  return normalized;
+  const keys = Array.from(pressedKeys);
+  return keys.join("+");
 }
 
 /**
