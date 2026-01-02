@@ -148,7 +148,7 @@ export class DictationRecordingButton extends LitElement {
         }
       });
 
-      await this.#dictationController.connect(
+      const isNewConnection = await this.#dictationController.connect(
         this.#mediaController.mediaRecorder,
         this._dictationConfig,
         {
@@ -160,6 +160,15 @@ export class DictationRecordingButton extends LitElement {
           },
         },
       );
+
+      // configuration has been accepted before
+      if (!isNewConnection) {
+        this.#mediaController.mediaRecorder?.start(AUDIO_CHUNK_INTERVAL_MS);
+        this.#mediaController.startAudioLevelMonitoring((level) => {
+          this.dispatchEvent(audioLevelChangedEvent(level));
+        });
+        this.dispatchEvent(recordingStateChangedEvent("recording"));
+      }
     } catch (error) {
       this.dispatchEvent(errorEvent(error));
       await this.#handleStop();

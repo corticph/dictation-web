@@ -14,6 +14,7 @@ interface DictationControllerHost extends ReactiveControllerHost {
   _tenantName?: string;
   _socketUrl?: string;
   _socketProxy?: ProxyOptions;
+  _dictationConfig?: Corti.TranscribeConfig;
 }
 
 export type TranscribeMessage =
@@ -38,7 +39,10 @@ export class DictationController implements ReactiveController {
   #cortiClient: CortiClient | null = null;
   #webSocket: TranscribeSocket | null = null;
   #closeTimeout?: number;
-  #onNetworkActivity?: WebSocketCallbacks["onNetworkActivity"];
+  #callbacks?: WebSocketCallbacks;
+  #lastDictationConfig: Corti.TranscribeConfig | null = null;
+  #lastSocketUrl?: string;
+  #lastSocketProxy?: ProxyOptions;
 
   constructor(host: DictationControllerHost) {
     this.host = host;
@@ -49,33 +53,56 @@ export class DictationController implements ReactiveController {
     this.cleanup();
   }
 
+  #configHasChanged(): boolean {
+    return (
+      JSON.stringify(this.host._dictationConfig) !==
+        JSON.stringify(this.#lastDictationConfig) ||
+      this.host._socketUrl !== this.#lastSocketUrl ||
+      JSON.stringify(this.host._socketProxy) !==
+        JSON.stringify(this.#lastSocketProxy)
+    );
+  }
+
   async connect(
     mediaRecorder: MediaRecorder | null,
     dictationConfig: Corti.TranscribeConfig = DEFAULT_DICTATION_CONFIG,
     callbacks: WebSocketCallbacks = {},
-  ): Promise<void> {
+  ): Promise<boolean> {
     if (!mediaRecorder) {
       throw new Error("MediaRecorder is required to connect");
     }
 
-    if (this.#webSocket?.readyState === WebSocket.OPEN) {
-      throw new Error("Already connected. Disconnect before reconnecting.");
+    const newConnection =
+      this.#configHasChanged() ||
+      this.#webSocket?.readyState !== WebSocket.OPEN;
+
+    if (newConnection) {
+      this.cleanup();
+
+      if (this.#webSocket?.readyState === WebSocket.OPEN) {
+        throw new Error("Already connected. Disconnect before reconnecting.");
+      }
+
+      this.#webSocket =
+        this.host._socketUrl || this.host._socketProxy
+          ? await this.#connectProxy(dictationConfig)
+          : await this.#connectAuth(dictationConfig);
+
+      this.#callbacks?.onNetworkActivity?.("sent", {
+        configuration: dictationConfig,
+        type: "config",
+      });
+
+      this.#lastDictationConfig = this.host._dictationConfig || null;
+      this.#lastSocketUrl = this.host._socketUrl;
+      this.#lastSocketProxy = this.host._socketProxy;
     }
 
-    this.#webSocket =
-      this.host._socketUrl || this.host._socketProxy
-        ? await this.#connectProxy(dictationConfig)
-        : await this.#connectAuth(dictationConfig);
-
-    this.#onNetworkActivity = callbacks.onNetworkActivity;
-
-    this.#onNetworkActivity?.("sent", {
-      configuration: dictationConfig,
-      type: "config",
-    });
-
+    this.#callbacks = callbacks;
     this.#setupMediaRecorder(mediaRecorder);
     this.#setupWebSocketHandlers(callbacks);
+
+    return newConnection;
   }
 
   async #connectProxy(
@@ -129,7 +156,7 @@ export class DictationController implements ReactiveController {
     }
 
     this.#webSocket.on("message", (message: TranscribeMessage) => {
-      this.#onNetworkActivity?.("received", message);
+      callbacks.onNetworkActivity?.("received", message);
 
       if (callbacks.onMessage) {
         callbacks.onMessage(message);
@@ -152,7 +179,7 @@ export class DictationController implements ReactiveController {
   #setupMediaRecorder(mediaRecorder: MediaRecorder): void {
     mediaRecorder.ondataavailable = (event) => {
       this.#webSocket?.sendAudio(event.data);
-      this.#onNetworkActivity?.("sent", {
+      this.#callbacks?.onNetworkActivity?.("sent", {
         size: event.data.size,
         type: "audio",
       });
@@ -179,12 +206,30 @@ export class DictationController implements ReactiveController {
         resolve();
       });
 
-      this.#webSocket.sendEnd({ type: "end" });
-      this.#onNetworkActivity?.("sent", { type: "end" });
+      this.#webSocket.on("message", (message) => {
+        this.#callbacks?.onNetworkActivity?.("received", message);
+
+        if (this.#callbacks?.onMessage) {
+          this.#callbacks?.onMessage(message);
+        }
+
+        if (message.type === "flushed") {
+          if (this.#closeTimeout) {
+            clearTimeout(this.#closeTimeout);
+            this.#closeTimeout = undefined;
+          }
+
+          resolve();
+          return;
+        }
+      });
+
+      this.#webSocket.sendFlush({ type: "flush" });
+      this.#callbacks?.onNetworkActivity?.("sent", { type: "flush" });
 
       this.#closeTimeout = window.setTimeout(() => {
         // Reject the promise before closing the web socket, so the promise rejects before close event fires
-        reject(new Error("WebSocket close timeout"));
+        reject(new Error("Audio processing timeout"));
 
         if (this.#webSocket?.readyState === WebSocket.OPEN) {
           this.#webSocket.close();
@@ -192,7 +237,9 @@ export class DictationController implements ReactiveController {
       }, 10000);
     });
 
-    this.cleanup();
+    if (this.#configHasChanged()) {
+      this.cleanup();
+    }
   }
 
   cleanup(): void {
@@ -207,5 +254,8 @@ export class DictationController implements ReactiveController {
 
     this.#webSocket = null;
     this.#cortiClient = null;
+    this.#lastDictationConfig = null;
+    this.#lastSocketUrl = undefined;
+    this.#lastSocketProxy = undefined;
   }
 }
