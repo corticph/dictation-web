@@ -296,7 +296,10 @@ export class DictationRoot extends LitElement {
       this.#languagesController.initialize();
     } else if (e.context === devicesContext) {
       this.#devicesController.initialize();
-    } else if (e.context === keybindingContext) {
+    } else if (
+      e.context === keybindingContext &&
+      e.contextTarget.tagName.toLowerCase() === "dictation-keybinding-selector"
+    ) {
       // Initialize keybinding to default "`" when setting first mounts
       if (this.keybinding === undefined) {
         this.keybinding = "`";
