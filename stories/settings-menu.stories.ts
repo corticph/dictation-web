@@ -18,12 +18,14 @@ import LangaugeSelectorStoryMeta, {
 type SettingsMenuStory = DictationSettingsMenu &
   LanguageSelectorStory &
   DeviceSelectorStory &
-  Pick<DictationRoot, "recordingState">;
+  Pick<DictationRoot, "recordingState" | "mode" | "keybinding">;
 
 const meta = {
   args: {
     disabled: false,
+    keybinding: "`",
     languages,
+    mode: "toggle-to-talk",
     recordingState: "stopped",
     settingsEnabled: ["device", "language"],
   },
@@ -34,6 +36,16 @@ const meta = {
       disabled: {
         control: false,
         table: { disable: true },
+      },
+      keybinding: {
+        control: "text",
+        description:
+          "Keyboard shortcut for starting/stopping recording (single key only, e.g., 'k', '`', 'KeyK', 'Backquote')",
+      },
+      mode: {
+        control: "select",
+        description: "Dictation mode: toggle-to-talk or push-to-talk",
+        options: ["toggle-to-talk", "push-to-talk"],
       },
       recordingState: {
         control: false,
@@ -53,6 +65,8 @@ const meta = {
     selectedDevice,
     settingsEnabled,
     recordingState,
+    mode,
+    keybinding,
   }) => {
     const selectedDeviceValue = selectedDevice
       ? mockDevices.find((device) => device.deviceId === selectedDevice)
@@ -64,9 +78,13 @@ const meta = {
         .selectedDevice=${selectedDeviceValue}
         languages=${languages}
         .recordingState=${recordingState}
+        mode=${mode}
+        keybinding=${keybinding}
       >
         <dictation-settings-menu
           settingsEnabled=${settingsEnabled}
+          @mode-changed=${action("mode-changed")}
+          @keybinding-changed=${action("keybinding-changed")}
           @languages-changed=${action("languages-changed")}
           @recording-devices-changed=${action("recording-devices-changed")}
           @ready=${action("ready")}
@@ -132,4 +150,27 @@ export const BothWithCustomOptions = {
     ...WithCustomLanguages.argTypes,
     ...WithCustomDevices.argTypes,
   },
+} as StoryObj<SettingsMenuStory>;
+
+export const WithModeAndKeybinding = {
+  args: {
+    keybinding: "k",
+    mode: "toggle-to-talk",
+    settingsEnabled: ["device", "language", "mode", "keybinding"],
+  },
+  argTypes: disableControls(["settingsEnabled"]),
+} as StoryObj<SettingsMenuStory>;
+
+export const OnlyModeSelector = {
+  args: {
+    settingsEnabled: ["mode"],
+  },
+  argTypes: disableControls(["settingsEnabled", "devices", "languages"]),
+} as StoryObj<SettingsMenuStory>;
+
+export const OnlyKeybindingSelector = {
+  args: {
+    settingsEnabled: ["keybinding"],
+  },
+  argTypes: disableControls(["settingsEnabled", "devices", "languages"]),
 } as StoryObj<SettingsMenuStory>;

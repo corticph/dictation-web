@@ -20,7 +20,9 @@ const meta = {
   args: {
     accessToken: "dummy_token",
     allowButtonFocus: false,
+    keybinding: "`",
     languagesSupported: languages,
+    mode: "toggle-to-talk",
     settingsEnabled: ["device", "language"],
   },
   argTypes: {
@@ -34,7 +36,17 @@ const meta = {
         "Whether the recording button inside the corti-dictation component can take focus on click",
     },
     devices: DeviceSelectorStoryMeta.argTypes.devices,
+    keybinding: {
+      control: "text",
+      description:
+        "Keyboard shortcut for starting/stopping recording (single key only, e.g., 'k', '`', 'KeyK', 'Backquote')",
+    },
     languagesSupported: LanguageSelectorStoryMeta.argTypes.languages,
+    mode: {
+      control: "select",
+      description: "Dictation mode: toggle-to-talk or push-to-talk",
+      options: ["toggle-to-talk", "push-to-talk"],
+    },
     settingsEnabled: SettingsMeunStoryMeta.argTypes.settingsEnabled,
   },
   component: "corti-dictation",
@@ -50,6 +62,8 @@ const meta = {
     allowButtonFocus,
     devices,
     selectedDevice,
+    mode,
+    keybinding,
   }) => {
     const selectedDeviceValue = selectedDevice
       ? mockDevices.find((device) => device.deviceId === selectedDevice)
@@ -63,6 +77,8 @@ const meta = {
         ?allowButtonFocus=${allowButtonFocus}
         .devices=${devices}
         .selectedDevice=${selectedDeviceValue}
+        mode=${mode}
+        keybinding=${keybinding}
         @mode-changed=${action("mode-changed")}
         @keybinding-changed=${action("keybinding-changed")}
         @languages-changed=${action("languages-changed")}
@@ -139,4 +155,26 @@ export const WithCustomDevices = {
     },
     ...disableControls(["devices", "settingsEnabled"]),
   },
+};
+
+export const WithModeAndKeybinding = {
+  args: {
+    accessToken: "dummy_token",
+    keybinding: "k",
+    languagesSupported: languages,
+    mode: "toggle-to-talk",
+    settingsEnabled: ["device", "language", "mode", "keybinding"],
+  },
+  argTypes: disableControls(["settingsEnabled"]),
+};
+
+export const PushToTalkMode = {
+  args: {
+    accessToken: "dummy_token",
+    keybinding: "`",
+    languagesSupported: languages,
+    mode: "push-to-talk",
+    settingsEnabled: ["device", "language", "mode", "keybinding"],
+  },
+  argTypes: disableControls(["settingsEnabled", "mode"]),
 };
