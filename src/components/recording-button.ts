@@ -31,6 +31,7 @@ import {
   commandEvent,
   errorEvent,
   networkActivityEvent,
+  type RecordingStateChangedEventDetail,
   recordingStateChangedEvent,
   streamClosedEvent,
   transcriptEvent,
@@ -240,7 +241,14 @@ export class DictationRecordingButton extends LitElement {
     if (this._recordingState === "initializing") {
       this.addEventListener(
         "recording-state-changed",
-        () => this.#handleStop(),
+        (event) => {
+          if (
+            (event as CustomEvent<RecordingStateChangedEventDetail>).detail
+              .state === "recording"
+          ) {
+            this.#handleStop();
+          }
+        },
         {
           once: true,
         },

@@ -236,10 +236,6 @@ export class DictationController implements ReactiveController {
         }
       }, 10000);
     });
-
-    if (this.#configHasChanged()) {
-      this.cleanup();
-    }
   }
 
   cleanup(): void {
