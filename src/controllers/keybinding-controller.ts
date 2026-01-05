@@ -1,4 +1,5 @@
 import type { ReactiveController, ReactiveControllerHost } from "lit";
+import type { DictationMode } from "../types.js";
 import {
   getPressedKeyFromEvent,
   matchesKeybinding,
@@ -7,6 +8,9 @@ import {
 
 interface KeybindingControllerHost extends ReactiveControllerHost {
   _keybinding?: string | null;
+  _mode?: DictationMode;
+  startRecording(): void;
+  stopRecording(): void;
   toggleRecording(): void;
 }
 
@@ -49,19 +53,38 @@ export class KeybindingController implements ReactiveController {
 
       if (matchesKeybinding(this.#pressedKeys, this.host._keybinding)) {
         event.preventDefault();
-        this.host.toggleRecording();
+
+        if (this.host._mode === "hold-to-talk") {
+          this.host.startRecording();
+        }
+
+        if (this.host._mode === "toggle-to-talk") {
+          this.host.toggleRecording();
+        }
       }
     };
 
     this.#keyupHandler = (event: KeyboardEvent) => {
       const pressedKey = getPressedKeyFromEvent(event);
       this.#pressedKeys.delete(pressedKey);
+
+      if (
+        this.host._mode === "hold-to-talk" &&
+        !matchesKeybinding(this.#pressedKeys, this.host._keybinding)
+      ) {
+        this.host.stopRecording();
+      }
     };
 
     this.#blurHandler = () => {
       // Clear all pressed keys when window loses focus
       // This prevents stuck keys when user switches windows/apps
       this.#pressedKeys.clear();
+
+      // window.blur (not element blur) - fires when switching apps/windows
+      if (this.host._mode === "hold-to-talk") {
+        this.host.stopRecording();
+      }
     };
 
     window.addEventListener("keydown", this.#keydownHandler);

@@ -4,7 +4,7 @@ export type RecordingState =
   | "stopping"
   | "stopped";
 
-export type DictationMode = "toggle-to-talk" | "push-to-talk";
+export type DictationMode = "toggle-to-talk" | "hold-to-talk";
 
 export type Keybinding = string;
 

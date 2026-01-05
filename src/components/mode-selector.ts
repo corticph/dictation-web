@@ -39,13 +39,13 @@ export class DictationModeSelector extends LitElement {
           </button>
           <button
             class=${classMap({
-              active: this._mode === "push-to-talk",
+              active: this._mode === "hold-to-talk",
               "mode-selector-tab": true,
             })}
-            @click=${() => this.#handleModeChange("push-to-talk")}
+            @click=${() => this.#handleModeChange("hold-to-talk")}
             ?disabled=${this.disabled}
           >
-            Push-to-talk
+            Hold-to-talk
           </button>
         </div>
       </div>

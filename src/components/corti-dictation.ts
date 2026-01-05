@@ -182,7 +182,7 @@ export class CortiDictation extends LitElement {
   }
 
   @state()
-  _mode?: DictationMode;
+  _mode?: DictationMode = "toggle-to-talk";
 
   /**
    * Keybinding for keyboard shortcut (e.g., "`", "meta+`", "ctrl+shift+k")

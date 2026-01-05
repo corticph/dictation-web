@@ -1,16 +1,11 @@
 import { css } from "lit";
+import { LabelStyles } from "./component-styles.js";
 
-const KeybindingSelectorStyles = css`
+const KeybindingSelectorStyles = [
+  LabelStyles,
+  css`
   :host {
     display: block;
-  }
-  label {
-    display: block;
-    font-size: 0.8rem;
-    padding-bottom: 0.5rem;
-    font-weight: 500;
-    color: var(--component-text-color, light-dark(#333, #eee));
-    pointer-events: none;
   }
   .keybinding-selector-wrapper {
     display: flex;
@@ -72,6 +67,7 @@ const KeybindingSelectorStyles = css`
     letter-spacing: 0.01px;
     padding-top: 8px;
   }
-`;
+`,
+];
 
 export default KeybindingSelectorStyles;

@@ -9,6 +9,7 @@ import {
   debugDisplayAudioContext,
   dictationConfigContext,
   keybindingContext,
+  modeContext,
   recordingStateContext,
   regionContext,
   selectedDeviceContext,
@@ -24,7 +25,7 @@ import { KeybindingController } from "../controllers/keybinding-controller.js";
 import { MediaController } from "../controllers/media-controller.js";
 import ButtonStyles from "../styles/buttons.js";
 import RecordingButtonStyles from "../styles/recording-button.js";
-import type { ProxyOptions, RecordingState } from "../types.js";
+import type { DictationMode, ProxyOptions, RecordingState } from "../types.js";
 import {
   audioLevelChangedEvent,
   commandEvent,
@@ -85,6 +86,10 @@ export class DictationRecordingButton extends LitElement {
   @state()
   _keybinding?: string | null;
 
+  @consume({ context: modeContext, subscribe: true })
+  @state()
+  _mode?: DictationMode;
+
   @property({ type: Boolean })
   allowButtonFocus: boolean = false;
 
@@ -97,6 +102,27 @@ export class DictationRecordingButton extends LitElement {
   #handleMouseDown(event: MouseEvent): void {
     if (!this.allowButtonFocus) {
       event.preventDefault();
+    }
+
+    if (this._mode === "hold-to-talk") {
+      this.startRecording();
+    }
+  }
+
+  #handleMouseUp(): void {
+    if (this._mode === "hold-to-talk") {
+      this.stopRecording();
+      return;
+    }
+
+    if (this._mode === "toggle-to-talk") {
+      this.toggleRecording();
+    }
+  }
+
+  #handleMouseLeave(): void {
+    if (this._mode === "hold-to-talk") {
+      this.stopRecording();
     }
   }
 
@@ -198,14 +224,6 @@ export class DictationRecordingButton extends LitElement {
     this.dispatchEvent(recordingStateChangedEvent("stopped"));
   }
 
-  #handleClick(): void {
-    if (this._recordingState === "stopped") {
-      this.#handleStart();
-    } else if (this._recordingState === "recording") {
-      this.#handleStop();
-    }
-  }
-
   public startRecording(): void {
     if (this._recordingState !== "stopped") {
       return;
@@ -215,7 +233,7 @@ export class DictationRecordingButton extends LitElement {
   }
 
   public stopRecording(): void {
-    if (this._recordingState !== "recording") {
+    if (this._recordingState === "stopped") {
       return;
     }
 
@@ -223,7 +241,11 @@ export class DictationRecordingButton extends LitElement {
   }
 
   public toggleRecording(): void {
-    this.#handleClick();
+    if (this._recordingState === "stopped") {
+      this.#handleStart();
+    } else if (this._recordingState === "recording") {
+      this.#handleStop();
+    }
   }
 
   render() {
@@ -235,7 +257,8 @@ export class DictationRecordingButton extends LitElement {
     return html`
       <button
         @mousedown=${this.#handleMouseDown}
-        @click=${this.#handleClick}
+        @mouseup=${this.#handleMouseUp}
+        @mouseleave=${this.#handleMouseLeave}
         ?disabled=${isLoading}
         class=${isRecording ? "red" : "accent"}
         aria-label=${isRecording ? "Stop recording" : "Start recording"}
