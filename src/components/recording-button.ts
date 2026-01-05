@@ -237,6 +237,17 @@ export class DictationRecordingButton extends LitElement {
       return;
     }
 
+    if (this._recordingState === "initializing") {
+      this.addEventListener(
+        "recording-state-changed",
+        () => this.#handleStop(),
+        {
+          once: true,
+        },
+      );
+      return;
+    }
+
     this.#handleStop();
   }
 

@@ -1,7 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from "lit";
 import type { DictationMode } from "../types.js";
 import {
-  getPressedKeyFromEvent,
   matchesKeybinding,
   shouldIgnoreKeybinding,
 } from "../utils/keybinding.js";
@@ -17,7 +16,6 @@ interface KeybindingControllerHost extends ReactiveControllerHost {
 export class KeybindingController implements ReactiveController {
   host: KeybindingControllerHost;
 
-  #pressedKeys: Set<string> = new Set();
   #keydownHandler?: (event: KeyboardEvent) => void;
   #keyupHandler?: (event: KeyboardEvent) => void;
   #blurHandler?: () => void;
@@ -33,7 +31,6 @@ export class KeybindingController implements ReactiveController {
 
   hostDisconnected(): void {
     this.#removeListeners();
-    this.#pressedKeys.clear();
   }
 
   #setupListeners(): void {
@@ -48,10 +45,7 @@ export class KeybindingController implements ReactiveController {
         return;
       }
 
-      const pressedKey = getPressedKeyFromEvent(event);
-      this.#pressedKeys.add(pressedKey);
-
-      if (matchesKeybinding(this.#pressedKeys, this.host._keybinding)) {
+      if (matchesKeybinding(event, this.host._keybinding)) {
         event.preventDefault();
 
         if (this.host._mode === "push-to-talk") {
@@ -65,23 +59,19 @@ export class KeybindingController implements ReactiveController {
     };
 
     this.#keyupHandler = (event: KeyboardEvent) => {
-      const pressedKey = getPressedKeyFromEvent(event);
-      this.#pressedKeys.delete(pressedKey);
+      if (!this.host._keybinding) {
+        return;
+      }
 
       if (
         this.host._mode === "push-to-talk" &&
-        !matchesKeybinding(this.#pressedKeys, this.host._keybinding)
+        matchesKeybinding(event, this.host._keybinding)
       ) {
         this.host.stopRecording();
       }
     };
 
     this.#blurHandler = () => {
-      // Clear all pressed keys when window loses focus
-      // This prevents stuck keys when user switches windows/apps
-      this.#pressedKeys.clear();
-
-      // window.blur (not element blur) - fires when switching apps/windows
       if (this.host._mode === "push-to-talk") {
         this.host.stopRecording();
       }

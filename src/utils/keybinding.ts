@@ -65,23 +65,19 @@ function normalizeKeyForKeybinding(key: string): string {
 }
 
 /**
- * Parses a keybinding string into an array of keys.
- * Supports any combination of keys, not limited to modifier keys.
- * Normalizes keys to match the format from getPressedKeyFromEvent.
- * Platform-specific: "meta"/"cmd" -> "Cmd" on Mac, "alt"/"opt" -> "Opt" on Mac.
+ * Normalizes a keybinding string.
  *
- * @param keybinding - Keybinding string (e.g., "`", "Cmd+`", "Opt+Shift+k", "a+b")
- * @returns Array of normalized keys, or null if keybinding is null/undefined/empty
+ * @param keybinding - Keybinding string to normalize
+ * @returns Normalized keybinding string or null if empty
  *
  * @example
- * parseKeybinding("Cmd+k") // ["Cmd", "k"] on Mac
- * parseKeybinding("opt+a") // ["Opt", "a"] on Mac
- * parseKeybinding("ctrl+shift+a") // ["Ctrl", "Shift", "a"]
- * parseKeybinding("`") // ["`"]
+ * normalizeKeybinding("k") // "k"
+ * normalizeKeybinding("meta") // "Cmd" on Mac
+ * normalizeKeybinding(" space ") // "Space"
  */
-export function parseKeybinding(
+export function normalizeKeybinding(
   keybinding: string | null | undefined,
-): string[] | null {
+): string | null {
   if (!keybinding) {
     return null;
   }
@@ -92,32 +88,38 @@ export function parseKeybinding(
     return null;
   }
 
-  return trimmed.split("+").map(normalizeKeyForKeybinding);
+  return normalizeKeyForKeybinding(trimmed);
 }
 
 /**
- * Checks if all keys in the keybinding are currently pressed.
+ * Checks if a pressed key matches the keybinding.
+ * Checks both event.key and event.code for better reliability.
  *
- * @param pressedKeys - Set of currently pressed keys (normalized with capitalization)
+ * @param event - KeyboardEvent to check
  * @param keybinding - Keybinding string to match against
- * @returns true if all keys in keybinding are in pressedKeys set
+ * @returns true if either the key or code matches the keybinding
  *
  * @example
- * const pressed = new Set(["Cmd", "k"]);
- * matchesKeybinding(pressed, "Cmd+k") // true
- * matchesKeybinding(pressed, "a+b") // false
+ * matchesKeybinding(event, "k") // true if event.key is "k" or event.code is "KeyK"
+ * matchesKeybinding(event, "`") // true if event.key is "`" or event.code is "Backquote"
  */
 export function matchesKeybinding(
-  pressedKeys: Set<string>,
+  event: KeyboardEvent,
   keybinding: string | null | undefined,
 ): boolean {
-  const requiredKeys = parseKeybinding(keybinding);
+  const normalizedKeybinding = normalizeKeybinding(keybinding);
 
-  if (!requiredKeys || requiredKeys.length === 0) {
+  if (!normalizedKeybinding) {
     return false;
   }
 
-  return requiredKeys.every((key) => pressedKeys.has(key));
+  const normalizedKey = normalizeKeyForKeybinding(event.key);
+  const normalizedCode = normalizeKeyForKeybinding(event.code);
+
+  return (
+    normalizedKey === normalizedKeybinding ||
+    normalizedCode === normalizedKeybinding
+  );
 }
 
 /**
@@ -134,27 +136,6 @@ export function matchesKeybinding(
  */
 export function getPressedKeyFromEvent(event: KeyboardEvent): string {
   return normalizeKeyForKeybinding(event.key);
-}
-
-/**
- * Converts a set of pressed keys to a keybinding string format.
- * Keys longer than 1 character should be capitalized.
- *
- * @param pressedKeys - Set of pressed keys (e.g., Set(["Cmd", "k"]))
- * @returns Keybinding string (e.g., "Cmd+k") or empty string if no keys
- *
- * @example
- * pressedKeysToKeybinding(new Set(["Cmd", "k"])) // "Cmd+k"
- * pressedKeysToKeybinding(new Set(["a", "b"])) // "a+b"
- * pressedKeysToKeybinding(new Set(["k"])) // "k"
- */
-export function pressedKeysToKeybinding(pressedKeys: Set<string>): string {
-  if (pressedKeys.size === 0) {
-    return "";
-  }
-
-  const keys = Array.from(pressedKeys);
-  return keys.join("+");
 }
 
 /**

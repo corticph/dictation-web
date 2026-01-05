@@ -4,10 +4,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { keybindingContext } from "../contexts/dictation-context.js";
 import KeybindingSelectorStyles from "../styles/keybinding-selector.js";
 import { keybindingChangedEvent } from "../utils/events.js";
-import {
-  getPressedKeyFromEvent,
-  pressedKeysToKeybinding,
-} from "../utils/keybinding.js";
+import { getPressedKeyFromEvent } from "../utils/keybinding.js";
 
 @customElement("dictation-keybinding-selector")
 export class DictationKeybindingSelector extends LitElement {
@@ -21,19 +18,14 @@ export class DictationKeybindingSelector extends LitElement {
   @state()
   _isCapturingKeybinding: boolean = false;
 
-  #pressedKeys: Set<string> = new Set();
-
   static styles = KeybindingSelectorStyles;
 
   #handleKeybindingInputFocus(): void {
     this._isCapturingKeybinding = true;
-    this.#pressedKeys.clear();
   }
 
   #handleKeybindingInputBlur(): void {
-    console.log("Blur keybinding input");
     this._isCapturingKeybinding = false;
-    this.#pressedKeys.clear();
   }
 
   #handleKeybindingKeyDown(event: KeyboardEvent): void {
@@ -45,27 +37,7 @@ export class DictationKeybindingSelector extends LitElement {
     event.stopPropagation();
 
     const pressedKey = getPressedKeyFromEvent(event);
-    this.#pressedKeys.add(pressedKey);
-
-    this.#commitKeybinding();
-  }
-
-  #handleKeybindingKeyUp(event: KeyboardEvent): void {
-    console.log("Keybinding keyup event", event);
-
-    if (!this._isCapturingKeybinding) {
-      return;
-    }
-
-    const pressedKey = getPressedKeyFromEvent(event);
-    this.#pressedKeys.delete(pressedKey);
-  }
-
-  #commitKeybinding(): void {
-    if (this.#pressedKeys.size > 0) {
-      const keybinding = pressedKeysToKeybinding(this.#pressedKeys);
-      this.dispatchEvent(keybindingChangedEvent(keybinding));
-    }
+    this.dispatchEvent(keybindingChangedEvent(pressedKey));
   }
 
   render() {
@@ -83,7 +55,6 @@ export class DictationKeybindingSelector extends LitElement {
             @focusin=${this.#handleKeybindingInputFocus}
             @focusout=${this.#handleKeybindingInputBlur}
             @keydown=${this.#handleKeybindingKeyDown}
-            @keyup=${this.#handleKeybindingKeyUp}
             ?disabled=${this.disabled}
           />
         </div>
