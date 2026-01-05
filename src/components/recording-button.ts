@@ -104,13 +104,13 @@ export class DictationRecordingButton extends LitElement {
       event.preventDefault();
     }
 
-    if (this._mode === "hold-to-talk") {
+    if (this._mode === "push-to-talk") {
       this.startRecording();
     }
   }
 
   #handleMouseUp(): void {
-    if (this._mode === "hold-to-talk") {
+    if (this._mode === "push-to-talk") {
       this.stopRecording();
       return;
     }
@@ -121,7 +121,7 @@ export class DictationRecordingButton extends LitElement {
   }
 
   #handleMouseLeave(): void {
-    if (this._mode === "hold-to-talk") {
+    if (this._mode === "push-to-talk") {
       this.stopRecording();
     }
   }

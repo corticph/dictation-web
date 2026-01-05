@@ -54,7 +54,7 @@ export class KeybindingController implements ReactiveController {
       if (matchesKeybinding(this.#pressedKeys, this.host._keybinding)) {
         event.preventDefault();
 
-        if (this.host._mode === "hold-to-talk") {
+        if (this.host._mode === "push-to-talk") {
           this.host.startRecording();
         }
 
@@ -69,7 +69,7 @@ export class KeybindingController implements ReactiveController {
       this.#pressedKeys.delete(pressedKey);
 
       if (
-        this.host._mode === "hold-to-talk" &&
+        this.host._mode === "push-to-talk" &&
         !matchesKeybinding(this.#pressedKeys, this.host._keybinding)
       ) {
         this.host.stopRecording();
@@ -82,7 +82,7 @@ export class KeybindingController implements ReactiveController {
       this.#pressedKeys.clear();
 
       // window.blur (not element blur) - fires when switching apps/windows
-      if (this.host._mode === "hold-to-talk") {
+      if (this.host._mode === "push-to-talk") {
         this.host.stopRecording();
       }
     };
