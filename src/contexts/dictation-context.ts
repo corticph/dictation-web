@@ -12,7 +12,6 @@ import {
   errorEvent,
   type KeybindingChangedEventDetail,
   keybindingChangedEvent,
-  modeChangedEvent,
 } from "../utils/events.js";
 import { normalizeKeybinding } from "../utils/keybinding.js";
 import { decodeToken } from "../utils/token.js";
