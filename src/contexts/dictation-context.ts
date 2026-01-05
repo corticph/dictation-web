@@ -11,6 +11,8 @@ import { commaSeparatedConverter } from "../utils/converters.js";
 import {
   errorEvent,
   type KeybindingChangedEventDetail,
+  keybindingChangedEvent,
+  modeChangedEvent,
 } from "../utils/events.js";
 import { normalizeKeybinding } from "../utils/keybinding.js";
 import { decodeToken } from "../utils/token.js";
@@ -307,6 +309,7 @@ export class DictationRoot extends LitElement {
       // Initialize keybinding to default "`" when setting first mounts
       if (this.keybinding === undefined) {
         this.keybinding = "`";
+        this.dispatchEvent(keybindingChangedEvent("`", "Backquote"));
       }
     }
   };
