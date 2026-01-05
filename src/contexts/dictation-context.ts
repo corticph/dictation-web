@@ -8,7 +8,11 @@ import ComponentStyles from "../styles/component-styles.js";
 import type { DictationMode, ProxyOptions, RecordingState } from "../types.js";
 import { getInitialToken } from "../utils/auth.js";
 import { commaSeparatedConverter } from "../utils/converters.js";
-import { errorEvent } from "../utils/events.js";
+import {
+  errorEvent,
+  type KeybindingChangedEventDetail,
+} from "../utils/events.js";
+import { normalizeKeybinding } from "../utils/keybinding.js";
 import { decodeToken } from "../utils/token.js";
 
 export const regionContext = createContext<string | undefined>(
@@ -314,9 +318,10 @@ export class DictationRoot extends LitElement {
   };
 
   #handleKeybindingChanged = (e: Event) => {
-    const event = e as CustomEvent;
+    const event = e as CustomEvent<KeybindingChangedEventDetail>;
 
-    this.keybinding = event.detail.keybinding;
+    const normalizedKeybinding = normalizeKeybinding(event.detail.key);
+    this.keybinding = normalizedKeybinding;
   };
 
   // ─────────────────────────────────────────────────────────────────────────────

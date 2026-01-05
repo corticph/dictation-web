@@ -185,7 +185,8 @@ export class CortiDictation extends LitElement {
   _mode?: DictationMode = "toggle-to-talk";
 
   /**
-   * Keybinding for keyboard shortcut (e.g., "`", "meta+`", "ctrl+shift+k")
+   * Keybinding for keyboard shortcut. Single key only (e.g., "`", "k", "meta", "ctrl").
+   * Combinations with "+" are not supported.
    * Defaults to "`" if keybinding is in settingsEnabled, otherwise undefined
    */
   @property({ type: String })

@@ -163,7 +163,8 @@ export type ModeChangedEventDetail = {
 };
 
 export type KeybindingChangedEventDetail = {
-  keybinding: string | null | undefined;
+  key: string | null | undefined;
+  code: string | null | undefined;
 };
 
 export function modeChangedEvent(
@@ -177,11 +178,12 @@ export function modeChangedEvent(
 }
 
 export function keybindingChangedEvent(
-  keybinding: string | null | undefined,
+  key: string | null | undefined,
+  code: string | null | undefined,
 ): CustomEvent<KeybindingChangedEventDetail> {
   return new CustomEvent("keybinding-changed", {
     bubbles: true,
     composed: true,
-    detail: { keybinding },
+    detail: { code, key },
   });
 }

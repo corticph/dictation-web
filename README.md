@@ -21,9 +21,11 @@ This library offers two approaches:
 
 **`<corti-dictation>`** - A complete, ready-to-use component that includes:
 - Recording button with visual feedback
-- Settings menu for device and language selection
+- Settings menu for device, language, mode, and keybinding selection
 - Automatic state management
 - Built-in styling and theming
+- Support for toggle-to-talk and push-to-talk modes
+- Keyboard shortcut (keybinding) support
 
 This is the easiest way to get started and works out of the box.
 
@@ -33,9 +35,11 @@ For more control and flexibility, you can use individual components:
 
 - **`<dictation-root>`** - Context provider that manages authentication, configuration, and shared state
 - **`<dictation-recording-button>`** - Standalone recording button with audio visualization
-- **`<dictation-settings-menu>`** - Settings menu with device and language selectors
+- **`<dictation-settings-menu>`** - Settings menu with device, language, mode, and keybinding selectors
 - **`<dictation-device-selector>`** - Device selection dropdown
 - **`<dictation-language-selector>`** - Language selection dropdown
+- **`<dictation-mode-selector>`** - Mode selection component (toggle-to-talk or push-to-talk)
+- **`<dictation-keybinding-selector>`** - Keybinding configuration component for keyboard shortcuts
 
 These components share state through a context system, allowing you to build custom UIs while leveraging the same underlying functionality.
 
@@ -128,7 +132,7 @@ For more control, use individual components to build a custom UI:
 <body>
 <dictation-root id="dictationRoot">
   <dictation-recording-button></dictation-recording-button>
-  <dictation-settings-menu settingsEnabled="device,language"></dictation-settings-menu>
+  <dictation-settings-menu settingsEnabled="device,language,mode,keybinding"></dictation-settings-menu>
 </dictation-root>
 
 <textarea
@@ -155,6 +159,52 @@ For more control, use individual components to build a custom UI:
 </body>
 </html>
 ```
+
+### Dictation Modes
+
+The component supports two dictation modes:
+
+**Toggle-to-Talk (default):**
+- Click or tap the recording button to start recording
+- Click or tap again to stop recording
+- Press the keybinding to toggle recording state
+
+```html
+<corti-dictation mode="toggle-to-talk"></corti-dictation>
+```
+
+**Push-to-Talk:**
+- Press and hold the recording button to record
+- Release to stop recording
+- Press and hold the keybinding to record (keydown starts, keyup stops)
+
+```html
+<corti-dictation mode="push-to-talk"></corti-dictation>
+```
+
+### Keyboard Shortcuts (Keybindings)
+
+Configure keyboard shortcuts to start/stop recording. You can use either key names (from `event.key`) or key codes (from `event.code`):
+
+```html
+<!-- Use backtick key (default) - key name -->
+<corti-dictation keybinding="`"></corti-dictation>
+
+<!-- Use 'k' key - key name -->
+<corti-dictation keybinding="k"></corti-dictation>
+
+<!-- Use Meta key (Cmd on Mac, Meta elsewhere) - key name -->
+<corti-dictation keybinding="meta"></corti-dictation>
+
+<!-- Use key codes instead of key names -->
+<corti-dictation keybinding="Backquote"></corti-dictation> <!-- backtick -->
+<corti-dictation keybinding="KeyK"></corti-dictation> <!-- 'k' key -->
+<corti-dictation keybinding="MetaLeft"></corti-dictation> <!-- Meta key -->
+```
+
+Keybindings are platform-aware:
+- Keybindings are automatically ignored when typing in input fields, textareas, or contenteditable elements
+- Both key names (e.g., `"k"`, `"Meta"`) and key codes (e.g., `"KeyK"`, `"MetaLeft"`) are supported
 
 ## Documentation
 

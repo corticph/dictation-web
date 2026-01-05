@@ -4,7 +4,6 @@ import { customElement, property, state } from "lit/decorators.js";
 import { keybindingContext } from "../contexts/dictation-context.js";
 import KeybindingSelectorStyles from "../styles/keybinding-selector.js";
 import { keybindingChangedEvent } from "../utils/events.js";
-import { getPressedKeyFromEvent } from "../utils/keybinding.js";
 
 @customElement("dictation-keybinding-selector")
 export class DictationKeybindingSelector extends LitElement {
@@ -36,8 +35,7 @@ export class DictationKeybindingSelector extends LitElement {
     event.preventDefault();
     event.stopPropagation();
 
-    const pressedKey = getPressedKeyFromEvent(event);
-    this.dispatchEvent(keybindingChangedEvent(pressedKey));
+    this.dispatchEvent(keybindingChangedEvent(event.key, event.code));
   }
 
   render() {
