@@ -1,6 +1,11 @@
 import type { Corti } from "@corti/sdk";
 import { consume } from "@lit/context";
-import { type CSSResultGroup, html, LitElement } from "lit";
+import {
+  type CSSResultGroup,
+  html,
+  LitElement,
+  type PropertyValues,
+} from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { AUDIO_CHUNK_INTERVAL_MS } from "../constants.js";
 import {
@@ -31,7 +36,6 @@ import {
   commandEvent,
   errorEvent,
   networkActivityEvent,
-  type RecordingStateChangedEventDetail,
   recordingStateChangedEvent,
   streamClosedEvent,
   transcriptEvent,
@@ -97,8 +101,22 @@ export class DictationRecordingButton extends LitElement {
   #mediaController = new MediaController(this);
   #dictationController = new DictationController(this);
   #keybindingController = new KeybindingController(this);
+  #closeConnectionOnInit = false;
 
   static styles: CSSResultGroup = [RecordingButtonStyles, ButtonStyles];
+
+  protected update(changedProperties: PropertyValues) {
+    if (
+      changedProperties.has("_recordingState") &&
+      this._recordingState === "recording" &&
+      this.#closeConnectionOnInit
+    ) {
+      this.#closeConnectionOnInit = false;
+      this.#handleStop();
+    }
+
+    super.update(changedProperties);
+  }
 
   #handleMouseDown(event: MouseEvent): void {
     if (!this.allowButtonFocus) {
@@ -242,20 +260,7 @@ export class DictationRecordingButton extends LitElement {
     }
 
     if (this._recordingState === "initializing") {
-      this.addEventListener(
-        "recording-state-changed",
-        (event) => {
-          if (
-            (event as CustomEvent<RecordingStateChangedEventDetail>).detail
-              .state === "recording"
-          ) {
-            this.#handleStop();
-          }
-        },
-        {
-          once: true,
-        },
-      );
+      this.#closeConnectionOnInit = true;
       return;
     }
 
@@ -264,9 +269,9 @@ export class DictationRecordingButton extends LitElement {
 
   public toggleRecording(): void {
     if (this._recordingState === "stopped") {
-      this.#handleStart();
+      this.startRecording();
     } else if (this._recordingState === "recording") {
-      this.#handleStop();
+      this.stopRecording();
     }
   }
 

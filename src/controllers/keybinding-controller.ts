@@ -71,6 +71,10 @@ export class KeybindingController implements ReactiveController {
         this.host._mode === "push-to-talk" &&
         matchesKeybinding(event, this.host._keybinding)
       ) {
+        if (!this.host.dispatchEvent(keybindingActivatedEvent(event))) {
+          return;
+        }
+
         this.host.stopRecording();
       }
     };
