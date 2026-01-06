@@ -234,7 +234,10 @@ export class DictationRecordingButton extends LitElement {
   }
 
   public stopRecording(): void {
-    if (this._recordingState === "stopped") {
+    if (
+      this._recordingState === "stopped" ||
+      this._recordingState === "stopping"
+    ) {
       return;
     }
 

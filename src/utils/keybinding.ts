@@ -123,22 +123,6 @@ export function matchesKeybinding(
 }
 
 /**
- * Gets the pressed key from a KeyboardEvent.
- * Treats modifier keys the same as any other key - they generate their own events.
- * Keys longer than 1 character are capitalized (e.g., "Cmd", "Ctrl", "Space").
- * Platform-specific: "Meta" -> "Cmd" on Mac, "Alt" -> "Opt" on Mac.
- *
- * @param event - KeyboardEvent to extract the pressed key from
- * @returns Normalized key string in keybinding format (e.g., "Cmd", "Opt", "Ctrl", "k")
- *
- * @example
- * getPressedKeyFromEvent(event) // "Cmd" when Meta key is pressed on Mac, "Opt" when Alt is pressed on Mac
- */
-export function getPressedKeyFromEvent(event: KeyboardEvent): string {
-  return normalizeKeyForKeybinding(event.key);
-}
-
-/**
  * Checks if keybindings should be ignored for the current active element.
  * Returns true if the user is typing in an input field.
  *
