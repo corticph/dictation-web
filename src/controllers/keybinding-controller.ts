@@ -1,5 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from "lit";
 import type { DictationMode } from "../types.js";
+import { keybindingActivatedEvent } from "../utils/events.js";
 import {
   matchesKeybinding,
   shouldIgnoreKeybinding,
@@ -11,6 +12,7 @@ interface KeybindingControllerHost extends ReactiveControllerHost {
   startRecording(): void;
   stopRecording(): void;
   toggleRecording(): void;
+  dispatchEvent(event: Event): boolean;
 }
 
 export class KeybindingController implements ReactiveController {
@@ -46,7 +48,9 @@ export class KeybindingController implements ReactiveController {
       }
 
       if (matchesKeybinding(event, this.host._keybinding)) {
-        event.preventDefault();
+        if (!this.host.dispatchEvent(keybindingActivatedEvent(event))) {
+          return;
+        }
 
         if (this.host._mode === "push-to-talk") {
           this.host.startRecording();

@@ -33,6 +33,7 @@ All events bubble and can be listened to on the root component:
 | `error`                     | Fired on error.                                                                                                                           | `detail.message` (string): Error message describing what went wrong                                                                      |
 | `mode-changed`              | Fired when the dictation mode changes.                                                                                                    | `detail.mode` (string): The new dictation mode. One of: `"toggle-to-talk"`, `"push-to-talk"`                                            |
 | `keybinding-changed`        | Fired when the keybinding configuration changes.                                                                                          | `detail.key` (string | null | undefined): The raw key from the keyboard event (e.g., `"k"`, `"Meta"`, `"`"`). `detail.code` (string | null | undefined): The raw code from the keyboard event (e.g., `"KeyK"`, `"MetaLeft"`, `"Backquote"`). The keybinding value is normalized from `key` for internal use. Only single keys are supported, not combinations. |
+| `keybinding-activated`       | Fired when a keybinding is activated (key pressed). This event is cancelable - call `event.preventDefault()` to prevent the keybinding from triggering recording. | `detail.keyboardEvent` (KeyboardEvent): The original keyboard event that triggered the keybinding. |
 
 ---
 

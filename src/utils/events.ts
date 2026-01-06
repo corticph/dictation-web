@@ -167,6 +167,10 @@ export type KeybindingChangedEventDetail = {
   code: string | null | undefined;
 };
 
+export type KeybindingActivatedEventDetail = {
+  keyboardEvent: KeyboardEvent;
+};
+
 export function modeChangedEvent(
   mode: DictationMode,
 ): CustomEvent<ModeChangedEventDetail> {
@@ -185,5 +189,16 @@ export function keybindingChangedEvent(
     bubbles: true,
     composed: true,
     detail: { code, key },
+  });
+}
+
+export function keybindingActivatedEvent(
+  keyboardEvent: KeyboardEvent,
+): CustomEvent<KeybindingActivatedEventDetail> {
+  return new CustomEvent("keybinding-activated", {
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+    detail: { keyboardEvent },
   });
 }
