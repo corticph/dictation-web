@@ -28,6 +28,7 @@ const ModeSelectorStyles = [
     font-weight: 500;
     line-height: 24px;
     color: var(--component-text-color, light-dark(#333, #eee));
+    opacity: 0.6;
     cursor: pointer;
     transition: all 0.2s;
     height: 32px;
@@ -38,12 +39,13 @@ const ModeSelectorStyles = [
     margin: -1px;
   }
   .mode-selector-tab:hover:not(:disabled) {
-    background: var(--action-plain-background-hover, light-dark(#ddd, #444));
+    opacity: 1;
   }
   .mode-selector-tab.active {
     background: var(--card-background, light-dark(#fff, #333));
     border-color: var(--card-border-color, light-dark(#ddd, #555));
     box-shadow: var(--card-box-shadow, 0 2px 5px rgba(0, 0, 0, 0.1));
+    opacity: 1;
   }
   .mode-selector-tab:disabled {
     opacity: 0.5;
