@@ -118,19 +118,29 @@ export class DictationRecordingButton extends LitElement {
     super.update(changedProperties);
   }
 
-  #handleMouseDown(event: MouseEvent): void {
+  #handlePointerDown(event: PointerEvent): void {
     if (!this.allowButtonFocus) {
       event.preventDefault();
     }
 
     if (this._mode === "push-to-talk") {
       this.startRecording();
+
+      (event.currentTarget as HTMLButtonElement).setPointerCapture(
+        event.pointerId,
+      );
     }
   }
 
-  #handleMouseUp(): void {
+  #handlePointerUp(event: PointerEvent): void {
     if (this._mode === "push-to-talk") {
       this.stopRecording();
+
+      const button = event.currentTarget as HTMLButtonElement;
+      if (button.hasPointerCapture(event.pointerId)) {
+        button.releasePointerCapture(event.pointerId);
+      }
+
       return;
     }
 
@@ -139,9 +149,14 @@ export class DictationRecordingButton extends LitElement {
     }
   }
 
-  #handleMouseLeave(): void {
+  #handlePointerLeave(event: PointerEvent): void {
     if (this._mode === "push-to-talk") {
       this.stopRecording();
+
+      const button = event.currentTarget as HTMLButtonElement;
+      if (button.hasPointerCapture(event.pointerId)) {
+        button.releasePointerCapture(event.pointerId);
+      }
     }
   }
 
@@ -283,9 +298,10 @@ export class DictationRecordingButton extends LitElement {
 
     return html`
       <button
-        @mousedown=${this.#handleMouseDown}
-        @mouseup=${this.#handleMouseUp}
-        @mouseleave=${this.#handleMouseLeave}
+        @pointerdown=${this.#handlePointerDown}
+        @pointerup=${this.#handlePointerUp}
+        @pointerleave=${this.#handlePointerLeave}
+        @pointercancel=${this.#handlePointerLeave}
         ?disabled=${isLoading}
         class=${isRecording ? "red" : "accent"}
         aria-label=${isRecording ? "Stop recording" : "Start recording"}
