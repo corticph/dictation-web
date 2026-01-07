@@ -43,7 +43,7 @@ export class DictationKeybindingSelector extends LitElement {
       <div>
         <label>Keybinding</label>
         <div class="keybinding-selector-wrapper">
-          <div class="keybinding-key">${this._keybinding}</div>
+          ${this._keybinding && html`<div class="keybinding-key">${this._keybinding}</div>`}
           <input
             type="text"
             class="keybinding-selector-input"
@@ -56,9 +56,12 @@ export class DictationKeybindingSelector extends LitElement {
             ?disabled=${this.disabled}
           />
         </div>
-        <p class="keybinding-help">
-          Press ${this._keybinding} to start/stop recording
-        </p>
+        ${
+          this._keybinding &&
+          html`<p class="keybinding-help">
+            Press ${this._keybinding} to start/stop recording
+          </p>`
+        }
       </div>
     `;
   }
