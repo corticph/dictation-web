@@ -20,10 +20,10 @@ const meta = {
   args: {
     accessToken: "dummy_token",
     allowButtonFocus: false,
-    keybinding: "`",
     languagesSupported: languages,
-    mode: "toggle-to-talk",
+    pushToTalkKeybinding: "Space",
     settingsEnabled: ["device", "language"],
+    toggleToTalkKeybinding: "`",
   },
   argTypes: {
     accessToken: {
@@ -36,18 +36,18 @@ const meta = {
         "Whether the recording button inside the corti-dictation component can take focus on click",
     },
     devices: DeviceSelectorStoryMeta.argTypes.devices,
-    keybinding: {
+    languagesSupported: LanguageSelectorStoryMeta.argTypes.languages,
+    pushToTalkKeybinding: {
       control: "text",
       description:
-        "Keyboard shortcut for starting/stopping recording (single key only, e.g., 'k', '`', 'KeyK', 'Backquote')",
-    },
-    languagesSupported: LanguageSelectorStoryMeta.argTypes.languages,
-    mode: {
-      control: "select",
-      description: "Dictation mode: toggle-to-talk or push-to-talk",
-      options: ["toggle-to-talk", "push-to-talk"],
+        "Push-to-talk keyboard shortcut (keydown starts, keyup stops). Single key only (e.g., 'Space', 'k', 'KeyK')",
     },
     settingsEnabled: SettingsMeunStoryMeta.argTypes.settingsEnabled,
+    toggleToTalkKeybinding: {
+      control: "text",
+      description:
+        "Toggle-to-talk keyboard shortcut (press toggles). Single key only (e.g., '`', 'k', 'KeyK', 'Backquote')",
+    },
   },
   component: "corti-dictation",
   parameters: {
@@ -62,8 +62,8 @@ const meta = {
     allowButtonFocus,
     devices,
     selectedDevice,
-    mode,
-    keybinding,
+    pushToTalkKeybinding,
+    toggleToTalkKeybinding,
   }) => {
     const selectedDeviceValue = selectedDevice
       ? mockDevices.find((device) => device.deviceId === selectedDevice)
@@ -77,9 +77,8 @@ const meta = {
         ?allowButtonFocus=${allowButtonFocus}
         .devices=${devices}
         .selectedDevice=${selectedDeviceValue}
-        mode=${mode}
-        keybinding=${keybinding}
-        @mode-changed=${action("mode-changed")}
+        pushToTalkKeybinding=${pushToTalkKeybinding}
+        toggleToTalkKeybinding=${toggleToTalkKeybinding}
         @keybinding-changed=${action("keybinding-changed")}
         @languages-changed=${action("languages-changed")}
         @recording-devices-changed=${action("recording-devices-changed")}
@@ -157,24 +156,13 @@ export const WithCustomDevices = {
   },
 };
 
-export const WithModeAndKeybinding = {
+export const WithKeybindings = {
   args: {
     accessToken: "dummy_token",
-    keybinding: "k",
     languagesSupported: languages,
-    mode: "toggle-to-talk",
-    settingsEnabled: ["device", "language", "mode", "keybinding"],
+    pushToTalkKeybinding: "Space",
+    settingsEnabled: ["device", "language", "keybinding"],
+    toggleToTalkKeybinding: "k",
   },
   argTypes: disableControls(["settingsEnabled"]),
-};
-
-export const PushToTalkMode = {
-  args: {
-    accessToken: "dummy_token",
-    keybinding: "`",
-    languagesSupported: languages,
-    mode: "push-to-talk",
-    settingsEnabled: ["device", "language", "mode", "keybinding"],
-  },
-  argTypes: disableControls(["settingsEnabled", "mode"]),
 };

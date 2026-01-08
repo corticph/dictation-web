@@ -13,14 +13,14 @@ import {
   authConfigContext,
   debugDisplayAudioContext,
   dictationConfigContext,
-  keybindingContext,
-  modeContext,
+  pushToTalkKeybindingContext,
   recordingStateContext,
   regionContext,
   selectedDeviceContext,
   socketProxyContext,
   socketUrlContext,
   tenantNameContext,
+  toggleToTalkKeybindingContext,
 } from "../contexts/dictation-context.js";
 import {
   DictationController,
@@ -30,7 +30,7 @@ import { KeybindingController } from "../controllers/keybinding-controller.js";
 import { MediaController } from "../controllers/media-controller.js";
 import ButtonStyles from "../styles/buttons.js";
 import RecordingButtonStyles from "../styles/recording-button.js";
-import type { DictationMode, ProxyOptions, RecordingState } from "../types.js";
+import type { ProxyOptions, RecordingState } from "../types.js";
 import {
   audioLevelChangedEvent,
   commandEvent,
@@ -87,13 +87,13 @@ export class DictationRecordingButton extends LitElement {
   @state()
   _debug_displayAudio?: boolean;
 
-  @consume({ context: keybindingContext, subscribe: true })
+  @consume({ context: pushToTalkKeybindingContext, subscribe: true })
   @state()
-  _keybinding?: string | null;
+  _pushToTalkKeybinding?: string | null;
 
-  @consume({ context: modeContext, subscribe: true })
+  @consume({ context: toggleToTalkKeybindingContext, subscribe: true })
   @state()
-  _mode?: DictationMode;
+  _toggleToTalkKeybinding?: string | null;
 
   @property({ type: Boolean })
   allowButtonFocus: boolean = false;
@@ -118,46 +118,12 @@ export class DictationRecordingButton extends LitElement {
     super.update(changedProperties);
   }
 
-  #handlePointerDown(event: PointerEvent): void {
+  #handleClick(event: MouseEvent): void {
     if (!this.allowButtonFocus) {
       event.preventDefault();
     }
 
-    if (this._mode === "push-to-talk") {
-      this.startRecording();
-
-      (event.currentTarget as HTMLButtonElement).setPointerCapture(
-        event.pointerId,
-      );
-    }
-  }
-
-  #handlePointerUp(event: PointerEvent): void {
-    if (this._mode === "push-to-talk") {
-      this.stopRecording();
-
-      const button = event.currentTarget as HTMLButtonElement;
-      if (button.hasPointerCapture(event.pointerId)) {
-        button.releasePointerCapture(event.pointerId);
-      }
-
-      return;
-    }
-
-    if (this._mode === "toggle-to-talk") {
-      this.toggleRecording();
-    }
-  }
-
-  #handlePointerLeave(event: PointerEvent): void {
-    if (this._mode === "push-to-talk") {
-      this.stopRecording();
-
-      const button = event.currentTarget as HTMLButtonElement;
-      if (button.hasPointerCapture(event.pointerId)) {
-        button.releasePointerCapture(event.pointerId);
-      }
-    }
+    this.toggleRecording();
   }
 
   #handleWebSocketMessage = (message: TranscribeMessage): void => {
@@ -298,10 +264,7 @@ export class DictationRecordingButton extends LitElement {
 
     return html`
       <button
-        @pointerdown=${this.#handlePointerDown}
-        @pointerup=${this.#handlePointerUp}
-        @pointerleave=${this.#handlePointerLeave}
-        @pointercancel=${this.#handlePointerLeave}
+        @click=${this.#handleClick}
         ?disabled=${isLoading}
         class=${isRecording ? "red" : "accent"}
         aria-label=${isRecording ? "Stop recording" : "Start recording"}

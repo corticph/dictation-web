@@ -1,5 +1,4 @@
 import type { ReactiveController, ReactiveControllerHost } from "lit";
-import type { DictationMode } from "../types.js";
 import { keybindingActivatedEvent } from "../utils/events.js";
 import {
   matchesKeybinding,
@@ -7,8 +6,8 @@ import {
 } from "../utils/keybinding.js";
 
 interface KeybindingControllerHost extends ReactiveControllerHost {
-  _keybinding?: string | null;
-  _mode?: DictationMode;
+  _pushToTalkKeybinding?: string | null;
+  _toggleToTalkKeybinding?: string | null;
   startRecording(): void;
   stopRecording(): void;
   toggleRecording(): void;
@@ -21,6 +20,7 @@ export class KeybindingController implements ReactiveController {
   #keydownHandler?: (event: KeyboardEvent) => void;
   #keyupHandler?: (event: KeyboardEvent) => void;
   #blurHandler?: () => void;
+  #isPushToTalkKeyPressed: boolean = false;
 
   constructor(host: KeybindingControllerHost) {
     this.host = host;
@@ -39,48 +39,52 @@ export class KeybindingController implements ReactiveController {
     this.#removeListeners();
 
     this.#keydownHandler = (event: KeyboardEvent) => {
-      if (!this.host._keybinding) {
-        return;
-      }
-
       if (shouldIgnoreKeybinding(document.activeElement)) {
         return;
       }
 
-      if (matchesKeybinding(event, this.host._keybinding)) {
-        if (!this.host.dispatchEvent(keybindingActivatedEvent(event))) {
-          return;
-        }
-
-        if (this.host._mode === "push-to-talk") {
-          this.host.startRecording();
-        }
-
-        if (this.host._mode === "toggle-to-talk") {
-          this.host.toggleRecording();
-        }
-      }
-    };
-
-    this.#keyupHandler = (event: KeyboardEvent) => {
-      if (!this.host._keybinding) {
-        return;
-      }
-
       if (
-        this.host._mode === "push-to-talk" &&
-        matchesKeybinding(event, this.host._keybinding)
+        this.host._toggleToTalkKeybinding &&
+        matchesKeybinding(event, this.host._toggleToTalkKeybinding) &&
+        !this.#isPushToTalkKeyPressed
       ) {
         if (!this.host.dispatchEvent(keybindingActivatedEvent(event))) {
           return;
         }
 
+        this.host.toggleRecording();
+        return;
+      }
+
+      if (
+        this.host._pushToTalkKeybinding &&
+        matchesKeybinding(event, this.host._pushToTalkKeybinding)
+      ) {
+        if (!this.host.dispatchEvent(keybindingActivatedEvent(event))) {
+          return;
+        }
+
+        this.#isPushToTalkKeyPressed = true;
+        this.host.startRecording();
+      }
+    };
+
+    this.#keyupHandler = (event: KeyboardEvent) => {
+      if (
+        this.host._pushToTalkKeybinding &&
+        matchesKeybinding(event, this.host._pushToTalkKeybinding)
+      ) {
+        if (!this.host.dispatchEvent(keybindingActivatedEvent(event))) {
+          return;
+        }
+        this.#isPushToTalkKeyPressed = false;
         this.host.stopRecording();
       }
     };
 
     this.#blurHandler = () => {
-      if (this.host._mode === "push-to-talk") {
+      if (this.#isPushToTalkKeyPressed) {
+        this.#isPushToTalkKeyPressed = false;
         this.host.stopRecording();
       }
     };

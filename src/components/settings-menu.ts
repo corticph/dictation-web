@@ -11,7 +11,6 @@ import { commaSeparatedConverter } from "../utils/converters.js";
 import "./device-selector.js";
 import "./keybinding-selector.js";
 import "./language-selector.js";
-import "./mode-selector.js";
 import "../icons/icons.js";
 
 @customElement("dictation-settings-menu")
@@ -40,7 +39,6 @@ export class DictationSettingsMenu extends LitElement {
     const isRecording = this._recordingState === "recording";
     const showDeviceSelector = this.settingsEnabled.includes("device");
     const showLanguageSelector = this.settingsEnabled.includes("language");
-    const showModeSelector = this.settingsEnabled.includes("mode");
     const showKeybinding = this.settingsEnabled.includes("keybinding");
 
     return html`
@@ -74,25 +72,10 @@ export class DictationSettingsMenu extends LitElement {
                 : nothing
             }
             ${
-              showModeSelector || showKeybinding
-                ? html`
-                  <div class="settings-group">
-                    ${
-                      showModeSelector
-                        ? html`<dictation-mode-selector
-                            ?disabled=${isRecording}
-                          />`
-                        : nothing
-                    }
-                    ${
-                      showKeybinding
-                        ? html`<dictation-keybinding-selector
-                            ?disabled=${isRecording}
-                          />`
-                        : nothing
-                    }
-                  </div>
-                `
+              showKeybinding
+                ? html`<dictation-keybinding-selector
+                    ?disabled=${isRecording}
+                  />`
                 : nothing
             }
           </div>

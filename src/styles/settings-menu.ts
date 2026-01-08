@@ -30,14 +30,6 @@ const SettingsMenuStyles = css`
     flex-direction: column;
     gap: 16px;
   }
-  .settings-group {
-    background: var(--muted-background, light-dark(#fafafa, #2a2a2a));
-    padding: 12px;
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
 `;
 
 export default SettingsMenuStyles;

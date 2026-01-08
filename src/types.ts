@@ -4,15 +4,9 @@ export type RecordingState =
   | "stopping"
   | "stopped";
 
-export type DictationMode = "toggle-to-talk" | "push-to-talk";
-
 export type Keybinding = string;
 
-export type ConfigurableSettings =
-  | "device"
-  | "language"
-  | "mode"
-  | "keybinding";
+export type ConfigurableSettings = "device" | "language" | "keybinding";
 
 export type ProxyOptions = {
   url: string;

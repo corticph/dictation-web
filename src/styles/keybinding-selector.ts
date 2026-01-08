@@ -26,7 +26,6 @@ const KeybindingSelectorStyles = [
     min-width: 0;
     border: none;
     background: transparent;
-    font-size: 14px;
     line-height: 24px;
     color: var(--component-text-color, light-dark(#333, #eee));
     outline: none;
@@ -51,8 +50,8 @@ const KeybindingSelectorStyles = [
     border: 1px solid var(--card-border-color, light-dark(#ddd, #555));
     border-radius: var(--card-inner-border-radius, 6px);
     box-shadow: var(--card-box-shadow, 0 2px 5px rgba(0, 0, 0, 0.1));
-    font-size: 16px;
-    line-height: 28px;
+    font-size: 14px;
+    line-height: 24px;
     color: var(--component-text-color, light-dark(#333, #eee));
     opacity: 0.6;
     text-align: center;
@@ -65,7 +64,14 @@ const KeybindingSelectorStyles = [
     opacity: 0.6;
     margin: 0;
     letter-spacing: 0.01px;
-    padding-top: 8px;
+  }
+  .settings-group {
+    background: var(--card-background, light-dark(#fafafa, #2a2a2a));
+    padding: 12px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
 `,
 ];

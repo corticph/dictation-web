@@ -7,7 +7,6 @@ import { DEFAULT_DICTATION_CONFIG } from "../constants.js";
 import type { DictationRoot } from "../contexts/dictation-context.js";
 import type {
   ConfigurableSettings,
-  DictationMode,
   ProxyOptions,
   RecordingState,
 } from "../types.js";
@@ -168,38 +167,46 @@ export class CortiDictation extends LitElement {
   }
 
   /**
-   * Dictation mode: "toggle-to-talk" or "push-to-talk"
+   * Push-to-talk keybinding for keyboard shortcut. Single key only (e.g., "Space", "k", "meta", "ctrl").
+   * Combinations with "+" are not supported.
+   * Keydown starts recording, keyup stops recording.
+   * Defaults to "Space" if keybinding is in settingsEnabled, otherwise undefined
    */
   @property({ type: String })
-  set mode(value: DictationMode) {
-    this._mode = value;
+  set pushToTalkKeybinding(value: string | null | undefined) {
+    this._pushToTalkKeybinding = value;
   }
 
-  get mode(): DictationMode {
+  get pushToTalkKeybinding(): string | null | undefined {
     return (
-      this.#contextProviderRef.value?.mode || this._mode || "toggle-to-talk"
+      this.#contextProviderRef.value?.pushToTalkKeybinding ||
+      this._pushToTalkKeybinding
     );
   }
 
   @state()
-  _mode?: DictationMode = "toggle-to-talk";
+  _pushToTalkKeybinding?: string | null;
 
   /**
-   * Keybinding for keyboard shortcut. Single key only (e.g., "`", "k", "meta", "ctrl").
+   * Toggle-to-talk keybinding for keyboard shortcut. Single key only (e.g., "`", "k", "meta", "ctrl").
    * Combinations with "+" are not supported.
+   * Pressing the key toggles recording on/off.
    * Defaults to "`" if keybinding is in settingsEnabled, otherwise undefined
    */
   @property({ type: String })
-  set keybinding(value: string | null | undefined) {
-    this._keybinding = value;
+  set toggleToTalkKeybinding(value: string | null | undefined) {
+    this._toggleToTalkKeybinding = value;
   }
 
-  get keybinding(): string | null | undefined {
-    return this.#contextProviderRef.value?.keybinding || this._keybinding;
+  get toggleToTalkKeybinding(): string | null | undefined {
+    return (
+      this.#contextProviderRef.value?.toggleToTalkKeybinding ||
+      this._toggleToTalkKeybinding
+    );
   }
 
   @state()
-  _keybinding?: string | null;
+  _toggleToTalkKeybinding?: string | null;
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Public methods
@@ -284,8 +291,8 @@ export class CortiDictation extends LitElement {
         .devices=${this._devices}
         .selectedDevice=${this._selectedDevice}
         .debug_displayAudio=${this.debug_displayAudio}
-        .mode=${this._mode}
-        .keybinding=${this._keybinding}
+        .pushToTalkKeybinding=${this._pushToTalkKeybinding}
+        .toggleToTalkKeybinding=${this._toggleToTalkKeybinding}
       >
         <dictation-recording-button
           ${ref(this.#recordingButtonRef)}

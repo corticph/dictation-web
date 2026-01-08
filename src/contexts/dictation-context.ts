@@ -5,7 +5,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { DevicesController } from "../controllers/devices-controller.js";
 import { LanguagesController } from "../controllers/languages-controller.js";
 import ComponentStyles from "../styles/component-styles.js";
-import type { DictationMode, ProxyOptions, RecordingState } from "../types.js";
+import type { ProxyOptions, RecordingState } from "../types.js";
 import { getInitialToken } from "../utils/auth.js";
 import { commaSeparatedConverter } from "../utils/converters.js";
 import {
@@ -52,10 +52,12 @@ export const socketProxyContext = createContext<ProxyOptions | undefined>(
 export const debugDisplayAudioContext = createContext<boolean | undefined>(
   Symbol("debugDisplayAudio"),
 );
-export const modeContext = createContext<DictationMode>(Symbol("mode"));
-export const keybindingContext = createContext<string | null | undefined>(
-  Symbol("keybinding"),
-);
+export const pushToTalkKeybindingContext = createContext<
+  string | null | undefined
+>(Symbol("pushToTalkKeybinding"));
+export const toggleToTalkKeybindingContext = createContext<
+  string | null | undefined
+>(Symbol("toggleToTalkKeybinding"));
 
 @customElement("dictation-root")
 export class DictationRoot extends LitElement {
@@ -167,13 +169,13 @@ export class DictationRoot extends LitElement {
   @property({ attribute: "debug-display-audio", type: Boolean })
   debug_displayAudio?: boolean;
 
-  @provide({ context: modeContext })
+  @provide({ context: pushToTalkKeybindingContext })
   @property({ type: String })
-  mode: DictationMode = "toggle-to-talk";
+  pushToTalkKeybinding?: string | null;
 
-  @provide({ context: keybindingContext })
+  @provide({ context: toggleToTalkKeybindingContext })
   @property({ type: String })
-  keybinding?: string | null;
+  toggleToTalkKeybinding?: string | null;
 
   @property({ type: Boolean })
   noWrapper: boolean = false;
@@ -200,7 +202,6 @@ export class DictationRoot extends LitElement {
       this.#handleRecordingStateChanged,
     );
     this.addEventListener("context-request", this.#handleContextRequest);
-    this.addEventListener("mode-changed", this.#handleModeChanged);
     this.addEventListener("keybinding-changed", this.#handleKeybindingChanged);
   }
 
@@ -302,28 +303,39 @@ export class DictationRoot extends LitElement {
     } else if (e.context === devicesContext) {
       this.#devicesController.initialize();
     } else if (
-      e.context === keybindingContext &&
       e.contextTarget.tagName.toLowerCase() === "dictation-keybinding-selector"
     ) {
-      // Initialize keybinding to default "`" when setting first mounts
-      if (this.keybinding === undefined) {
-        this.keybinding = "`";
-        this.dispatchEvent(keybindingChangedEvent("`", "Backquote"));
+      if (
+        e.context === pushToTalkKeybindingContext &&
+        this.pushToTalkKeybinding === undefined
+      ) {
+        this.pushToTalkKeybinding = "Space";
+        this.dispatchEvent(
+          keybindingChangedEvent("Space", "Space", "push-to-talk"),
+        );
+      }
+
+      if (
+        e.context === toggleToTalkKeybindingContext &&
+        this.toggleToTalkKeybinding === undefined
+      ) {
+        this.toggleToTalkKeybinding = "`";
+        this.dispatchEvent(
+          keybindingChangedEvent("`", "Backquote", "toggle-to-talk"),
+        );
       }
     }
-  };
-
-  #handleModeChanged = (e: Event) => {
-    const event = e as CustomEvent;
-
-    this.mode = event.detail.mode;
   };
 
   #handleKeybindingChanged = (e: Event) => {
     const event = e as CustomEvent<KeybindingChangedEventDetail>;
 
     const normalizedKeybinding = normalizeKeybinding(event.detail.key);
-    this.keybinding = normalizedKeybinding;
+    if (event.detail.type === "push-to-talk") {
+      this.pushToTalkKeybinding = normalizedKeybinding;
+    } else if (event.detail.type === "toggle-to-talk") {
+      this.toggleToTalkKeybinding = normalizedKeybinding;
+    }
   };
 
   // ─────────────────────────────────────────────────────────────────────────────

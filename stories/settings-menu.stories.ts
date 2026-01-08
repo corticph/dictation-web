@@ -18,16 +18,19 @@ import LangaugeSelectorStoryMeta, {
 type SettingsMenuStory = DictationSettingsMenu &
   LanguageSelectorStory &
   DeviceSelectorStory &
-  Pick<DictationRoot, "recordingState" | "mode" | "keybinding">;
+  Pick<
+    DictationRoot,
+    "recordingState" | "pushToTalkKeybinding" | "toggleToTalkKeybinding"
+  >;
 
 const meta = {
   args: {
     disabled: false,
-    keybinding: "`",
     languages,
-    mode: "toggle-to-talk",
+    pushToTalkKeybinding: "Space",
     recordingState: "stopped",
     settingsEnabled: ["device", "language"],
+    toggleToTalkKeybinding: "`",
   },
   argTypes: {
     ...DeviceSelectorStoryMeta.argTypes,
@@ -37,25 +40,25 @@ const meta = {
         control: false,
         table: { disable: true },
       },
-      keybinding: {
+      pushToTalkKeybinding: {
         control: "text",
         description:
-          "Keyboard shortcut for starting/stopping recording (single key only, e.g., 'k', '`', 'KeyK', 'Backquote')",
-      },
-      mode: {
-        control: "select",
-        description: "Dictation mode: toggle-to-talk or push-to-talk",
-        options: ["toggle-to-talk", "push-to-talk"],
+          "Push-to-talk keyboard shortcut (keydown starts, keyup stops). Single key only (e.g., 'Space', 'k', 'KeyK')",
       },
       recordingState: {
         control: false,
         table: { disable: true },
       },
+      toggleToTalkKeybinding: {
+        control: "text",
+        description:
+          "Toggle-to-talk keyboard shortcut (press toggles). Single key only (e.g., '`', 'k', 'KeyK', 'Backquote')",
+      },
     },
     settingsEnabled: {
       control: "check",
       description: "Which settings to enable in the settings menu",
-      options: ["device", "language", "mode", "keybinding"],
+      options: ["device", "language", "keybinding"],
     },
   },
   component: "dictation-settings-menu",
@@ -65,8 +68,8 @@ const meta = {
     selectedDevice,
     settingsEnabled,
     recordingState,
-    mode,
-    keybinding,
+    pushToTalkKeybinding,
+    toggleToTalkKeybinding,
   }) => {
     const selectedDeviceValue = selectedDevice
       ? mockDevices.find((device) => device.deviceId === selectedDevice)
@@ -78,12 +81,11 @@ const meta = {
         .selectedDevice=${selectedDeviceValue}
         languages=${languages}
         .recordingState=${recordingState}
-        mode=${mode}
-        keybinding=${keybinding}
+        pushToTalkKeybinding=${pushToTalkKeybinding}
+        toggleToTalkKeybinding=${toggleToTalkKeybinding}
       >
         <dictation-settings-menu
           settingsEnabled=${settingsEnabled}
-          @mode-changed=${action("mode-changed")}
           @keybinding-changed=${action("keybinding-changed")}
           @languages-changed=${action("languages-changed")}
           @recording-devices-changed=${action("recording-devices-changed")}
@@ -152,20 +154,13 @@ export const BothWithCustomOptions = {
   },
 } as StoryObj<SettingsMenuStory>;
 
-export const WithModeAndKeybinding = {
+export const WithKeybindings = {
   args: {
-    keybinding: "k",
-    mode: "toggle-to-talk",
-    settingsEnabled: ["device", "language", "mode", "keybinding"],
+    pushToTalkKeybinding: "Space",
+    settingsEnabled: ["device", "language", "keybinding"],
+    toggleToTalkKeybinding: "k",
   },
   argTypes: disableControls(["settingsEnabled"]),
-} as StoryObj<SettingsMenuStory>;
-
-export const OnlyModeSelector = {
-  args: {
-    settingsEnabled: ["mode"],
-  },
-  argTypes: disableControls(["settingsEnabled", "devices", "languages"]),
 } as StoryObj<SettingsMenuStory>;
 
 export const OnlyKeybindingSelector = {
