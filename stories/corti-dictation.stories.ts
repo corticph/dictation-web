@@ -99,7 +99,13 @@ const meta = {
 
 export default meta;
 
-export const Default = {} as StoryObj<CortiDictationStory>;
+export const Default = {
+  args: {
+    pushToTalkKeybinding: "`",
+    settingsEnabled: ["device", "language", "keybinding"],
+    toggleToTalkKeybinding: "Space",
+  },
+} as StoryObj<CortiDictationStory>;
 
 export const OnlyLanguageSettings = {
   args: {

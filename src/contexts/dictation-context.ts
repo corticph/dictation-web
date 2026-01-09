@@ -13,7 +13,6 @@ import {
   type KeybindingChangedEventDetail,
   keybindingChangedEvent,
 } from "../utils/events.js";
-import { normalizeKeybinding } from "../utils/keybinding.js";
 import { decodeToken } from "../utils/token.js";
 
 export const regionContext = createContext<string | undefined>(
@@ -311,7 +310,7 @@ export class DictationRoot extends LitElement {
       ) {
         this.pushToTalkKeybinding = "Space";
         this.dispatchEvent(
-          keybindingChangedEvent("Space", "Space", "push-to-talk"),
+          keybindingChangedEvent(" ", "Space", "Space", "push-to-talk"),
         );
       }
 
@@ -321,7 +320,7 @@ export class DictationRoot extends LitElement {
       ) {
         this.toggleToTalkKeybinding = "`";
         this.dispatchEvent(
-          keybindingChangedEvent("`", "Backquote", "toggle-to-talk"),
+          keybindingChangedEvent("`", "Backquote", "`", "toggle-to-talk"),
         );
       }
     }
@@ -330,11 +329,12 @@ export class DictationRoot extends LitElement {
   #handleKeybindingChanged = (e: Event) => {
     const event = e as CustomEvent<KeybindingChangedEventDetail>;
 
-    const normalizedKeybinding = normalizeKeybinding(event.detail.key);
+    const keybinding = event.detail.keybinding;
+
     if (event.detail.type === "push-to-talk") {
-      this.pushToTalkKeybinding = normalizedKeybinding;
+      this.pushToTalkKeybinding = keybinding;
     } else if (event.detail.type === "toggle-to-talk") {
-      this.toggleToTalkKeybinding = normalizedKeybinding;
+      this.toggleToTalkKeybinding = keybinding;
     }
   };
 

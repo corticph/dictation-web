@@ -7,6 +7,7 @@ import {
 } from "../contexts/dictation-context.js";
 import KeybindingSelectorStyles from "../styles/keybinding-selector.js";
 import { keybindingChangedEvent } from "../utils/events.js";
+import { normalizeKeybinding } from "../utils/keybinding.js";
 
 @customElement("dictation-keybinding-input")
 export class DictationKeybindingInput extends LitElement {
@@ -45,8 +46,15 @@ export class DictationKeybindingInput extends LitElement {
     event.preventDefault();
     event.stopPropagation();
 
+    const keybinding = normalizeKeybinding(event.key);
+
     this.dispatchEvent(
-      keybindingChangedEvent(event.key, event.code, this.keybindingType),
+      keybindingChangedEvent(
+        event.key,
+        event.code,
+        keybinding,
+        this.keybindingType,
+      ),
     );
   }
 

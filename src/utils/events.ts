@@ -161,6 +161,7 @@ export function networkActivityEvent(
 export type KeybindingChangedEventDetail = {
   key: string | null | undefined;
   code: string | null | undefined;
+  keybinding: string | null;
   type?: "push-to-talk" | "toggle-to-talk";
 };
 
@@ -171,12 +172,13 @@ export type KeybindingActivatedEventDetail = {
 export function keybindingChangedEvent(
   key: string | null | undefined,
   code: string | null | undefined,
+  keybinding: string | null,
   type?: "push-to-talk" | "toggle-to-talk",
 ): CustomEvent<KeybindingChangedEventDetail> {
   return new CustomEvent("keybinding-changed", {
     bubbles: true,
     composed: true,
-    detail: { code, key, type },
+    detail: { code, key, keybinding, type },
   });
 }
 
