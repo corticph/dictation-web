@@ -318,9 +318,9 @@ export class DictationRoot extends LitElement {
         e.context === toggleToTalkKeybindingContext &&
         this.toggleToTalkKeybinding === undefined
       ) {
-        this.toggleToTalkKeybinding = "`";
+        this.toggleToTalkKeybinding = "Enter";
         this.dispatchEvent(
-          keybindingChangedEvent("`", "Backquote", "`", "toggle-to-talk"),
+          keybindingChangedEvent("Enter", "Enter", "Enter", "toggle-to-talk"),
         );
       }
     }
