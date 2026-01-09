@@ -1,14 +1,9 @@
 import { css } from "lit";
+import { LabelStyles } from "./component-styles.js";
 
-const SelectStyles = css`
-  label {
-    display: block;
-    font-size: 0.8rem;
-    padding-bottom: 0.5rem;
-    font-weight: 500;
-    color: var(--component-text-color, light-dark(#333, #eee));
-    pointer-events: none;
-  }
+const SelectStyles = [
+  LabelStyles,
+  css`
   select {
     background: var(--card-background, light-dark(#fff, #333));
     color: var(--component-text-color, light-dark(#333, #eee));
@@ -32,6 +27,7 @@ const SelectStyles = css`
     outline: 2px solid var(--action-accent-background, light-dark(#007bff, #0056b3));
     /* outline-offset: 2px; */
   }
-`;
+`,
+];
 
 export default SelectStyles;

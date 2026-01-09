@@ -4,7 +4,9 @@ export type RecordingState =
   | "stopping"
   | "stopped";
 
-export type ConfigurableSettings = "device" | "language";
+export type Keybinding = string;
+
+export type ConfigurableSettings = "device" | "language" | "keybinding";
 
 export type ProxyOptions = {
   url: string;

@@ -157,3 +157,38 @@ export function networkActivityEvent(
     detail: { data, direction },
   });
 }
+
+export type KeybindingChangedEventDetail = {
+  key: string | null | undefined;
+  code: string | null | undefined;
+  keybinding: string | null;
+  type?: "push-to-talk" | "toggle-to-talk";
+};
+
+export type KeybindingActivatedEventDetail = {
+  keyboardEvent: KeyboardEvent;
+};
+
+export function keybindingChangedEvent(
+  key: string | null | undefined,
+  code: string | null | undefined,
+  keybinding: string | null,
+  type?: "push-to-talk" | "toggle-to-talk",
+): CustomEvent<KeybindingChangedEventDetail> {
+  return new CustomEvent("keybinding-changed", {
+    bubbles: true,
+    composed: true,
+    detail: { code, key, keybinding, type },
+  });
+}
+
+export function keybindingActivatedEvent(
+  keyboardEvent: KeyboardEvent,
+): CustomEvent<KeybindingActivatedEventDetail> {
+  return new CustomEvent("keybinding-activated", {
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+    detail: { keyboardEvent },
+  });
+}

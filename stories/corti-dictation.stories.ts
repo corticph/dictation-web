@@ -21,7 +21,9 @@ const meta = {
     accessToken: "dummy_token",
     allowButtonFocus: false,
     languagesSupported: languages,
+    pushToTalkKeybinding: "Space",
     settingsEnabled: ["device", "language"],
+    toggleToTalkKeybinding: "`",
   },
   argTypes: {
     accessToken: {
@@ -35,7 +37,17 @@ const meta = {
     },
     devices: DeviceSelectorStoryMeta.argTypes.devices,
     languagesSupported: LanguageSelectorStoryMeta.argTypes.languages,
+    pushToTalkKeybinding: {
+      control: "text",
+      description:
+        "Push-to-talk keyboard shortcut (keydown starts, keyup stops). Single key only (e.g., 'Space', 'k', 'KeyK')",
+    },
     settingsEnabled: SettingsMeunStoryMeta.argTypes.settingsEnabled,
+    toggleToTalkKeybinding: {
+      control: "text",
+      description:
+        "Toggle-to-talk keyboard shortcut (press toggles). Single key only (e.g., '`', 'k', 'KeyK', 'Backquote')",
+    },
   },
   component: "corti-dictation",
   parameters: {
@@ -50,6 +62,8 @@ const meta = {
     allowButtonFocus,
     devices,
     selectedDevice,
+    pushToTalkKeybinding,
+    toggleToTalkKeybinding,
   }) => {
     const selectedDeviceValue = selectedDevice
       ? mockDevices.find((device) => device.deviceId === selectedDevice)
@@ -63,6 +77,9 @@ const meta = {
         ?allowButtonFocus=${allowButtonFocus}
         .devices=${devices}
         .selectedDevice=${selectedDeviceValue}
+        pushToTalkKeybinding=${pushToTalkKeybinding}
+        toggleToTalkKeybinding=${toggleToTalkKeybinding}
+        @keybinding-changed=${action("keybinding-changed")}
         @languages-changed=${action("languages-changed")}
         @recording-devices-changed=${action("recording-devices-changed")}
         @stream-closed=${action("stream-closed")}
@@ -82,7 +99,13 @@ const meta = {
 
 export default meta;
 
-export const Default = {} as StoryObj<CortiDictationStory>;
+export const Default = {
+  args: {
+    pushToTalkKeybinding: "`",
+    settingsEnabled: ["device", "language", "keybinding"],
+    toggleToTalkKeybinding: "Space",
+  },
+} as StoryObj<CortiDictationStory>;
 
 export const OnlyLanguageSettings = {
   args: {
@@ -137,4 +160,15 @@ export const WithCustomDevices = {
     },
     ...disableControls(["devices", "settingsEnabled"]),
   },
+};
+
+export const WithKeybindings = {
+  args: {
+    accessToken: "dummy_token",
+    languagesSupported: languages,
+    pushToTalkKeybinding: "Space",
+    settingsEnabled: ["device", "language", "keybinding"],
+    toggleToTalkKeybinding: "k",
+  },
+  argTypes: disableControls(["settingsEnabled"]),
 };
