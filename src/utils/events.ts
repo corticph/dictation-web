@@ -17,6 +17,8 @@ export type RecordingDevicesChangedEventDetail = {
 
 export type RecordingStateChangedEventDetail = {
   state: RecordingState;
+  connection?: "CONNECTING" | "OPEN" | "CLOSING" | "CLOSED" | null;
+  processing?: boolean;
 };
 
 export type AudioLevelChangedEventDetail = {
@@ -68,11 +70,19 @@ export function recordingDevicesChangedEvent(
 
 export function recordingStateChangedEvent(
   state: RecordingState,
+  options: Partial<{
+    connection: "CONNECTING" | "OPEN" | "CLOSING" | "CLOSED" | null;
+    processing: boolean;
+  }> = {},
 ): CustomEvent<RecordingStateChangedEventDetail> {
   return new CustomEvent("recording-state-changed", {
     bubbles: true,
     composed: true,
-    detail: { state },
+    detail: {
+      connection: options.connection,
+      processing: options.processing,
+      state,
+    },
   });
 }
 
@@ -117,6 +127,9 @@ export function errorEvent(error: unknown): CustomEvent<ErrorEventDetail> {
   });
 }
 
+/**
+ * @deprecated Use recording-state-changed event with detail.connection field instead.
+ */
 export function streamClosedEvent(detail: unknown): CustomEvent {
   return new CustomEvent("stream-closed", {
     bubbles: true,

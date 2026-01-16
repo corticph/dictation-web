@@ -267,6 +267,22 @@ export class CortiDictation extends LitElement {
     this.#recordingButtonRef.value?.toggleRecording();
   }
 
+  /**
+   * Opens the WebSocket connection without starting recording.
+   * Use this to pre-establish the connection before recording starts.
+   */
+  public async openConnection(): Promise<void> {
+    await this.#recordingButtonRef.value?.openConnection();
+  }
+
+  /**
+   * Closes the WebSocket connection by sending "end" and waiting for "ended".
+   * Call this to receive "usage" statistics or when done with the connection.
+   */
+  public async closeConnection(): Promise<void> {
+    await this.#recordingButtonRef.value?.closeConnection();
+  }
+
   // ─────────────────────────────────────────────────────────────────────────────
   // Render
   // ─────────────────────────────────────────────────────────────────────────────
