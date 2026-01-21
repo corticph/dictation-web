@@ -163,7 +163,7 @@ For more control, use individual components to build a custom UI:
 
 The component supports both push-to-talk and toggle-to-talk keybindings simultaneously. You can configure separate keybindings for each behavior:
 
-**Toggle-to-Talk Keybinding (default: `` ` ``):**
+**Toggle-to-Talk Keybinding (default: `Enter`):**
 - Pressing the key toggles recording on/off
 - Works like clicking the button
 
@@ -175,7 +175,7 @@ The component supports both push-to-talk and toggle-to-talk keybindings simultan
 You can use either key names (from `event.key`) or key codes (from `event.code`):
 
 ```html
-<!-- Configure toggle-to-talk keybinding (default: backtick) -->
+<!-- Configure toggle-to-talk keybinding (default: Enter) -->
 <corti-dictation toggleToTalkKeybinding="`"></corti-dictation>
 
 <!-- Configure push-to-talk keybinding (default: Space) -->
