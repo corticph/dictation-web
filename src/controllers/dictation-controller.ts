@@ -67,9 +67,7 @@ export class DictationController implements ReactiveController {
     dictationConfig: Corti.TranscribeConfig = DEFAULT_DICTATION_CONFIG,
     callbacks: WebSocketCallbacks = {},
   ): Promise<boolean> {
-    const newConnection =
-      this.#configHasChanged() ||
-      this.#webSocket?.readyState !== WebSocket.OPEN;
+    const newConnection = this.#configHasChanged() || !this.isConnectionOpen();
 
     if (newConnection) {
       this.cleanup();
