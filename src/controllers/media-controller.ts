@@ -1,4 +1,5 @@
 import type { ReactiveController, ReactiveControllerHost } from "lit";
+import { errorEvent } from "../utils/events.js";
 import {
   calculateAudioLevel,
   createAudioAnalyzer,
@@ -8,6 +9,7 @@ import {
 interface MediaControllerHost extends ReactiveControllerHost {
   _selectedDevice?: MediaDeviceInfo;
   _debug_displayAudio?: boolean;
+  dispatchEvent(event: Event): boolean;
 }
 
 export class MediaController implements ReactiveController {
@@ -162,6 +164,15 @@ export class MediaController implements ReactiveController {
   }
 
   removeDataHandler(): void {
+    if (this.#bufferedChunks.length > 0) {
+      this.host.dispatchEvent(
+        errorEvent(
+          "Connection timeout: server did not respond in time. Buffered audio was not processed.",
+        ),
+      );
+      this.#bufferedChunks = [];
+    }
+
     this.#dataHandler = undefined;
   }
 
