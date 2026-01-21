@@ -166,6 +166,48 @@ export class CortiDictation extends LitElement {
     return this.#contextProviderRef.value?.recordingState || "stopped";
   }
 
+  /**
+   * Push-to-talk keybinding for keyboard shortcut. Single key only (e.g., "Space", "k", "meta", "ctrl").
+   * Combinations with "+" are not supported.
+   * Keydown starts recording, keyup stops recording.
+   * Defaults to "Space" if keybinding is in settingsEnabled, otherwise undefined
+   */
+  @property({ type: String })
+  set pushToTalkKeybinding(value: string | null | undefined) {
+    this._pushToTalkKeybinding = value;
+  }
+
+  get pushToTalkKeybinding(): string | null | undefined {
+    return (
+      this.#contextProviderRef.value?.pushToTalkKeybinding ||
+      this._pushToTalkKeybinding
+    );
+  }
+
+  @state()
+  _pushToTalkKeybinding?: string | null;
+
+  /**
+   * Toggle-to-talk keybinding for keyboard shortcut. Single key only (e.g., "`", "k", "meta", "ctrl").
+   * Combinations with "+" are not supported.
+   * Pressing the key toggles recording on/off.
+   * Defaults to "`" if keybinding is in settingsEnabled, otherwise undefined
+   */
+  @property({ type: String })
+  set toggleToTalkKeybinding(value: string | null | undefined) {
+    this._toggleToTalkKeybinding = value;
+  }
+
+  get toggleToTalkKeybinding(): string | null | undefined {
+    return (
+      this.#contextProviderRef.value?.toggleToTalkKeybinding ||
+      this._toggleToTalkKeybinding
+    );
+  }
+
+  @state()
+  _toggleToTalkKeybinding?: string | null;
+
   // ─────────────────────────────────────────────────────────────────────────────
   // Public methods
   // ─────────────────────────────────────────────────────────────────────────────
@@ -225,6 +267,22 @@ export class CortiDictation extends LitElement {
     this.#recordingButtonRef.value?.toggleRecording();
   }
 
+  /**
+   * Opens the WebSocket connection without starting recording.
+   * Use this to pre-establish the connection before recording starts.
+   */
+  public async openConnection(): Promise<void> {
+    await this.#recordingButtonRef.value?.openConnection();
+  }
+
+  /**
+   * Closes the WebSocket connection by sending "end" and waiting for "ended".
+   * Call this to receive "usage" statistics or when done with the connection.
+   */
+  public async closeConnection(): Promise<void> {
+    await this.#recordingButtonRef.value?.closeConnection();
+  }
+
   // ─────────────────────────────────────────────────────────────────────────────
   // Render
   // ─────────────────────────────────────────────────────────────────────────────
@@ -249,6 +307,8 @@ export class CortiDictation extends LitElement {
         .devices=${this._devices}
         .selectedDevice=${this._selectedDevice}
         .debug_displayAudio=${this.debug_displayAudio}
+        .pushToTalkKeybinding=${this._pushToTalkKeybinding}
+        .toggleToTalkKeybinding=${this._toggleToTalkKeybinding}
       >
         <dictation-recording-button
           ${ref(this.#recordingButtonRef)}

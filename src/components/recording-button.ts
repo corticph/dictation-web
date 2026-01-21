@@ -1,6 +1,11 @@
 import type { Corti } from "@corti/sdk";
 import { consume } from "@lit/context";
-import { type CSSResultGroup, html, LitElement } from "lit";
+import {
+  type CSSResultGroup,
+  html,
+  LitElement,
+  type PropertyValues,
+} from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { AUDIO_CHUNK_INTERVAL_MS } from "../constants.js";
 import {
@@ -8,17 +13,20 @@ import {
   authConfigContext,
   debugDisplayAudioContext,
   dictationConfigContext,
+  pushToTalkKeybindingContext,
   recordingStateContext,
   regionContext,
   selectedDeviceContext,
   socketProxyContext,
   socketUrlContext,
   tenantNameContext,
+  toggleToTalkKeybindingContext,
 } from "../contexts/dictation-context.js";
 import {
   DictationController,
   type TranscribeMessage,
 } from "../controllers/dictation-controller.js";
+import { KeybindingController } from "../controllers/keybinding-controller.js";
 import { MediaController } from "../controllers/media-controller.js";
 import ButtonStyles from "../styles/buttons.js";
 import RecordingButtonStyles from "../styles/recording-button.js";
@@ -28,6 +36,7 @@ import {
   commandEvent,
   errorEvent,
   networkActivityEvent,
+  type RecordingStateChangedEventDetail,
   recordingStateChangedEvent,
   streamClosedEvent,
   transcriptEvent,
@@ -79,28 +88,58 @@ export class DictationRecordingButton extends LitElement {
   @state()
   _debug_displayAudio?: boolean;
 
+  @consume({ context: pushToTalkKeybindingContext, subscribe: true })
+  @state()
+  _pushToTalkKeybinding?: string | null;
+
+  @consume({ context: toggleToTalkKeybindingContext, subscribe: true })
+  @state()
+  _toggleToTalkKeybinding?: string | null;
+
   @property({ type: Boolean })
   allowButtonFocus: boolean = false;
 
   #mediaController = new MediaController(this);
   #dictationController = new DictationController(this);
+  #keybindingController = new KeybindingController(this);
+  #closeConnectionOnInit = false;
+  #processing = false;
+  #connection: RecordingStateChangedEventDetail["connection"] = "CLOSED";
 
   static styles: CSSResultGroup = [RecordingButtonStyles, ButtonStyles];
 
-  #handleMouseDown(event: MouseEvent): void {
+  protected update(changedProperties: PropertyValues) {
+    if (
+      changedProperties.has("_recordingState") &&
+      this._recordingState === "recording" &&
+      this.#closeConnectionOnInit
+    ) {
+      this.#closeConnectionOnInit = false;
+      this.#handleStop();
+    }
+
+    super.update(changedProperties);
+  }
+
+  #handleClick(event: MouseEvent): void {
     if (!this.allowButtonFocus) {
       event.preventDefault();
     }
+
+    this.toggleRecording();
   }
 
   #handleWebSocketMessage = (message: TranscribeMessage): void => {
     switch (message.type) {
       case "CONFIG_ACCEPTED":
-        this.#mediaController.mediaRecorder?.start(AUDIO_CHUNK_INTERVAL_MS);
-        this.#mediaController.startAudioLevelMonitoring((level) => {
-          this.dispatchEvent(audioLevelChangedEvent(level));
-        });
-        this.dispatchEvent(recordingStateChangedEvent("recording"));
+        this.#mediaController.addDataHandler(
+          this.#dictationController.mediaRecorderHandler,
+        );
+
+        if (this._recordingState === "initializing") {
+          this.#processing = true;
+          this.#dispatchRecordingStateChanged("recording");
+        }
         break;
       case "CONFIG_DENIED":
         this.dispatchEvent(
@@ -125,20 +164,48 @@ export class DictationRecordingButton extends LitElement {
         this.dispatchEvent(errorEvent(message.error));
         this.#handleStop();
         break;
+      case "flushed":
+        if (
+          this._recordingState === "stopped" ||
+          this._recordingState === "stopping"
+        ) {
+          this.#processing = false;
+          this.#dispatchRecordingStateChanged(this._recordingState);
+        }
+        break;
     }
   };
 
   #handleWebSocketError = (error: Error): void => {
     this.dispatchEvent(errorEvent("Socket error: " + error.message));
+    this.#processing = false;
+    this.#connection = "CLOSED";
     this.#handleStop();
   };
 
   #handleWebSocketClose = (event: unknown): void => {
+    // When we already have new socket opened
+    if (this.#dictationController.isConnectionOpen()) {
+      return;
+    }
+
+    this.#processing = false;
+    this.#connection = "CLOSED";
     this.dispatchEvent(streamClosedEvent(event));
+    this.#dispatchRecordingStateChanged(this._recordingState);
   };
 
+  #dispatchRecordingStateChanged(state: RecordingState): void {
+    this.dispatchEvent(
+      recordingStateChangedEvent(state, {
+        connection: this.#connection,
+        processing: this.#processing,
+      }),
+    );
+  }
+
   async #handleStart(): Promise<void> {
-    this.dispatchEvent(recordingStateChangedEvent("initializing"));
+    this.#dispatchRecordingStateChanged("initializing");
 
     try {
       await this.#mediaController.initialize(() => {
@@ -147,9 +214,18 @@ export class DictationRecordingButton extends LitElement {
           this.#handleStop();
         }
       });
+      this.#mediaController.mediaRecorder?.start(AUDIO_CHUNK_INTERVAL_MS);
+      this.#mediaController.startAudioLevelMonitoring((level) => {
+        this.dispatchEvent(audioLevelChangedEvent(level));
+      });
 
-      await this.#dictationController.connect(
-        this.#mediaController.mediaRecorder,
+      if (this.#connection !== "OPEN") {
+        this.#connection = "CONNECTING";
+      }
+
+      this.#dispatchRecordingStateChanged("recording");
+
+      const isNewConnection = await this.#dictationController.connect(
         this._dictationConfig,
         {
           onClose: this.#handleWebSocketClose,
@@ -160,6 +236,17 @@ export class DictationRecordingButton extends LitElement {
           },
         },
       );
+
+      if (!isNewConnection) {
+        this.#mediaController.addDataHandler(
+          this.#dictationController.mediaRecorderHandler,
+        );
+        this.#processing = true;
+      }
+
+      this.#connection = "OPEN";
+
+      this.#dispatchRecordingStateChanged("recording");
     } catch (error) {
       this.dispatchEvent(errorEvent(error));
       await this.#handleStop();
@@ -167,26 +254,19 @@ export class DictationRecordingButton extends LitElement {
   }
 
   async #handleStop(): Promise<void> {
-    this.dispatchEvent(recordingStateChangedEvent("stopping"));
+    this.#dispatchRecordingStateChanged("stopping");
 
     try {
       this.#mediaController.stopAudioLevelMonitoring();
       await this.#mediaController.stopRecording();
+      this.#mediaController.removeDataHandler();
 
-      await this.#dictationController.disconnect(this.#handleWebSocketClose);
+      this.#dispatchRecordingStateChanged("stopped");
+
+      await this.#dictationController.pause();
       await this.#mediaController.cleanup();
     } catch (error) {
       this.dispatchEvent(errorEvent(error));
-    }
-
-    this.dispatchEvent(recordingStateChangedEvent("stopped"));
-  }
-
-  #handleClick(): void {
-    if (this._recordingState === "stopped") {
-      this.#handleStart();
-    } else if (this._recordingState === "recording") {
-      this.#handleStop();
     }
   }
 
@@ -199,7 +279,15 @@ export class DictationRecordingButton extends LitElement {
   }
 
   public stopRecording(): void {
-    if (this._recordingState !== "recording") {
+    if (
+      this._recordingState === "stopped" ||
+      this._recordingState === "stopping"
+    ) {
+      return;
+    }
+
+    if (this._recordingState === "initializing") {
+      this.#closeConnectionOnInit = true;
       return;
     }
 
@@ -207,7 +295,63 @@ export class DictationRecordingButton extends LitElement {
   }
 
   public toggleRecording(): void {
-    this.#handleClick();
+    if (this._recordingState === "stopped") {
+      this.startRecording();
+    } else if (this._recordingState === "recording") {
+      this.stopRecording();
+    }
+  }
+
+  public async openConnection(): Promise<void> {
+    if (this._recordingState !== "stopped" || this.#processing) {
+      return;
+    }
+
+    if (this.#dictationController.isConnectionOpen()) {
+      return;
+    }
+
+    try {
+      this.#connection = "CONNECTING";
+      this.#dispatchRecordingStateChanged("stopped");
+
+      await this.#dictationController.connect(this._dictationConfig, {
+        onClose: this.#handleWebSocketClose,
+        onError: this.#handleWebSocketError,
+        onMessage: this.#handleWebSocketMessage,
+        onNetworkActivity: (direction, data) => {
+          this.dispatchEvent(networkActivityEvent(direction, data));
+        },
+      });
+
+      this.#connection = "OPEN";
+      this.#dispatchRecordingStateChanged("stopped");
+    } catch (error) {
+      this.#connection = "CLOSED";
+      this.dispatchEvent(errorEvent(error));
+    }
+  }
+
+  public async closeConnection(): Promise<void> {
+    if (this._recordingState !== "stopped" || this.#processing) {
+      return;
+    }
+
+    if (!this.#dictationController.isConnectionOpen()) {
+      this.#connection = "CLOSED";
+      this.#dispatchRecordingStateChanged("stopped");
+      return;
+    }
+
+    try {
+      this.#connection = "CLOSING";
+      this.#dispatchRecordingStateChanged("stopped");
+      await this.#dictationController.closeConnection(
+        this.#handleWebSocketClose,
+      );
+    } catch (error) {
+      this.dispatchEvent(errorEvent(error));
+    }
   }
 
   render() {
@@ -218,7 +362,6 @@ export class DictationRecordingButton extends LitElement {
 
     return html`
       <button
-        @mousedown=${this.#handleMouseDown}
         @click=${this.#handleClick}
         ?disabled=${isLoading}
         class=${isRecording ? "red" : "accent"}

@@ -20,4 +20,15 @@ const ComponentStyles = css`
   }
 `;
 
+export const LabelStyles = css`
+  label {
+    display: block;
+    font-size: 0.8rem;
+    padding-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--component-text-color, light-dark(#333, #eee));
+    pointer-events: none;
+  }
+`;
+
 export default ComponentStyles;

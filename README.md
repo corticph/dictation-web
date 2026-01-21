@@ -21,9 +21,11 @@ This library offers two approaches:
 
 **`<corti-dictation>`** - A complete, ready-to-use component that includes:
 - Recording button with visual feedback
-- Settings menu for device and language selection
+- Settings menu for device, language, and keybinding selection
 - Automatic state management
 - Built-in styling and theming
+- Support for both push-to-talk and toggle-to-talk keybindings simultaneously
+- Keyboard shortcut (keybinding) support
 
 This is the easiest way to get started and works out of the box.
 
@@ -33,9 +35,10 @@ For more control and flexibility, you can use individual components:
 
 - **`<dictation-root>`** - Context provider that manages authentication, configuration, and shared state
 - **`<dictation-recording-button>`** - Standalone recording button with audio visualization
-- **`<dictation-settings-menu>`** - Settings menu with device and language selectors
+- **`<dictation-settings-menu>`** - Settings menu with device, language, and keybinding selectors
 - **`<dictation-device-selector>`** - Device selection dropdown
 - **`<dictation-language-selector>`** - Language selection dropdown
+- **`<dictation-keybinding-selector>`** - Keybinding configuration component for keyboard shortcuts (supports both push-to-talk and toggle-to-talk)
 
 These components share state through a context system, allowing you to build custom UIs while leveraging the same underlying functionality.
 
@@ -128,7 +131,7 @@ For more control, use individual components to build a custom UI:
 <body>
 <dictation-root id="dictationRoot">
   <dictation-recording-button></dictation-recording-button>
-  <dictation-settings-menu settingsEnabled="device,language"></dictation-settings-menu>
+  <dictation-settings-menu settingsEnabled="device,language,keybinding"></dictation-settings-menu>
 </dictation-root>
 
 <textarea
@@ -155,6 +158,39 @@ For more control, use individual components to build a custom UI:
 </body>
 </html>
 ```
+
+### Keyboard Shortcuts (Keybindings)
+
+The component supports both push-to-talk and toggle-to-talk keybindings simultaneously. You can configure separate keybindings for each behavior:
+
+**Toggle-to-Talk Keybinding (default: `Enter`):**
+- Pressing the key toggles recording on/off
+- Works like clicking the button
+
+**Push-to-Talk Keybinding (default: `Space`):**
+- Keydown starts recording
+- Keyup stops recording
+- Works like press-and-hold
+
+You can use either key names (from `event.key`) or key codes (from `event.code`):
+
+```html
+<!-- Configure toggle-to-talk keybinding (default: Enter) -->
+<corti-dictation toggleToTalkKeybinding="`"></corti-dictation>
+
+<!-- Configure push-to-talk keybinding (default: Space) -->
+<corti-dictation pushToTalkKeybinding="Space"></corti-dictation>
+
+<!-- Use key codes instead of key names -->
+<corti-dictation toggleToTalkKeybinding="Backquote"></corti-dictation> <!-- backtick -->
+<corti-dictation pushToTalkKeybinding="Space"></corti-dictation> <!-- Space key -->
+```
+
+Keybindings are platform-aware:
+- Keybindings are automatically ignored when typing in input fields, textareas, or contenteditable elements
+- Both key names (e.g., `"k"`, `"Meta"`, `"Space"`) and key codes (e.g., `"KeyK"`, `"MetaLeft"`, `"Space"`) are supported
+- Both keybindings can be active at the same time
+- **Note:** If both keybindings are set to the same key, toggle-to-talk takes priority
 
 ## Documentation
 

@@ -9,6 +9,7 @@ import type { ConfigurableSettings, RecordingState } from "../types.js";
 import { commaSeparatedConverter } from "../utils/converters.js";
 
 import "./device-selector.js";
+import "./keybinding-selector.js";
 import "./language-selector.js";
 import "../icons/icons.js";
 
@@ -38,6 +39,7 @@ export class DictationSettingsMenu extends LitElement {
     const isRecording = this._recordingState === "recording";
     const showDeviceSelector = this.settingsEnabled.includes("device");
     const showLanguageSelector = this.settingsEnabled.includes("language");
+    const showKeybinding = this.settingsEnabled.includes("keybinding");
 
     return html`
       <div class="mic-selector">
@@ -67,6 +69,13 @@ export class DictationSettingsMenu extends LitElement {
                 ? html`<dictation-language-selector
                   ?disabled=${isRecording}
                 />`
+                : nothing
+            }
+            ${
+              showKeybinding
+                ? html`<dictation-keybinding-selector
+                    ?disabled=${isRecording}
+                  />`
                 : nothing
             }
           </div>
