@@ -175,7 +175,10 @@ export class DictationRecordingButton extends LitElement {
 
   #handleWebSocketClose = (event: unknown): void => {
     // When we already have new socket opened
-    if (this.#dictationController.isConnectionOpen()) {
+    if (
+      this.#dictationController.isConnectionOpen() ||
+      this.#dictationController.isConnecting()
+    ) {
       return;
     }
 
@@ -323,6 +326,10 @@ export class DictationRecordingButton extends LitElement {
   public async closeConnection(): Promise<void> {
     if (this._recordingState !== "stopped" || this.#processing) {
       return;
+    }
+
+    if (this.#dictationController.isConnecting()) {
+      await this.#dictationController.waitForConnection();
     }
 
     if (!this.#dictationController.isConnectionOpen()) {

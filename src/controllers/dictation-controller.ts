@@ -52,6 +52,7 @@ export class DictationController implements ReactiveController {
   #socketReady = false;
   #connectingPromise: Promise<boolean | "superseded"> | null = null;
   #connectionGeneration = 0;
+  #isConnecting = false;
 
   constructor(host: DictationControllerHost) {
     this.host = host;
@@ -80,10 +81,12 @@ export class DictationController implements ReactiveController {
       return this.#connectingPromise;
     }
 
+    this.#isConnecting = true;
     this.#connectingPromise = this.#doConnect(
       dictationConfig,
       callbacks,
     ).finally(() => {
+      this.#isConnecting = false;
       this.#connectingPromise = null;
     });
 
@@ -275,12 +278,24 @@ export class DictationController implements ReactiveController {
     );
   }
 
+  isConnecting(): boolean {
+    return this.#isConnecting;
+  }
+
+  async waitForConnection(): Promise<void> {
+    await this.#connectingPromise;
+  }
+
   async closeConnection(onClose?: (event: unknown) => void): Promise<void> {
     await new Promise<void>((resolve, reject) => {
       const oldSocket = this.#webSocket;
       this.#webSocket = null;
 
-      if (!oldSocket || oldSocket.readyState !== WebSocket.OPEN) {
+      if (
+        !oldSocket ||
+        (oldSocket.readyState !== WebSocket.OPEN &&
+          oldSocket.readyState !== WebSocket.CONNECTING)
+      ) {
         this.#socketReady = false;
         resolve();
         return;
@@ -299,11 +314,20 @@ export class DictationController implements ReactiveController {
         resolve();
       });
 
+      const wasReady = this.#socketReady;
+      this.#socketReady = false;
+
       oldSocket.on("message", (message) => {
         this.#callbacks?.onNetworkActivity?.("received", message);
 
         if (this.#callbacks?.onMessage) {
           this.#callbacks?.onMessage(message);
+        }
+
+        if (!wasReady && message.type === "CONFIG_ACCEPTED") {
+          oldSocket.sendEnd({ type: "end" });
+          this.#callbacks?.onNetworkActivity?.("sent", { type: "end" });
+          return;
         }
 
         if (message.type === "ended") {
@@ -317,14 +341,10 @@ export class DictationController implements ReactiveController {
         }
       });
 
-      if (this.#socketReady) {
+      if (wasReady) {
         oldSocket.sendEnd({ type: "end" });
         this.#callbacks?.onNetworkActivity?.("sent", { type: "end" });
-      } else {
-        this.#outboundQueue.push({ type: "end" });
       }
-
-      this.#socketReady = false;
 
       this.#closeTimeout = window.setTimeout(() => {
         reject(new Error("Connection close timeout"));
