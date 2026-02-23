@@ -2,12 +2,14 @@ import { type Corti, CortiClient, CortiWebSocketProxyClient } from "@corti/sdk";
 import type { ReactiveController, ReactiveControllerHost } from "lit";
 import { DEFAULT_DICTATION_CONFIG } from "../constants.js";
 import type { ProxyOptions } from "../types.js";
+import { errorEvent } from "../utils/events.js";
 
 type TranscribeSocket = Awaited<
   ReturnType<CortiClient["transcribe"]["connect"]>
 >;
 
 interface DictationControllerHost extends ReactiveControllerHost {
+  dispatchEvent: (event: Event) => void;
   _accessToken?: string;
   _authConfig?: Corti.BearerOptions;
   _region?: string;
@@ -77,10 +79,16 @@ export class DictationController implements ReactiveController {
     dictationConfig: Corti.TranscribeConfig = DEFAULT_DICTATION_CONFIG,
     callbacks: WebSocketCallbacks = {},
   ): Promise<boolean | "superseded"> {
+    // If a connection attempt is already in progress with the same config, reuse it
+    // to avoid opening multiple sockets when connect() is called concurrently.
     if (this.#connectingPromise && !this.#configHasChanged()) {
       return this.#connectingPromise;
     }
 
+    // #isConnecting must be set synchronously before #doConnect runs, because
+    // #doConnect calls cleanup() which closes the old socket, firing its "close"
+    // event synchronously. Handlers that check isConnecting() need to see true
+    // at that point — before #connectingPromise is even assigned.
     this.#isConnecting = true;
     this.#connectingPromise = this.#doConnect(
       dictationConfig,
@@ -113,6 +121,8 @@ export class DictationController implements ReactiveController {
           ? await this.#connectProxy(dictationConfig)
           : await this.#connectAuth(dictationConfig);
 
+      // If cleanup() was called while we were awaiting (e.g. config changed),
+      // the generation counter will have advanced — discard this stale socket.
       if (this.#connectionGeneration !== generation) {
         socket.close();
         return "superseded";
@@ -324,6 +334,10 @@ export class DictationController implements ReactiveController {
           this.#callbacks?.onMessage(message);
         }
 
+        // closeConnection() may be called before CONFIG_ACCEPTED arrives (e.g.
+        // openConnection() followed immediately by closeConnection()). We can't
+        // use the outbound queue here because #webSocket is already null, so we
+        // send "end" directly on oldSocket as soon as config is accepted.
         if (!wasReady && message.type === "CONFIG_ACCEPTED") {
           oldSocket.sendEnd({ type: "end" });
           this.#callbacks?.onNetworkActivity?.("sent", { type: "end" });
@@ -357,6 +371,8 @@ export class DictationController implements ReactiveController {
   }
 
   cleanup(): void {
+    // Incrementing generation invalidates any in-flight #doConnect awaits,
+    // causing them to discard their socket and return "superseded".
     this.#connectionGeneration++;
     this.#socketReady = false;
 
@@ -374,6 +390,15 @@ export class DictationController implements ReactiveController {
     this.#lastDictationConfig = null;
     this.#lastSocketUrl = undefined;
     this.#lastSocketProxy = undefined;
+
+    if (this.#outboundQueue.length > 0) {
+      this.host.dispatchEvent(
+        errorEvent(
+          `${this.#outboundQueue.length} unsent audio message(s) were discarded because the configuration changed before the connection was closed`,
+        ),
+      );
+    }
+
     this.#outboundQueue = [];
   }
 }

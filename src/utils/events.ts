@@ -118,7 +118,9 @@ export function usageEvent(
 
 export function errorEvent(error: unknown): CustomEvent<ErrorEventDetail> {
   const message =
-    error instanceof Error && error.message ? error.message : String(error);
+    error instanceof Error && error.message
+      ? error.message
+      : JSON.stringify(error);
 
   return new CustomEvent("error", {
     bubbles: false,
