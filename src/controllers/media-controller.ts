@@ -1,5 +1,4 @@
 import type { ReactiveController, ReactiveControllerHost } from "lit";
-import { errorEvent } from "../utils/events.js";
 import {
   calculateAudioLevel,
   createAudioAnalyzer,
@@ -24,7 +23,6 @@ export class MediaController implements ReactiveController {
   #onTrackEnded?: () => void;
   #onAudioLevelChange?: (level: number) => void;
   #dataHandler?: (data: Blob) => void;
-  #bufferedChunks: Blob[] = [];
 
   constructor(host: MediaControllerHost) {
     this.host = host;
@@ -35,10 +33,14 @@ export class MediaController implements ReactiveController {
     this.cleanup();
   }
 
-  async initialize(onTrackEnded?: () => void): Promise<void> {
+  async initialize(
+    onTrackEnded?: () => void,
+    dataHandler?: (data: Blob) => void,
+  ): Promise<void> {
     await this.cleanup();
 
     this.#onTrackEnded = onTrackEnded;
+    this.#dataHandler = dataHandler;
     this.#mediaStream = await getMediaStream(
       this.host._selectedDevice?.deviceId,
       this.host._debug_displayAudio,
@@ -61,10 +63,7 @@ export class MediaController implements ReactiveController {
     this.#mediaRecorder.ondataavailable = (event) => {
       if (this.#dataHandler) {
         this.#dataHandler(event.data);
-        return;
       }
-
-      this.#bufferedChunks.push(event.data);
     };
   }
 
@@ -132,7 +131,6 @@ export class MediaController implements ReactiveController {
     this.#onTrackEnded = undefined;
     this.#onAudioLevelChange = undefined;
     this.#dataHandler = undefined;
-    this.#bufferedChunks = [];
   }
 
   /**
@@ -152,28 +150,6 @@ export class MediaController implements ReactiveController {
 
       this.#mediaRecorder.stop();
     });
-  }
-
-  addDataHandler(handler: (data: Blob) => void): void {
-    for (const chunk of this.#bufferedChunks) {
-      handler(chunk);
-    }
-
-    this.#bufferedChunks = [];
-    this.#dataHandler = handler;
-  }
-
-  removeDataHandler(): void {
-    if (this.#bufferedChunks.length > 0) {
-      this.host.dispatchEvent(
-        errorEvent(
-          "Connection timeout: server did not respond in time. Buffered audio was not processed.",
-        ),
-      );
-      this.#bufferedChunks = [];
-    }
-
-    this.#dataHandler = undefined;
   }
 
   get mediaRecorder(): MediaRecorder | null {

@@ -26,6 +26,11 @@ export type TranscribeMessage =
   | Corti.TranscribeCommandMessage
   | Corti.TranscribeFlushedMessage;
 
+type OutboundItem =
+  | Blob
+  | Corti.TranscribeFlushMessage
+  | Corti.TranscribeEndMessage;
+
 interface WebSocketCallbacks {
   onMessage?: (message: TranscribeMessage) => void;
   onError?: (error: Error) => void;
@@ -43,6 +48,10 @@ export class DictationController implements ReactiveController {
   #lastDictationConfig: Corti.TranscribeConfig | null = null;
   #lastSocketUrl?: string;
   #lastSocketProxy?: ProxyOptions;
+  #outboundQueue: OutboundItem[] = [];
+  #socketReady = false;
+  #connectingPromise: Promise<boolean | "superseded"> | null = null;
+  #connectionGeneration = 0;
 
   constructor(host: DictationControllerHost) {
     this.host = host;
@@ -66,33 +75,61 @@ export class DictationController implements ReactiveController {
   async connect(
     dictationConfig: Corti.TranscribeConfig = DEFAULT_DICTATION_CONFIG,
     callbacks: WebSocketCallbacks = {},
-  ): Promise<boolean> {
+  ): Promise<boolean | "superseded"> {
+    if (this.#connectingPromise && !this.#configHasChanged()) {
+      return this.#connectingPromise;
+    }
+
+    this.#connectingPromise = this.#doConnect(
+      dictationConfig,
+      callbacks,
+    ).finally(() => {
+      this.#connectingPromise = null;
+    });
+
+    return this.#connectingPromise;
+  }
+
+  async #doConnect(
+    dictationConfig: Corti.TranscribeConfig,
+    callbacks: WebSocketCallbacks,
+  ): Promise<boolean | "superseded"> {
     const newConnection = this.#configHasChanged() || !this.isConnectionOpen();
 
     if (newConnection) {
       this.cleanup();
 
-      if (this.#webSocket?.readyState === WebSocket.OPEN) {
-        throw new Error("Already connected. Disconnect before reconnecting.");
-      }
+      this.#lastDictationConfig = this.host._dictationConfig || null;
+      this.#lastSocketUrl = this.host._socketUrl;
+      this.#lastSocketProxy = this.host._socketProxy;
 
-      this.#webSocket =
+      const generation = this.#connectionGeneration;
+
+      const socket =
         this.host._socketUrl || this.host._socketProxy
           ? await this.#connectProxy(dictationConfig)
           : await this.#connectAuth(dictationConfig);
+
+      if (this.#connectionGeneration !== generation) {
+        socket.close();
+        return "superseded";
+      }
+
+      this.#webSocket = socket;
 
       this.#callbacks?.onNetworkActivity?.("sent", {
         configuration: dictationConfig,
         type: "config",
       });
-
-      this.#lastDictationConfig = this.host._dictationConfig || null;
-      this.#lastSocketUrl = this.host._socketUrl;
-      this.#lastSocketProxy = this.host._socketProxy;
     }
 
     this.#callbacks = callbacks;
     this.#setupWebSocketHandlers(callbacks);
+
+    if (!newConnection && this.isConnectionOpen()) {
+      this.#socketReady = true;
+      this.#drain();
+    }
 
     return newConnection;
   }
@@ -148,6 +185,11 @@ export class DictationController implements ReactiveController {
     }
 
     this.#webSocket.on("message", (message: TranscribeMessage) => {
+      if (message.type === "CONFIG_ACCEPTED") {
+        this.#socketReady = true;
+        this.#drain();
+      }
+
       callbacks.onNetworkActivity?.("received", message);
 
       if (callbacks.onMessage) {
@@ -156,29 +198,73 @@ export class DictationController implements ReactiveController {
     });
 
     this.#webSocket.on("error", (event: Error) => {
+      this.#socketReady = false;
       if (callbacks.onError) {
         callbacks.onError(event);
       }
     });
 
     this.#webSocket.on("close", (event: unknown) => {
+      this.#socketReady = false;
       if (callbacks.onClose) {
         callbacks.onClose(event);
       }
     });
   }
 
+  #drain(): void {
+    if (
+      !this.#socketReady ||
+      !this.isConnectionOpen() ||
+      this.#outboundQueue.length === 0
+    ) {
+      return;
+    }
+
+    while (this.#outboundQueue.length > 0 && this.isConnectionOpen()) {
+      const item = this.#outboundQueue.shift();
+
+      if (item === undefined) {
+        break;
+      }
+
+      if (item instanceof Blob) {
+        this.#webSocket!.send(item);
+        this.#callbacks?.onNetworkActivity?.("sent", {
+          size: item.size,
+          type: "audio",
+        });
+        continue;
+      }
+
+      this.#webSocket!.send(JSON.stringify(item));
+      this.#callbacks?.onNetworkActivity?.("sent", {
+        type: item.type,
+      });
+    }
+  }
+
   mediaRecorderHandler = (data: Blob): void => {
-    this.#webSocket?.sendAudio(data);
-    this.#callbacks?.onNetworkActivity?.("sent", {
-      size: data.size,
-      type: "audio",
-    });
+    if (this.#socketReady && this.isConnectionOpen()) {
+      this.#webSocket?.send(data);
+      this.#callbacks?.onNetworkActivity?.("sent", {
+        size: data.size,
+        type: "audio",
+      });
+      return;
+    }
+
+    this.#outboundQueue.push(data);
   };
 
   async pause(): Promise<void> {
-    this.#webSocket?.sendFlush({ type: "flush" });
-    this.#callbacks?.onNetworkActivity?.("sent", { type: "flush" });
+    if (this.#socketReady && this.isConnectionOpen()) {
+      this.#webSocket?.send(JSON.stringify({ type: "flush" }));
+      this.#callbacks?.onNetworkActivity?.("sent", { type: "flush" });
+      return;
+    }
+
+    this.#outboundQueue.push({ type: "flush" });
   }
 
   isConnectionOpen(): boolean {
@@ -195,6 +281,7 @@ export class DictationController implements ReactiveController {
       this.#webSocket = null;
 
       if (!oldSocket || oldSocket.readyState !== WebSocket.OPEN) {
+        this.#socketReady = false;
         resolve();
         return;
       }
@@ -230,8 +317,14 @@ export class DictationController implements ReactiveController {
         }
       });
 
-      oldSocket.sendEnd({ type: "end" });
-      this.#callbacks?.onNetworkActivity?.("sent", { type: "end" });
+      if (this.#socketReady) {
+        oldSocket.sendEnd({ type: "end" });
+        this.#callbacks?.onNetworkActivity?.("sent", { type: "end" });
+      } else {
+        this.#outboundQueue.push({ type: "end" });
+      }
+
+      this.#socketReady = false;
 
       this.#closeTimeout = window.setTimeout(() => {
         reject(new Error("Connection close timeout"));
@@ -244,13 +337,16 @@ export class DictationController implements ReactiveController {
   }
 
   cleanup(): void {
+    this.#connectionGeneration++;
+    this.#socketReady = false;
+
     if (this.#closeTimeout) {
       clearTimeout(this.#closeTimeout);
       this.#closeTimeout = undefined;
     }
 
-    if (this.#webSocket?.readyState === WebSocket.OPEN) {
-      this.#webSocket.close();
+    if (this.isConnectionOpen()) {
+      this.#webSocket?.close();
     }
 
     this.#webSocket = null;
@@ -258,5 +354,6 @@ export class DictationController implements ReactiveController {
     this.#lastDictationConfig = null;
     this.#lastSocketUrl = undefined;
     this.#lastSocketProxy = undefined;
+    this.#outboundQueue = [];
   }
 }
