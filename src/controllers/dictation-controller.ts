@@ -400,7 +400,7 @@ export class DictationController implements ReactiveController {
     if (this.#outboundQueue.length > 0) {
       this.host.dispatchEvent(
         errorEvent(
-          `${this.#outboundQueue.length} unsent audio message(s) were discarded because the configuration changed before the connection was closed`,
+          `${this.#outboundQueue.length} unsent message(s) were discarded because the configuration changed before the connection was closed`,
         ),
       );
     }
