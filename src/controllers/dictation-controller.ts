@@ -225,16 +225,22 @@ export class DictationController implements ReactiveController {
     });
   }
 
+  #isSocketOpen(): boolean {
+    return (
+      this.#webSocket !== null && this.#webSocket.readyState === WebSocket.OPEN
+    );
+  }
+
   #drain(): void {
     if (
       !this.#socketReady ||
-      !this.isConnectionOpen() ||
+      !this.#isSocketOpen() ||
       this.#outboundQueue.length === 0
     ) {
       return;
     }
 
-    while (this.#outboundQueue.length > 0 && this.isConnectionOpen()) {
+    while (this.#outboundQueue.length > 0 && this.#isSocketOpen()) {
       const item = this.#outboundQueue.shift();
 
       if (item === undefined) {
@@ -258,7 +264,7 @@ export class DictationController implements ReactiveController {
   }
 
   mediaRecorderHandler = (data: Blob): void => {
-    if (this.#socketReady && this.isConnectionOpen()) {
+    if (this.#socketReady && this.#isSocketOpen()) {
       this.#webSocket?.send(data);
       this.#callbacks?.onNetworkActivity?.("sent", {
         size: data.size,
@@ -271,7 +277,7 @@ export class DictationController implements ReactiveController {
   };
 
   async pause(): Promise<void> {
-    if (this.#socketReady && this.isConnectionOpen()) {
+    if (this.#socketReady && this.#isSocketOpen()) {
       this.#webSocket?.send(JSON.stringify({ type: "flush" }));
       this.#callbacks?.onNetworkActivity?.("sent", { type: "flush" });
       return;

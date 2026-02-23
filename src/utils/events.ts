@@ -116,11 +116,24 @@ export function usageEvent(
   });
 }
 
+function errorToMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (typeof error === "object" && error !== null) {
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return String(error);
+    }
+  }
+
+  return String(error);
+}
+
 export function errorEvent(error: unknown): CustomEvent<ErrorEventDetail> {
-  const message =
-    error instanceof Error && error.message
-      ? error.message
-      : JSON.stringify(error);
+  const message = errorToMessage(error);
 
   return new CustomEvent("error", {
     bubbles: false,
