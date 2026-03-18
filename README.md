@@ -199,5 +199,5 @@ For more detailed information, see:
 - **[API Reference](docs/API_REFERENCE.md)** - Complete API documentation for properties, methods, and events
 - **[Authentication Guide](docs/AUTHENTICATION.md)** - How to set up authentication with tokens and refresh mechanisms
 - **[Styling Guide](docs/styling.md)** - Customize the component's appearance with CSS variables and themes
-- **[Examples](demo/README.md)** - Practical usage examples and demos
+- **[Examples](https://github.com/corticph/corti-examples/tree/main/dictation/typescript/web-component)** - Practical usage examples and demos
 - **[Development Guide](docs/DEV_README.md)** - Information for contributors and developers
