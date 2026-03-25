@@ -66,10 +66,14 @@ jobs:
         run: |
           CURRENT=$(node -p "require('./package.json').version")
           TARGET="${{ steps.version.outputs.version }}"
+          SUFFIX="${{ steps.version.outputs.suffix }}"
           if [[ "$CURRENT" == "$TARGET" ]]; then
             echo "Version already $TARGET — skipping version bump"
+          elif [[ -n "$SUFFIX" ]]; then
+            echo "Pre-release ($SUFFIX) — bumping version locally only, not committing"
+            npm version "$TARGET" --no-git-tag-version
           else
-            echo "Bumping version: $CURRENT → $TARGET"
+            echo "Stable release — bumping version: $CURRENT → $TARGET"
             npm version "$TARGET" --no-git-tag-version
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
