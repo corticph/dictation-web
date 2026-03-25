@@ -49,7 +49,9 @@ jobs:
         # Always create a local branch from the current detached HEAD so git push works.
         # For main/master this creates a new release/vX.Y.Z branch.
         # For other branches this gives the detached HEAD a pushable name.
-        run: git checkout -b "${{ steps.version.outputs.branch }}"
+        run: |
+          git checkout -b "${{ steps.version.outputs.branch }}"
+          git pull --rebase origin "${{ steps.version.outputs.branch }}" || true
 
       - name: Set up node
         uses: actions/setup-node@v4
@@ -59,16 +61,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Bump version
-        run: npm version ${{ steps.version.outputs.version }} --no-git-tag-version
-
-      - name: Commit and push version bump
+      - name: Bump version and push
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json
-          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}"
-          git push origin "${{ steps.version.outputs.branch }}"
+          CURRENT=$(node -p "require('./package.json').version")
+          TARGET="${{ steps.version.outputs.version }}"
+          if [[ "$CURRENT" == "$TARGET" ]]; then
+            echo "Version already $TARGET — skipping version bump"
+          else
+            echo "Bumping version: $CURRENT → $TARGET"
+            npm version "$TARGET" --no-git-tag-version
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add package.json package-lock.json
+            git commit -m "chore: bump version to $TARGET"
+            git push origin "${{ steps.version.outputs.branch }}"
+          fi
 
       - name: Build
         run: npm run build && npm run build:bundle
