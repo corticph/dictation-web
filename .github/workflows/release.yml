@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
 
     steps:
       - name: Checkout repo
@@ -81,21 +82,21 @@ jobs:
         run: npm run build && npm run build:bundle
 
       - name: Publish to npm
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
+          publish() {  # use latest npm to ensure OIDC support
+            npx -y npm@latest publish "$@"
+          }
           SUFFIX="${{ steps.version.outputs.suffix }}"
           if [[ -n "$SUFFIX" ]]; then
-            npx -y npm@latest publish --access public --tag "$SUFFIX"
+            publish --access public --tag "$SUFFIX"
           else
             PKG_NAME=$(node -p "require('./package.json').name")
             PKG_VERSION=$(node -p "require('./package.json').version")
             CURRENT_LATEST=$(npm view "${PKG_NAME}" dist-tags.latest 2>/dev/null || echo "0.0.0")
             if npx -y semver "${PKG_VERSION}" -r "<${CURRENT_LATEST}" > /dev/null 2>&1; then
               echo "Publishing ${PKG_VERSION} with --tag backport (current latest is ${CURRENT_LATEST})"
-              npx -y npm@latest publish --access public --tag backport
+              publish --access public --tag backport
             else
-              npx -y npm@latest publish --access public
+              publish --access public
             fi
           fi
