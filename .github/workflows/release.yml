@@ -1,0 +1,119 @@
+name: release
+
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-notes:
+    uses: ./.github/workflows/release-notes.yml
+    permissions:
+      contents: write
+      pull-requests: read
+    secrets: inherit
+
+  publish:
+    needs: release-notes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${TAG#v}"
+          if [[ "$VERSION" == *-* ]]; then
+            SUFFIX="${VERSION#*-}"
+          else
+            SUFFIX=""
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "suffix=$SUFFIX" >> $GITHUB_OUTPUT
+
+      - name: Set up node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set version
+        run: npm version ${{ steps.version.outputs.version }} --no-git-tag-version
+
+      - name: Build
+        run: npm run build && npm run build:bundle
+
+      - name: Test
+        run: npm test
+
+      - name: Publish to npm
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
+          SUFFIX="${{ steps.version.outputs.suffix }}"
+          if [[ -n "$SUFFIX" ]]; then
+            npx -y npm@latest publish --access public --tag "$SUFFIX"
+          else
+            PKG_NAME=$(node -p "require('./package.json').name")
+            PKG_VERSION=$(node -p "require('./package.json').version")
+            CURRENT_LATEST=$(npm view "${PKG_NAME}" dist-tags.latest 2>/dev/null || echo "0.0.0")
+            if npx -y semver "${PKG_VERSION}" -r "<${CURRENT_LATEST}" > /dev/null 2>&1; then
+              echo "Publishing ${PKG_VERSION} with --tag backport (current latest is ${CURRENT_LATEST})"
+              npx -y npm@latest publish --access public --tag backport
+            else
+              npx -y npm@latest publish --access public
+            fi
+
+  mark-linear-issues-done:
+    name: Mark Linear issues as done
+    needs: [release-notes, publish]
+    runs-on: ubuntu-latest
+    if: github.event.release.prerelease == false && needs.publish.result == 'success'
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download pr-details artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-details
+
+      - name: Mark issues as done
+        uses: actions/github-script@v7
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+        with:
+          script: |
+            const fs = await import("node:fs");
+            const { issues } = JSON.parse(fs.readFileSync("pr-details.json", "utf8"));
+            const { default: updateLinearIssues } = await import("${{ github.workspace }}/.github/scripts/update-linear-issues.js");
+            await updateLinearIssues(issues, "Done");
+
+  notify-release-notes-failure:
+    name: Notify release notes failure
+    needs: release-notes
+    runs-on: ubuntu-latest
+    if: always() && needs.release-notes.result == 'failure'
+    steps:
+      - name: Post failure message to Slack
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          channel-id: ${{ vars.SLACK_PRERELEASE_CHANNEL_ID }}
+          payload: |
+            {
+              "markdown_text": ":red-siren: *Release notes workflow failed!* Unable to generate release notes for ${{ github.event.release.tag_name }}. Please check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.",
+              "unfurl_links": false,
+              "unfurl_media": false
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          fi
