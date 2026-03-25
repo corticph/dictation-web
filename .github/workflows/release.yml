@@ -65,47 +65,4 @@ jobs:
             else
               npx -y npm@latest publish --access public
             fi
-
-  mark-linear-issues-done:
-    name: Mark Linear issues as done
-    needs: [release-notes, publish]
-    runs-on: ubuntu-latest
-    if: github.event.release.prerelease == false && needs.publish.result == 'success'
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Download pr-details artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: pr-details
-
-      - name: Mark issues as done
-        uses: actions/github-script@v7
-        env:
-          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
-        with:
-          script: |
-            const fs = await import("node:fs");
-            const { issues } = JSON.parse(fs.readFileSync("pr-details.json", "utf8"));
-            const { default: updateLinearIssues } = await import("${{ github.workspace }}/.github/scripts/update-linear-issues.js");
-            await updateLinearIssues(issues, "Done");
-
-  notify-release-notes-failure:
-    name: Notify release notes failure
-    needs: release-notes
-    runs-on: ubuntu-latest
-    if: always() && needs.release-notes.result == 'failure'
-    steps:
-      - name: Post failure message to Slack
-        uses: slackapi/slack-github-action@v1.25.0
-        with:
-          channel-id: ${{ vars.SLACK_PRERELEASE_CHANNEL_ID }}
-          payload: |
-            {
-              "markdown_text": ":red-siren: *Release notes workflow failed!* Unable to generate release notes for ${{ github.event.release.tag_name }}. Please check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.",
-              "unfurl_links": false,
-              "unfurl_media": false
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          fi
