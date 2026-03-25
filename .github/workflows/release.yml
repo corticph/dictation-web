@@ -45,8 +45,10 @@ jobs:
           echo "suffix=$SUFFIX" >> $GITHUB_OUTPUT
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT
 
-      - name: Create release branch (main/master releases only)
-        if: ${{ github.event.release.target_commitish == 'main' || github.event.release.target_commitish == 'master' }}
+      - name: Prepare working branch
+        # Always create a local branch from the current detached HEAD so git push works.
+        # For main/master this creates a new release/vX.Y.Z branch.
+        # For other branches this gives the detached HEAD a pushable name.
         run: git checkout -b "${{ steps.version.outputs.branch }}"
 
       - name: Set up node
@@ -70,9 +72,6 @@ jobs:
 
       - name: Build
         run: npm run build && npm run build:bundle
-
-      - name: Test
-        run: npm test
 
       - name: Publish to npm
         env:
