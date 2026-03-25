@@ -11,12 +11,14 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Extract version from tag
+      - name: Extract version and determine target branch
         id: version
         run: |
           TAG="${{ github.event.release.tag_name }}"
@@ -27,8 +29,25 @@ jobs:
           else
             SUFFIX=""
           fi
+          TARGET="${{ github.event.release.target_commitish }}"
+          if [[ "$TARGET" == "main" || "$TARGET" == "master" ]]; then
+            BRANCH="release/${TAG}"
+          else
+            BRANCH="$TARGET"
+          fi
+          echo "tag=$TAG"
+          echo "version=$VERSION"
+          echo "prerelease=${{ github.event.release.prerelease }}"
+          echo "suffix=$SUFFIX"
+          echo "target_commitish=$TARGET"
+          echo "branch=$BRANCH"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "suffix=$SUFFIX" >> $GITHUB_OUTPUT
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+
+      - name: Create release branch (main/master releases only)
+        if: ${{ github.event.release.target_commitish == 'main' || github.event.release.target_commitish == 'master' }}
+        run: git checkout -b "${{ steps.version.outputs.branch }}"
 
       - name: Set up node
         uses: actions/setup-node@v4
@@ -38,8 +57,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Set version
+      - name: Bump version
         run: npm version ${{ steps.version.outputs.version }} --no-git-tag-version
+
+      - name: Commit and push version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}"
+          git push origin "${{ steps.version.outputs.branch }}"
 
       - name: Build
         run: npm run build && npm run build:bundle
