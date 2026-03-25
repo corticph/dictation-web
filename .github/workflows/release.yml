@@ -9,15 +9,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release-notes:
-    uses: ./.github/workflows/release-notes.yml
-    permissions:
-      contents: write
-      pull-requests: read
-    secrets: inherit
-
   publish:
-    needs: release-notes
     runs-on: ubuntu-latest
 
     steps:
