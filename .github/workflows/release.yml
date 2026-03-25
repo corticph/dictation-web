@@ -30,7 +30,8 @@ jobs:
           TAG="${{ github.event.release.tag_name }}"
           VERSION="${TAG#v}"
           if [[ "$VERSION" == *-* ]]; then
-            SUFFIX="${VERSION#*-}"
+            PRERELEASE="${VERSION#*-}"   # e.g. "alpha.1" from "1.2.3-alpha.1"
+            SUFFIX="${PRERELEASE%%.*}"   # strip ".1" → "alpha" (npm dist-tag)
           else
             SUFFIX=""
           fi
@@ -116,4 +117,3 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          fi
