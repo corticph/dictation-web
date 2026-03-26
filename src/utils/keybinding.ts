@@ -62,10 +62,11 @@ function normalizeKeyForKeybinding(key: string): string {
     return "Space";
   }
 
+  // TODO: Uncomment this for v1 to avoid breaking changes now
   // Capitalize single letters (a-z) for consistent display
-  if (/^[a-z]$/.test(normalized)) {
-    return normalized.toUpperCase();
-  }
+  // if (/^[a-z]$/.test(normalized)) {
+  //   return normalized.toUpperCase();
+  // }
 
   return normalized.length > 1 ? capitalize(normalized) : normalized;
 }
