@@ -32,4 +32,3 @@ const AudioVisualiserStyles = css`
 `;
 
 export default AudioVisualiserStyles;
-

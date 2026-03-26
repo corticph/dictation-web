@@ -1,0 +1,127 @@
+name: ci
+
+on: [push]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build && npm run build:bundle
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+  publish:
+    needs: [compile, lint, test]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          if [[ "$VERSION" == *-* ]]; then
+            PRERELEASE="${VERSION#*-}"   # e.g. "alpha.1" from "1.2.3-alpha.1"
+            SUFFIX="${PRERELEASE%%.*}"   # strip ".1" → "alpha" (npm dist-tag)
+          else
+            SUFFIX=""
+          fi
+          echo "tag=$TAG"
+          echo "version=$VERSION"
+          echo "suffix=$SUFFIX"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "suffix=$SUFFIX" >> $GITHUB_OUTPUT
+
+      - name: Set up node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set version
+        run: |
+          npm version ${{ steps.version.outputs.version }} --no-git-tag-version
+          echo "package.json version set to $(node -p "require('./package.json').version")"
+
+      - name: Build
+        run: npm run build && npm run build:bundle
+
+      - name: Publish to npm
+        run: |
+          publish() {  # use latest npm to ensure OIDC support
+            npx -y npm@latest publish "$@"
+          }
+          SUFFIX="${{ steps.version.outputs.suffix }}"
+          if [[ -n "$SUFFIX" ]]; then
+            publish --access public --tag "$SUFFIX"
+          else
+            PKG_NAME=$(node -p "require('./package.json').name")
+            PKG_VERSION=$(node -p "require('./package.json').version")
+            CURRENT_LATEST=$(npm view "${PKG_NAME}" dist-tags.latest 2>/dev/null || echo "0.0.0")
+            if npx -y semver "${PKG_VERSION}" -r "<${CURRENT_LATEST}" > /dev/null 2>&1; then
+              echo "Publishing ${PKG_VERSION} with --tag backport (current latest is ${CURRENT_LATEST})"
+              publish --access public --tag backport
+            else
+              publish --access public
+            fi
+          fi

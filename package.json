@@ -2,7 +2,7 @@
   "name": "@corti/dictation-web",
   "description": "Web component for Corti Dictation",
   "author": "Corti ApS",
-  "version": "0.5.2",
+  "version": "0.0.0-dev",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
@@ -51,7 +51,7 @@
     "biome:format": "biome format --write .",
     "biome:fix": "biome check --write .",
     "prepare": "husky && husky install",
-    "test": "tsc && wtr --coverage",
+    "test": "tsc -p tsconfig.test.json && wtr --coverage",
     "test:watch": "tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wtr --watch\"",
     "storybook": "npm run analyze -- --exclude dist && storybook dev -p 8080",
     "storybook:build": "tsc && tsc -p tsconfig.stories.json && npm run analyze -- --exclude dist && storybook build"
