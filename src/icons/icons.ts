@@ -1,8 +1,8 @@
 /* eslint-disable max-classes-per-file */
-import { LitElement, css, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { css, html, LitElement } from "lit";
+import { customElement } from "lit/decorators.js";
 
-@customElement('icon-mic-on')
+@customElement("icon-mic-on")
 export class IconMicOn extends LitElement {
   render() {
     return html`
@@ -28,7 +28,7 @@ export class IconMicOn extends LitElement {
   }
 }
 
-@customElement('icon-mic-off')
+@customElement("icon-mic-off")
 export class IconMicOff extends LitElement {
   render() {
     return html` <div style="display: flex">
@@ -55,7 +55,7 @@ export class IconMicOff extends LitElement {
   }
 }
 
-@customElement('icon-recording')
+@customElement("icon-recording")
 export class IconRecording extends LitElement {
   render() {
     return html`
@@ -79,7 +79,7 @@ export class IconRecording extends LitElement {
     `;
   }
 }
-@customElement('icon-settings')
+@customElement("icon-settings")
 export class IconSettings extends LitElement {
   render() {
     return html`<div style="display: flex">
@@ -104,7 +104,7 @@ export class IconSettings extends LitElement {
   }
 }
 
-@customElement('icon-loading-spinner')
+@customElement("icon-loading-spinner")
 export class IconLoadingSpinner extends LitElement {
   static styles = css`
     @keyframes spin {
