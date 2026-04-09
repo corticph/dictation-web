@@ -1,4 +1,4 @@
-import type { Corti } from "@corti/sdk";
+import type { Corti, CortiAuth } from "@corti/sdk";
 import { consume } from "@lit/context";
 import {
   type CSSResultGroup,
@@ -62,7 +62,7 @@ export class DictationRecordingButton extends LitElement {
 
   @consume({ context: authConfigContext, subscribe: true })
   @state()
-  _authConfig?: Corti.BearerOptions;
+  _authConfig?: CortiAuth.AuthTokenDerivable;
 
   @consume({ context: regionContext, subscribe: true })
   @state()
