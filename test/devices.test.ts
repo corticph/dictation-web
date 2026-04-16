@@ -45,93 +45,111 @@ const NON_AUDIO_DEVICES: MediaDeviceInfo[] = [
   } as MediaDeviceInfo,
 ];
 
-let originalMediaDevices: PropertyDescriptor | undefined;
-let originalPermissions: PropertyDescriptor | undefined;
-
-function installFakeNavigator(opts: {
+interface InstallOpts {
   permissionState?: PermissionState | "unavailable";
   enumerateResults: MediaDeviceInfo[][];
   getUserMediaRejection?: Error;
-}): { fakeMediaDevices: FakeMediaDevices; trackStop: sinon.SinonSpy } {
-  const trackStop = sinon.spy();
-  const fakeStream = {
-    getTracks: () => [{ stop: trackStop }],
-  } as unknown as MediaStream;
-
-  const enumerateStub = sinon.stub();
-  opts.enumerateResults.forEach((result, i) => {
-    enumerateStub.onCall(i).resolves(result);
-  });
-  const lastResult =
-    opts.enumerateResults[opts.enumerateResults.length - 1] ?? [];
-  enumerateStub.resolves(lastResult);
-
-  const getUserMediaStub = sinon.stub();
-  if (opts.getUserMediaRejection) {
-    getUserMediaStub.rejects(opts.getUserMediaRejection);
-  } else {
-    getUserMediaStub.resolves(fakeStream);
-  }
-
-  const fakeMediaDevices: FakeMediaDevices = {
-    addEventListener: () => {},
-    enumerateDevices: enumerateStub,
-    getUserMedia: getUserMediaStub,
-    removeEventListener: () => {},
-  };
-
-  originalMediaDevices = Object.getOwnPropertyDescriptor(
-    navigator,
-    "mediaDevices",
-  );
-  Object.defineProperty(navigator, "mediaDevices", {
-    configurable: true,
-    value: fakeMediaDevices,
-  });
-
-  originalPermissions = Object.getOwnPropertyDescriptor(
-    navigator,
-    "permissions",
-  );
-  if (opts.permissionState === "unavailable") {
-    Object.defineProperty(navigator, "permissions", {
-      configurable: true,
-      value: undefined,
-    });
-  } else {
-    const fakePermissions: FakePermissions = {
-      query: sinon
-        .stub()
-        .resolves({ state: opts.permissionState ?? "granted" }),
-    };
-    Object.defineProperty(navigator, "permissions", {
-      configurable: true,
-      value: fakePermissions,
-    });
-  }
-
-  return { fakeMediaDevices, trackStop };
 }
 
-function restoreNavigator(): void {
-  if (originalMediaDevices) {
-    Object.defineProperty(navigator, "mediaDevices", originalMediaDevices);
-    originalMediaDevices = undefined;
-  }
-  if (originalPermissions) {
-    Object.defineProperty(navigator, "permissions", originalPermissions);
-    originalPermissions = undefined;
-  }
+interface InstallResult {
+  fakeMediaDevices: FakeMediaDevices;
+  trackStop: sinon.SinonSpy;
+}
+
+function createNavigatorSandbox(): {
+  install: (opts: InstallOpts) => InstallResult;
+  restore: () => void;
+} {
+  let activeRestore: (() => void) | null = null;
+
+  const install = (opts: InstallOpts): InstallResult => {
+    const trackStop = sinon.spy();
+    const fakeStream = {
+      getTracks: () => [{ stop: trackStop }],
+    } as unknown as MediaStream;
+
+    const enumerateStub = sinon.stub();
+    opts.enumerateResults.forEach((result, i) => {
+      enumerateStub.onCall(i).resolves(result);
+    });
+    const lastResult =
+      opts.enumerateResults[opts.enumerateResults.length - 1] ?? [];
+    enumerateStub.resolves(lastResult);
+
+    const getUserMediaStub = sinon.stub();
+    if (opts.getUserMediaRejection) {
+      getUserMediaStub.rejects(opts.getUserMediaRejection);
+    } else {
+      getUserMediaStub.resolves(fakeStream);
+    }
+
+    const fakeMediaDevices: FakeMediaDevices = {
+      addEventListener: () => {},
+      enumerateDevices: enumerateStub,
+      getUserMedia: getUserMediaStub,
+      removeEventListener: () => {},
+    };
+
+    const originalMediaDevices = Object.getOwnPropertyDescriptor(
+      navigator,
+      "mediaDevices",
+    );
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: fakeMediaDevices,
+    });
+
+    const originalPermissions = Object.getOwnPropertyDescriptor(
+      navigator,
+      "permissions",
+    );
+    if (opts.permissionState === "unavailable") {
+      Object.defineProperty(navigator, "permissions", {
+        configurable: true,
+        value: undefined,
+      });
+    } else {
+      const fakePermissions: FakePermissions = {
+        query: sinon
+          .stub()
+          .resolves({ state: opts.permissionState ?? "granted" }),
+      };
+      Object.defineProperty(navigator, "permissions", {
+        configurable: true,
+        value: fakePermissions,
+      });
+    }
+
+    activeRestore = () => {
+      if (originalMediaDevices) {
+        Object.defineProperty(navigator, "mediaDevices", originalMediaDevices);
+      }
+      if (originalPermissions) {
+        Object.defineProperty(navigator, "permissions", originalPermissions);
+      }
+    };
+
+    return { fakeMediaDevices, trackStop };
+  };
+
+  const restore = (): void => {
+    activeRestore?.();
+    activeRestore = null;
+  };
+
+  return { install, restore };
 }
 
 describe("primeMicStream", () => {
+  const env = createNavigatorSandbox();
+
   afterEach(() => {
     sinon.restore();
-    restoreNavigator();
+    env.restore();
   });
 
   it("throws when microphone permission is denied", async () => {
-    const { fakeMediaDevices } = installFakeNavigator({
+    const { fakeMediaDevices } = env.install({
       enumerateResults: [],
       permissionState: "denied",
     });
@@ -148,7 +166,7 @@ describe("primeMicStream", () => {
   });
 
   it("opens and stops a stream when permission is 'prompt'", async () => {
-    const { fakeMediaDevices, trackStop } = installFakeNavigator({
+    const { fakeMediaDevices, trackStop } = env.install({
       enumerateResults: [],
       permissionState: "prompt",
     });
@@ -160,7 +178,7 @@ describe("primeMicStream", () => {
   });
 
   it("opens and stops a stream when permission is already 'granted'", async () => {
-    const { fakeMediaDevices, trackStop } = installFakeNavigator({
+    const { fakeMediaDevices, trackStop } = env.install({
       enumerateResults: [],
       permissionState: "granted",
     });
@@ -172,7 +190,7 @@ describe("primeMicStream", () => {
   });
 
   it("opens a stream when the Permissions API is unavailable", async () => {
-    const { fakeMediaDevices, trackStop } = installFakeNavigator({
+    const { fakeMediaDevices, trackStop } = env.install({
       enumerateResults: [],
       permissionState: "unavailable",
     });
@@ -182,18 +200,37 @@ describe("primeMicStream", () => {
     expect(fakeMediaDevices.getUserMedia.calledOnce).to.equal(true);
     expect(trackStop.calledOnce).to.equal(true);
   });
+
+  it("propagates a runtime getUserMedia rejection (e.g. NotReadableError)", async () => {
+    env.install({
+      enumerateResults: [],
+      getUserMediaRejection: new Error("NotReadableError"),
+      permissionState: "granted",
+    });
+
+    let error: Error | undefined;
+    try {
+      await primeMicStream();
+    } catch (e) {
+      error = e as Error;
+    }
+
+    expect(error?.message).to.equal("NotReadableError");
+  });
 });
 
 describe("getAudioDevices", () => {
+  const env = createNavigatorSandbox();
+
   afterEach(() => {
     sinon.restore();
-    restoreNavigator();
+    env.restore();
   });
 
   // Chrome / Safari path: enumerateDevices returns populated entries on the
   // first call, so we should not invoke getUserMedia at all.
   it("returns devices without priming when entries are already populated", async () => {
-    const { fakeMediaDevices } = installFakeNavigator({
+    const { fakeMediaDevices } = env.install({
       enumerateResults: [[...REAL_DEVICES, ...NON_AUDIO_DEVICES]],
       permissionState: "granted",
     });
@@ -211,7 +248,7 @@ describe("getAudioDevices", () => {
   // even when permission is granted; only after getUserMedia does
   // enumerateDevices return the real devices.
   it("primes with getUserMedia and re-enumerates when Firefox returns a placeholder", async () => {
-    const { fakeMediaDevices, trackStop } = installFakeNavigator({
+    const { fakeMediaDevices, trackStop } = env.install({
       enumerateResults: [[FIREFOX_PLACEHOLDER], REAL_DEVICES],
       permissionState: "granted",
     });
@@ -227,7 +264,7 @@ describe("getAudioDevices", () => {
 
   it("primes when any audio input has a blank label but a real deviceId", async () => {
     const blankLabel = audioInput("mic1", "");
-    const { fakeMediaDevices } = installFakeNavigator({
+    const { fakeMediaDevices } = env.install({
       enumerateResults: [[blankLabel], REAL_DEVICES],
       permissionState: "granted",
     });
@@ -239,7 +276,7 @@ describe("getAudioDevices", () => {
   });
 
   it("does not call getUserMedia when no audio inputs exist", async () => {
-    const { fakeMediaDevices } = installFakeNavigator({
+    const { fakeMediaDevices } = env.install({
       enumerateResults: [NON_AUDIO_DEVICES],
       permissionState: "granted",
     });
@@ -252,7 +289,7 @@ describe("getAudioDevices", () => {
   });
 
   it("propagates the denied error when priming is needed but permission is denied", async () => {
-    const { fakeMediaDevices } = installFakeNavigator({
+    const { fakeMediaDevices } = env.install({
       enumerateResults: [[FIREFOX_PLACEHOLDER]],
       permissionState: "denied",
     });
@@ -266,5 +303,22 @@ describe("getAudioDevices", () => {
 
     expect(error?.message).to.equal("Microphone permission is denied");
     expect(fakeMediaDevices.getUserMedia.called).to.equal(false);
+  });
+
+  it("propagates a runtime getUserMedia rejection when priming is needed", async () => {
+    env.install({
+      enumerateResults: [[FIREFOX_PLACEHOLDER]],
+      getUserMediaRejection: new Error("NotReadableError"),
+      permissionState: "granted",
+    });
+
+    let error: Error | undefined;
+    try {
+      await getAudioDevices();
+    } catch (e) {
+      error = e as Error;
+    }
+
+    expect(error?.message).to.equal("NotReadableError");
   });
 });
