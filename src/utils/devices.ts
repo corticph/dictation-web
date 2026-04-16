@@ -1,14 +1,15 @@
 /**
- * Requests access to the microphone.
+ * Primes the document with an active microphone stream.
  *
  * Opens (and immediately stops) a media stream so the document holds an
- * active mic permission for this session. Throws early if the user has
- * already denied permission.
+ * active mic permission for this session. In Firefox this is what makes
+ * real deviceIds and labels appear in subsequent enumerateDevices() calls.
+ * Throws early if the user has already denied permission.
  *
- * @returns A promise that resolves when the permission request is complete.
+ * @returns A promise that resolves once the stream has been opened and stopped.
  * @throws Error if microphone access is denied or unavailable.
  */
-export async function requestMicAccess(): Promise<void> {
+export async function primeMicStream(): Promise<void> {
   if (navigator.permissions) {
     const permissionStatus = await navigator.permissions.query({
       name: "microphone" as PermissionName,
@@ -51,7 +52,7 @@ export async function getAudioDevices(): Promise<{
   let audioDevices = await listAudioInputs();
 
   if (needsMicPriming(audioDevices)) {
-    await requestMicAccess();
+    await primeMicStream();
     audioDevices = await listAudioInputs();
   }
 
@@ -68,7 +69,7 @@ async function listAudioInputs(): Promise<MediaDeviceInfo[]> {
 
 function needsMicPriming(audioInputs: MediaDeviceInfo[]): boolean {
   if (audioInputs.length === 0) {
-    return false;
+    return false; // no mic hardware — don't trigger a permission prompt
   }
   return audioInputs.some((d) => d.deviceId === "" || d.label === "");
 }

@@ -1,6 +1,6 @@
 import { expect } from "@open-wc/testing";
 import * as sinon from "sinon";
-import { getAudioDevices, requestMicAccess } from "../src/utils/devices.js";
+import { getAudioDevices, primeMicStream } from "../src/utils/devices.js";
 
 interface FakeMediaDevices {
   getUserMedia: sinon.SinonStub;
@@ -124,7 +124,7 @@ function restoreNavigator(): void {
   }
 }
 
-describe("requestMicAccess", () => {
+describe("primeMicStream", () => {
   afterEach(() => {
     sinon.restore();
     restoreNavigator();
@@ -138,7 +138,7 @@ describe("requestMicAccess", () => {
 
     let error: Error | undefined;
     try {
-      await requestMicAccess();
+      await primeMicStream();
     } catch (e) {
       error = e as Error;
     }
@@ -153,7 +153,7 @@ describe("requestMicAccess", () => {
       permissionState: "prompt",
     });
 
-    await requestMicAccess();
+    await primeMicStream();
 
     expect(fakeMediaDevices.getUserMedia.calledOnce).to.equal(true);
     expect(trackStop.calledOnce).to.equal(true);
@@ -165,7 +165,7 @@ describe("requestMicAccess", () => {
       permissionState: "granted",
     });
 
-    await requestMicAccess();
+    await primeMicStream();
 
     expect(fakeMediaDevices.getUserMedia.calledOnce).to.equal(true);
     expect(trackStop.calledOnce).to.equal(true);
@@ -177,7 +177,7 @@ describe("requestMicAccess", () => {
       permissionState: "unavailable",
     });
 
-    await requestMicAccess();
+    await primeMicStream();
 
     expect(fakeMediaDevices.getUserMedia.calledOnce).to.equal(true);
     expect(trackStop.calledOnce).to.equal(true);
