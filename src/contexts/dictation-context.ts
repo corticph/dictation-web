@@ -1,4 +1,4 @@
-import type { Corti } from "@corti/sdk";
+import type { Corti, CortiAuth } from "@corti/sdk";
 import { type ContextEvent, createContext, provide } from "@lit/context";
 import { type CSSResultGroup, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
@@ -39,9 +39,9 @@ export const accessTokenContext = createContext<string | undefined>(
 export const dictationConfigContext = createContext<
   Corti.TranscribeConfig | undefined
 >(Symbol("dictationConfig"));
-export const authConfigContext = createContext<Corti.BearerOptions | undefined>(
-  Symbol("authConfig"),
-);
+export const authConfigContext = createContext<
+  CortiAuth.AuthTokenDerivable | undefined
+>(Symbol("authConfig"));
 export const socketUrlContext = createContext<string | undefined>(
   Symbol("socketUrl"),
 );
@@ -95,14 +95,14 @@ export class DictationRoot extends LitElement {
 
   @provide({ context: authConfigContext })
   @state()
-  _authConfig?: Corti.BearerOptions;
+  _authConfig?: CortiAuth.AuthTokenDerivable;
 
   @property({ attribute: false, type: Object })
-  set authConfig(config: Corti.BearerOptions | undefined) {
+  set authConfig(config: CortiAuth.AuthTokenDerivable | undefined) {
     this.setAuthConfig(config);
   }
 
-  get authConfig(): Corti.BearerOptions | undefined {
+  get authConfig(): CortiAuth.AuthTokenDerivable | undefined {
     return this._authConfig;
   }
 
@@ -245,7 +245,7 @@ export class DictationRoot extends LitElement {
    * @returns Promise with ServerConfig containing environment, tenant, and accessToken
    * @deprecated Use 'authConfig' property instead.
    */
-  public async setAuthConfig(config?: Corti.BearerOptions) {
+  public async setAuthConfig(config?: CortiAuth.AuthTokenDerivable) {
     this._authConfig = config;
 
     if (!config) {
