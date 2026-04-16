@@ -28,6 +28,7 @@ export type AudioLevelChangedEventDetail = {
 export type TranscriptEventDetail = Corti.TranscribeTranscriptMessage;
 export type CommandEventDetail = Corti.TranscribeCommandMessage;
 export type UsageEventDetail = Corti.TranscribeUsageMessage;
+export type DeltaUsageEventDetail = Corti.TranscribeDeltaUsageMessage;
 
 export type ErrorEventDetail = {
   message: string;
@@ -110,6 +111,16 @@ export function usageEvent(
   detail: UsageEventDetail,
 ): CustomEvent<UsageEventDetail> {
   return new CustomEvent("usage", {
+    bubbles: true,
+    composed: true,
+    detail,
+  });
+}
+
+export function deltaUsageEvent(
+  detail: DeltaUsageEventDetail,
+): CustomEvent<DeltaUsageEventDetail> {
+  return new CustomEvent("delta-usage", {
     bubbles: true,
     composed: true,
     detail,

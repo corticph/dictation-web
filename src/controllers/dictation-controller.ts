@@ -27,6 +27,7 @@ interface DictationControllerHost extends ReactiveControllerHost {
 export type TranscribeMessage =
   | Corti.TranscribeConfigStatusMessage
   | Corti.TranscribeUsageMessage
+  | Corti.TranscribeDeltaUsageMessage
   | Corti.TranscribeEndedMessage
   | Corti.TranscribeErrorMessage
   | Corti.TranscribeTranscriptMessage

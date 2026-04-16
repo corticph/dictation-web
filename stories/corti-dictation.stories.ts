@@ -84,6 +84,7 @@ const meta = {
         @recording-devices-changed=${action("recording-devices-changed")}
         @stream-closed=${action("stream-closed")}
         @usage=${action("usage")}
+        @delta-usage=${action("delta-usage")}
         @transcript=${action("transcript")}
         @command=${action("command")}
         @ready=${action("ready")}

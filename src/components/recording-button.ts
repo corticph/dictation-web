@@ -34,6 +34,7 @@ import type { ProxyOptions, RecordingState } from "../types.js";
 import {
   audioLevelChangedEvent,
   commandEvent,
+  deltaUsageEvent,
   errorEvent,
   networkActivityEvent,
   type RecordingStateChangedEventDetail,
@@ -149,6 +150,9 @@ export class DictationRecordingButton extends LitElement {
         break;
       case "usage":
         this.dispatchEvent(usageEvent(message));
+        break;
+      case "delta_usage":
+        this.dispatchEvent(deltaUsageEvent(message));
         break;
       case "error":
         this.dispatchEvent(errorEvent(message.error));
