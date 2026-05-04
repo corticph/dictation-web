@@ -1,4 +1,4 @@
-import type { Corti } from "@corti/sdk";
+import type { Corti, CortiAuth } from "@corti/sdk";
 import { css, html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
@@ -45,7 +45,7 @@ export class CortiDictation extends LitElement {
    * Authentication configuration with optional refresh mechanism.
    */
   @property({ attribute: false, type: Object })
-  authConfig?: Corti.BearerOptions;
+  authConfig?: CortiAuth.AuthTokenDerivable;
 
   /**
    * WebSocket URL for proxy connection. When provided, uses CortiWebSocketProxyClient instead of CortiClient.
@@ -234,7 +234,7 @@ export class CortiDictation extends LitElement {
    * @returns Promise with ServerConfig containing environment, tenant, and accessToken
    * @deprecated Use 'authConfig' property instead.
    */
-  public async setAuthConfig(config: Corti.BearerOptions) {
+  public async setAuthConfig(config: CortiAuth.AuthTokenDerivable) {
     this.authConfig = config;
 
     return (

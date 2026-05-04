@@ -1,4 +1,9 @@
-import { type Corti, CortiClient, CortiWebSocketProxyClient } from "@corti/sdk";
+import {
+  type Corti,
+  type CortiAuth,
+  CortiClient,
+  CortiWebSocketProxyClient,
+} from "@corti/sdk";
 import type { ReactiveController, ReactiveControllerHost } from "lit";
 import { DEFAULT_DICTATION_CONFIG } from "../constants.js";
 import type { ProxyOptions } from "../types.js";
@@ -11,7 +16,7 @@ type TranscribeSocket = Awaited<
 interface DictationControllerHost extends ReactiveControllerHost {
   dispatchEvent: (event: Event) => void;
   _accessToken?: string;
-  _authConfig?: Corti.BearerOptions;
+  _authConfig?: CortiAuth.AuthTokenDerivable;
   _region?: string;
   _tenantName?: string;
   _socketUrl?: string;
@@ -22,6 +27,7 @@ interface DictationControllerHost extends ReactiveControllerHost {
 export type TranscribeMessage =
   | Corti.TranscribeConfigStatusMessage
   | Corti.TranscribeUsageMessage
+  | Corti.TranscribeDeltaUsageMessage
   | Corti.TranscribeEndedMessage
   | Corti.TranscribeErrorMessage
   | Corti.TranscribeTranscriptMessage
@@ -159,6 +165,8 @@ export class DictationController implements ReactiveController {
     }
 
     return await CortiWebSocketProxyClient.transcribe.connect({
+      // setting to "false" to have CONFIG_* message in network activity events
+      awaitConfiguration: false,
       configuration: dictationConfig,
       proxy: proxyOptions,
     });
@@ -174,7 +182,7 @@ export class DictationController implements ReactiveController {
     }
 
     // Use authConfig if available, otherwise create one from accessToken
-    const auth: Corti.BearerOptions = this.host._authConfig || {
+    const auth: CortiAuth.AuthTokenDerivable = this.host._authConfig || {
       accessToken: this.host._accessToken || "",
       refreshAccessToken: () => ({
         accessToken: this.host._accessToken || "",
@@ -188,6 +196,8 @@ export class DictationController implements ReactiveController {
     });
 
     return await this.#cortiClient.transcribe.connect({
+      // setting to "false" to have CONFIG_* message in network activity events
+      awaitConfiguration: false,
       configuration: dictationConfig,
     });
   }

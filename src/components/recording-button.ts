@@ -1,4 +1,4 @@
-import type { Corti } from "@corti/sdk";
+import type { Corti, CortiAuth } from "@corti/sdk";
 import { consume } from "@lit/context";
 import {
   type CSSResultGroup,
@@ -34,6 +34,7 @@ import type { ProxyOptions, RecordingState } from "../types.js";
 import {
   audioLevelChangedEvent,
   commandEvent,
+  deltaUsageEvent,
   errorEvent,
   networkActivityEvent,
   type RecordingStateChangedEventDetail,
@@ -62,7 +63,7 @@ export class DictationRecordingButton extends LitElement {
 
   @consume({ context: authConfigContext, subscribe: true })
   @state()
-  _authConfig?: Corti.BearerOptions;
+  _authConfig?: CortiAuth.AuthTokenDerivable;
 
   @consume({ context: regionContext, subscribe: true })
   @state()
@@ -149,6 +150,9 @@ export class DictationRecordingButton extends LitElement {
         break;
       case "usage":
         this.dispatchEvent(usageEvent(message));
+        break;
+      case "delta_usage":
+        this.dispatchEvent(deltaUsageEvent(message));
         break;
       case "error":
         this.dispatchEvent(errorEvent(message.error));

@@ -56,6 +56,7 @@ export type {
 export type {
   AudioLevelChangedEventDetail,
   CommandEventDetail,
+  DeltaUsageEventDetail,
   ErrorEventDetail,
   KeybindingActivatedEventDetail,
   KeybindingChangedEventDetail,
