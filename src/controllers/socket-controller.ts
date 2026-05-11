@@ -311,7 +311,7 @@ export abstract class SocketController<
           return;
         }
 
-        if (message.type === "ended") {
+        if (message.type === "ended" || message.type === "ENDED") {
           if (this.#closeTimeout) {
             clearTimeout(this.#closeTimeout);
             this.#closeTimeout = undefined;
