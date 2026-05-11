@@ -7,7 +7,10 @@ import {
   type PropertyValues,
 } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { AUDIO_CHUNK_INTERVAL_MS } from "../constants.js";
+import {
+  AUDIO_CHUNK_INTERVAL_MS,
+  DEFAULT_DICTATION_CONFIG,
+} from "../constants.js";
 import {
   accessTokenContext,
   authConfigContext,
@@ -225,7 +228,7 @@ export class DictationRecordingButton extends LitElement {
       this.#dispatchRecordingStateChanged("recording");
 
       const isNewConnection = await this.#dictationController.connect(
-        this._dictationConfig,
+        this._dictationConfig ?? DEFAULT_DICTATION_CONFIG,
         {
           onClose: this.#handleWebSocketClose,
           onError: this.#handleWebSocketError,
@@ -255,10 +258,10 @@ export class DictationRecordingButton extends LitElement {
     try {
       this.#mediaController.stopAudioLevelMonitoring();
       await this.#mediaController.stopRecording();
+      await this.#dictationController.stopRecording();
 
       this.#dispatchRecordingStateChanged("stopped");
 
-      await this.#dictationController.pause();
       await this.#mediaController.cleanup();
     } catch (error) {
       this.dispatchEvent(errorEvent(error));
@@ -310,14 +313,17 @@ export class DictationRecordingButton extends LitElement {
       this.#connection = "CONNECTING";
       this.#dispatchRecordingStateChanged(this._recordingState);
 
-      await this.#dictationController.connect(this._dictationConfig, {
-        onClose: this.#handleWebSocketClose,
-        onError: this.#handleWebSocketError,
-        onMessage: this.#handleWebSocketMessage,
-        onNetworkActivity: (direction, data) => {
-          this.dispatchEvent(networkActivityEvent(direction, data));
+      await this.#dictationController.connect(
+        this._dictationConfig ?? DEFAULT_DICTATION_CONFIG,
+        {
+          onClose: this.#handleWebSocketClose,
+          onError: this.#handleWebSocketError,
+          onMessage: this.#handleWebSocketMessage,
+          onNetworkActivity: (direction, data) => {
+            this.dispatchEvent(networkActivityEvent(direction, data));
+          },
         },
-      });
+      );
 
       this.#connection = "OPEN";
       this.#dispatchRecordingStateChanged(this._recordingState);
