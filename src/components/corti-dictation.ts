@@ -1,16 +1,11 @@
 import type { Corti, CortiAuth } from "@corti/sdk";
-import { css, html, LitElement, nothing } from "lit";
+import { html, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
-import { createRef, type Ref, ref } from "lit/directives/ref.js";
+import { ref } from "lit/directives/ref.js";
 import { DEFAULT_DICTATION_CONFIG } from "../constants.js";
 import type { DictationRoot } from "../contexts/dictation-context.js";
-import type {
-  ConfigurableSettings,
-  ProxyOptions,
-  RecordingState,
-} from "../types.js";
-import { commaSeparatedConverter } from "../utils/converters.js";
+import { CortiRoot } from "./corti-root.js";
 import type { DictationRecordingButton } from "./dictation-recording-button.js";
 
 import "../contexts/dictation-context.js";
@@ -18,90 +13,13 @@ import "./dictation-recording-button.js";
 import "./settings-menu.js";
 
 @customElement("corti-dictation")
-export class CortiDictation extends LitElement {
-  static styles = css`
-    .hidden {
-      display: none;
-    }
-  `;
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Private refs
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  #recordingButtonRef: Ref<DictationRecordingButton> = createRef();
-  #contextProviderRef: Ref<DictationRoot> = createRef();
-
+export class CortiDictation extends CortiRoot<
+  DictationRoot,
+  DictationRecordingButton
+> {
   // ─────────────────────────────────────────────────────────────────────────────
   // Properties
   // ─────────────────────────────────────────────────────────────────────────────
-
-  /**
-   * Latest access token
-   */
-  @property({ type: String })
-  accessToken?: string;
-
-  /**
-   * Authentication configuration with optional refresh mechanism.
-   */
-  @property({ attribute: false, type: Object })
-  authConfig?: CortiAuth.AuthTokenDerivable;
-
-  /**
-   * WebSocket URL for proxy connection. When provided, uses CortiWebSocketProxyClient instead of CortiClient.
-   */
-  @property({ type: String })
-  socketUrl?: string;
-
-  /**
-   * Socket proxy configuration object. When provided, uses CortiWebSocketProxyClient instead of CortiClient.
-   */
-  @property({ attribute: false, type: Object })
-  socketProxy?: ProxyOptions;
-
-  /**
-   * List of all language codes available for use with the Web Component.
-   *  Default list depends on the accessToken
-   */
-  @property({
-    converter: commaSeparatedConverter,
-    type: Array,
-  })
-  set languagesSupported(value:
-    | Corti.TranscribeSupportedLanguage[]
-    | undefined) {
-    this._languagesSupported = value;
-  }
-
-  get languagesSupported(): Corti.TranscribeSupportedLanguage[] {
-    return (
-      this.#contextProviderRef.value?.languages ||
-      this._languagesSupported ||
-      []
-    );
-  }
-
-  @state()
-  _languagesSupported?: Corti.TranscribeSupportedLanguage[];
-
-  /**
-   * Which settings should be available in the UI.
-   *  If an empty array is passed, the settings will be disabled entirely.
-   *  Options are language and devices
-   */
-  @property({
-    converter: commaSeparatedConverter,
-    type: Array,
-  })
-  settingsEnabled: ConfigurableSettings[] = ["device", "language"];
-
-  /**
-   * When false (default), allows the start/stop button from taking focus when clicked,
-   *  disabling textareas or other input elements to maintain focus.
-   *  Set to "true" to allow the button to receive focus on click.
-   */
-  @property({ type: Boolean })
-  allowButtonFocus: boolean = false;
 
   /**
    * Overrides any device selection and instead uses getDisplayMedia to stream system audio.
@@ -120,93 +38,12 @@ export class CortiDictation extends LitElement {
 
   get dictationConfig(): Corti.TranscribeConfig {
     return (
-      this.#contextProviderRef.value?.dictationConfig || this._dictationConfig
+      this._contextProviderRef.value?.dictationConfig || this._dictationConfig
     );
   }
 
   @state()
   _dictationConfig: Corti.TranscribeConfig = DEFAULT_DICTATION_CONFIG;
-
-  /**
-   * List of available recording devices
-   */
-  @property({ attribute: false, type: Array })
-  set devices(value: MediaDeviceInfo[] | undefined) {
-    this._devices = value;
-  }
-
-  get devices(): MediaDeviceInfo[] {
-    return this.#contextProviderRef.value?.devices || this._devices || [];
-  }
-
-  @state()
-  _devices?: MediaDeviceInfo[];
-
-  /**
-   * The selected device used for recording (MediaDeviceInfo).
-   */
-  @property({ attribute: false, type: Object })
-  set selectedDevice(value: MediaDeviceInfo | undefined) {
-    this._selectedDevice = value;
-  }
-
-  get selectedDevice(): MediaDeviceInfo | undefined {
-    return (
-      this.#contextProviderRef.value?.selectedDevice || this._selectedDevice
-    );
-  }
-
-  @state()
-  _selectedDevice?: MediaDeviceInfo;
-
-  /**
-   * Current state of recording (stopped, recording, initializing and stopping, ).
-   */
-  get recordingState(): RecordingState {
-    return this.#contextProviderRef.value?.recordingState || "stopped";
-  }
-
-  /**
-   * Push-to-talk keybinding for keyboard shortcut. Single key only (e.g., "Space", "k", "meta", "ctrl").
-   * Combinations with "+" are not supported.
-   * Keydown starts recording, keyup stops recording.
-   * Defaults to "Space" if keybinding is in settingsEnabled, otherwise undefined
-   */
-  @property({ type: String })
-  set pushToTalkKeybinding(value: string | null | undefined) {
-    this._pushToTalkKeybinding = value;
-  }
-
-  get pushToTalkKeybinding(): string | null | undefined {
-    return (
-      this.#contextProviderRef.value?.pushToTalkKeybinding ||
-      this._pushToTalkKeybinding
-    );
-  }
-
-  @state()
-  _pushToTalkKeybinding?: string | null;
-
-  /**
-   * Toggle-to-talk keybinding for keyboard shortcut. Single key only (e.g., "`", "k", "meta", "ctrl").
-   * Combinations with "+" are not supported.
-   * Pressing the key toggles recording on/off.
-   * Defaults to "`" if keybinding is in settingsEnabled, otherwise undefined
-   */
-  @property({ type: String })
-  set toggleToTalkKeybinding(value: string | null | undefined) {
-    this._toggleToTalkKeybinding = value;
-  }
-
-  get toggleToTalkKeybinding(): string | null | undefined {
-    return (
-      this.#contextProviderRef.value?.toggleToTalkKeybinding ||
-      this._toggleToTalkKeybinding
-    );
-  }
-
-  @state()
-  _toggleToTalkKeybinding?: string | null;
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Public methods
@@ -221,7 +58,7 @@ export class CortiDictation extends LitElement {
     this.accessToken = token;
 
     return (
-      this.#contextProviderRef.value?.setAccessToken(token) ?? {
+      this._contextProviderRef.value?.setAccessToken(token) ?? {
         accessToken: token,
         environment: undefined,
         tenant: undefined,
@@ -238,49 +75,12 @@ export class CortiDictation extends LitElement {
     this.authConfig = config;
 
     return (
-      this.#contextProviderRef.value?.setAuthConfig(config) ?? {
+      this._contextProviderRef.value?.setAuthConfig(config) ?? {
         accessToken: undefined,
         environment: undefined,
         tenant: undefined,
       }
     );
-  }
-
-  /**
-   * Starts a recording.
-   */
-  public startRecording(): void {
-    this.#recordingButtonRef.value?.startRecording();
-  }
-
-  /**
-   * Stops a recording.
-   */
-  public stopRecording(): void {
-    this.#recordingButtonRef.value?.stopRecording();
-  }
-
-  /**
-   * Starts or stops recording. Convenience layer on top of the start/stop methods.
-   */
-  public toggleRecording(): void {
-    this.#recordingButtonRef.value?.toggleRecording();
-  }
-
-  /**
-   * Opens the WebSocket connection without starting recording.
-   * Use this to pre-establish the connection before recording starts.
-   */
-  public async openConnection(): Promise<void> {
-    await this.#recordingButtonRef.value?.openConnection();
-  }
-
-  /**
-   * Closes the WebSocket connection by sending "end" and waiting for "ended".
-   * Call this to receive "usage" statistics or when done with the connection.
-   */
-  public async closeConnection(): Promise<void> {
-    await this.#recordingButtonRef.value?.closeConnection();
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -296,7 +96,7 @@ export class CortiDictation extends LitElement {
 
     return html`
       <dictation-root
-        ${ref(this.#contextProviderRef)}
+        ${ref(this._contextProviderRef)}
         class=${classMap({ hidden: isHidden })}
         .accessToken=${this.accessToken}
         .authConfig=${this.authConfig}
@@ -311,7 +111,7 @@ export class CortiDictation extends LitElement {
         .toggleToTalkKeybinding=${this._toggleToTalkKeybinding}
       >
         <dictation-recording-button
-          ${ref(this.#recordingButtonRef)}
+          ${ref(this._recordingButtonRef)}
           ?allowButtonFocus=${this.allowButtonFocus}
         ></dictation-recording-button>
         ${
