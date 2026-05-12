@@ -1,7 +1,7 @@
 import { consume } from "@lit/context";
 import { type CSSResultGroup, html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { recordingStateContext } from "../contexts/dictation-context.js";
+import { recordingStateContext } from "../contexts/mixins/recording-state-context.js";
 import ButtonStyles from "../styles/buttons.js";
 import CalloutStyles from "../styles/callout.js";
 import SettingsMenuStyles from "../styles/settings-menu.js";

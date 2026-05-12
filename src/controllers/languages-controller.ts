@@ -75,11 +75,6 @@ export class LanguagesController implements ReactiveController {
           ? previousLanguage
           : defaultLanguage;
 
-      this.host.dictationConfig = {
-        ...this.host.dictationConfig,
-        primaryLanguage: selectedLanguage || "en",
-      };
-
       this.host.requestUpdate();
       this.host.dispatchEvent(
         languagesChangedEvent(languages, selectedLanguage),

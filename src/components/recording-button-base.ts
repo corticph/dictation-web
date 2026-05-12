@@ -8,19 +8,23 @@ import {
 } from "lit";
 import { property, state } from "lit/decorators.js";
 import { AUDIO_CHUNK_INTERVAL_MS } from "../constants.js";
+import { debugDisplayAudioContext } from "../contexts/dictation-context.js";
 import {
   accessTokenContext,
   authConfigContext,
-  debugDisplayAudioContext,
-  pushToTalkKeybindingContext,
-  recordingStateContext,
   regionContext,
-  selectedDeviceContext,
+  tenantNameContext,
+} from "../contexts/mixins/auth-context.js";
+import { selectedDeviceContext } from "../contexts/mixins/devices-context.js";
+import {
+  pushToTalkKeybindingContext,
+  toggleToTalkKeybindingContext,
+} from "../contexts/mixins/keybindings-context.js";
+import {
   socketProxyContext,
   socketUrlContext,
-  tenantNameContext,
-  toggleToTalkKeybindingContext,
-} from "../contexts/dictation-context.js";
+} from "../contexts/mixins/proxy-context.js";
+import { recordingStateContext } from "../contexts/mixins/recording-state-context.js";
 import type { TranscribeMessage } from "../controllers/dictation-controller.js";
 import { KeybindingController } from "../controllers/keybinding-controller.js";
 import { MediaController } from "../controllers/media-controller.js";
@@ -114,6 +118,7 @@ export abstract class RecordingButtonBase<
   protected abstract _getConnectConfig(): TConfig;
 
   #mediaController = new MediaController(this);
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: Controller self-registers in constructor (addController).
   #keybindingController = new KeybindingController(this);
   #closeConnectionOnInit = false;
   #processing = false;

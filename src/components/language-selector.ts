@@ -2,10 +2,8 @@ import type { Corti } from "@corti/sdk";
 import { consume } from "@lit/context";
 import { html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import {
-  dictationConfigContext,
-  languagesContext,
-} from "../contexts/dictation-context.js";
+import { dictationConfigContext } from "../contexts/dictation-context.js";
+import { languagesContext } from "../contexts/mixins/languages-context.js";
 import SelectStyles from "../styles/select.js";
 import {
   languageChangedEvent,
