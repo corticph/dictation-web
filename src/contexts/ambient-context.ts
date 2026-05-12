@@ -1,0 +1,54 @@
+import type { Corti } from "@corti/sdk";
+import { createContext, provide } from "@lit/context";
+import { customElement, property } from "lit/decorators.js";
+import { DEFAULT_STREAM_CONFIG } from "../constants.js";
+import { RootContext } from "./root-context.js";
+
+export const ambientConfigContext = createContext<
+  Corti.StreamConfig | undefined
+>(Symbol("ambientConfig"));
+
+export const interactionIdContext = createContext<string | undefined>(
+  Symbol("interactionId"),
+);
+
+@customElement("ambient-root")
+export class AmbientRoot extends RootContext {
+  @provide({ context: ambientConfigContext })
+  @property({ attribute: false, type: Object })
+  ambientConfig: Corti.StreamConfig = DEFAULT_STREAM_CONFIG;
+
+  @provide({ context: interactionIdContext })
+  @property({ type: String })
+  interactionId?: string;
+
+  constructor() {
+    super();
+
+    this.addEventListener("languages-changed", (e: Event) => {
+      const event = e as CustomEvent;
+
+      const lang = (event.detail.selectedLanguage ??
+        "en") as Corti.TranscribeSupportedLanguage;
+      const base = this.ambientConfig ?? DEFAULT_STREAM_CONFIG;
+
+      this.ambientConfig = {
+        ...base,
+        mode: {
+          ...base.mode,
+          outputLocale: lang,
+        },
+        transcription: {
+          ...base.transcription,
+          primaryLanguage: lang,
+        },
+      };
+    });
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "ambient-root": AmbientRoot;
+  }
+}

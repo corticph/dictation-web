@@ -1,27 +1,70 @@
-import { customElement, property } from "lit/decorators.js";
+import type { Corti } from "@corti/sdk";
+import { consume } from "@lit/context";
+import { customElement, state } from "lit/decorators.js";
 import { DEFAULT_STREAM_CONFIG } from "../constants.js";
+import {
+  ambientConfigContext,
+  interactionIdContext,
+} from "../contexts/ambient-context.js";
 import {
   AmbientController,
   type AmbientStreamSessionConfig,
   type StreamAmbientMessage,
 } from "../controllers/ambient-controller.js";
+import { errorEvent } from "../utils/events.js";
 import { RecordingButtonBase } from "./recording-button-base.js";
+
+const interactionIdRequiredError = () =>
+  new Error("interactionId is required. Set interactionId on ambient-root.");
 
 @customElement("ambient-recording-button")
 export class AmbientRecordingButton extends RecordingButtonBase<
   AmbientStreamSessionConfig,
   StreamAmbientMessage
 > {
-  @property({ attribute: "interaction-id", type: String })
-  interactionId: string = "9254ec9b-70e6-45d1-bacb-63d6cce19e86";
+  @consume({ context: ambientConfigContext, subscribe: true })
+  @state()
+  private _ambientConfig?: Corti.StreamConfig;
+
+  @consume({ context: interactionIdContext, subscribe: true })
+  @state()
+  private _interactionId?: string;
 
   protected _socketController = new AmbientController(this);
 
+  public override startRecording(): void {
+    if (!this.#trimmedInteractionId()) {
+      this.dispatchEvent(errorEvent(interactionIdRequiredError()));
+      return;
+    }
+
+    super.startRecording();
+  }
+
+  public override async openConnection(): Promise<void> {
+    if (!this.#trimmedInteractionId()) {
+      this.dispatchEvent(errorEvent(interactionIdRequiredError()));
+      return;
+    }
+
+    await super.openConnection();
+  }
+
   protected _getConnectConfig(): AmbientStreamSessionConfig {
+    const interactionId = this.#trimmedInteractionId();
+
+    if (!interactionId) {
+      throw interactionIdRequiredError();
+    }
+
     return {
-      configuration: DEFAULT_STREAM_CONFIG,
-      interactionId: this.interactionId,
+      configuration: this._ambientConfig ?? DEFAULT_STREAM_CONFIG,
+      interactionId,
     };
+  }
+
+  #trimmedInteractionId(): string | undefined {
+    return this._interactionId?.trim();
   }
 }
 
