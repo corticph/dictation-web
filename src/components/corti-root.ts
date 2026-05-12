@@ -27,7 +27,7 @@ type CortiRecordingButtonHost = LitElement & {
 };
 
 /**
- * Shared base for all-in-one Corti host elements (e.g. corti-dictation).
+ * Shared base for all-in-one Corti host elements (e.g. corti-dictation, corti-ambient).
  * Intentionally minimal; shared behavior will move here incrementally.
  */
 export class CortiRoot<

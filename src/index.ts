@@ -1,4 +1,5 @@
 import { AmbientRecordingButton } from "./components/ambient-recording-button.js";
+import { CortiAmbient } from "./components/corti-ambient.js";
 import { CortiDictation } from "./components/corti-dictation.js";
 import { DictationDeviceSelector } from "./components/device-selector.js";
 import { DictationRecordingButton } from "./components/dictation-recording-button.js";
@@ -9,6 +10,10 @@ import { DictationRoot } from "./contexts/dictation-context.js";
 
 if (!customElements.get("ambient-recording-button")) {
   customElements.define("ambient-recording-button", AmbientRecordingButton);
+}
+
+if (!customElements.get("corti-ambient")) {
+  customElements.define("corti-ambient", CortiAmbient);
 }
 
 if (!customElements.get("corti-dictation")) {
@@ -46,6 +51,7 @@ if (!customElements.get("dictation-root")) {
 }
 
 export { AmbientRecordingButton } from "./components/ambient-recording-button.js";
+export { CortiAmbient } from "./components/corti-ambient.js";
 export { CortiDictation } from "./components/corti-dictation.js";
 export { DictationDeviceSelector } from "./components/device-selector.js";
 export { DictationRecordingButton } from "./components/dictation-recording-button.js";
