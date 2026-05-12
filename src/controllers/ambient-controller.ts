@@ -8,7 +8,7 @@ import { SocketController } from "./socket-controller.js";
 
 export type AmbientStreamSessionConfig = {
   interactionId: string;
-  configuration?: Corti.StreamConfig;
+  configuration: Corti.StreamConfig;
 };
 
 type AmbientStreamSocket = Awaited<

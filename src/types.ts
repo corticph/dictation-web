@@ -1,3 +1,10 @@
+import type { StreamAmbientMessage } from "./controllers/ambient-controller.js";
+import type { TranscribeMessage } from "./controllers/dictation-controller.js";
+
+export type RecordingSocketInboundMessage =
+  | TranscribeMessage
+  | StreamAmbientMessage;
+
 export type RecordingState =
   | "initializing"
   | "recording"

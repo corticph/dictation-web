@@ -11,10 +11,10 @@ import type {
   RecordingState,
 } from "../types.js";
 import { commaSeparatedConverter } from "../utils/converters.js";
-import type { DictationRecordingButton } from "./recording-button.js";
+import type { DictationRecordingButton } from "./dictation-recording-button.js";
 
 import "../contexts/dictation-context.js";
-import "./recording-button.js";
+import "./dictation-recording-button.js";
 import "./settings-menu.js";
 
 @customElement("corti-dictation")

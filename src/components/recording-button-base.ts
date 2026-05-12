@@ -1,4 +1,4 @@
-import type { Corti, CortiAuth } from "@corti/sdk";
+import type { CortiAuth } from "@corti/sdk";
 import { consume } from "@lit/context";
 import {
   type CSSResultGroup,
@@ -6,16 +6,12 @@ import {
   LitElement,
   type PropertyValues,
 } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
-import {
-  AUDIO_CHUNK_INTERVAL_MS,
-  DEFAULT_DICTATION_CONFIG,
-} from "../constants.js";
+import { property, state } from "lit/decorators.js";
+import { AUDIO_CHUNK_INTERVAL_MS } from "../constants.js";
 import {
   accessTokenContext,
   authConfigContext,
   debugDisplayAudioContext,
-  dictationConfigContext,
   pushToTalkKeybindingContext,
   recordingStateContext,
   regionContext,
@@ -25,20 +21,27 @@ import {
   tenantNameContext,
   toggleToTalkKeybindingContext,
 } from "../contexts/dictation-context.js";
-import {
-  DictationController,
-  type TranscribeMessage,
-} from "../controllers/dictation-controller.js";
+import type { TranscribeMessage } from "../controllers/dictation-controller.js";
 import { KeybindingController } from "../controllers/keybinding-controller.js";
 import { MediaController } from "../controllers/media-controller.js";
+import type {
+  SocketController,
+  SocketControllerOutboundItem,
+  SocketControllerWebSocket,
+} from "../controllers/socket-controller.js";
 import ButtonStyles from "../styles/buttons.js";
 import RecordingButtonStyles from "../styles/recording-button.js";
-import type { ProxyOptions, RecordingState } from "../types.js";
+import type {
+  ProxyOptions,
+  RecordingSocketInboundMessage,
+  RecordingState,
+} from "../types.js";
 import {
   audioLevelChangedEvent,
   commandEvent,
   deltaUsageEvent,
   errorEvent,
+  factsEvent,
   networkActivityEvent,
   type RecordingStateChangedEventDetail,
   recordingStateChangedEvent,
@@ -50,8 +53,10 @@ import {
 import "./audio-visualiser.js";
 import "../icons/icons.js";
 
-@customElement("dictation-recording-button")
-export class DictationRecordingButton extends LitElement {
+export abstract class RecordingButtonBase<
+  TConfig,
+  TMessage extends RecordingSocketInboundMessage = TranscribeMessage,
+> extends LitElement {
   @consume({ context: recordingStateContext, subscribe: true })
   @state()
   _recordingState: RecordingState = "stopped";
@@ -76,10 +81,6 @@ export class DictationRecordingButton extends LitElement {
   @state()
   _tenantName?: string;
 
-  @consume({ context: dictationConfigContext, subscribe: true })
-  @state()
-  _dictationConfig?: Corti.TranscribeConfig;
-
   @consume({ context: socketUrlContext, subscribe: true })
   @state()
   _socketUrl?: string;
@@ -103,8 +104,16 @@ export class DictationRecordingButton extends LitElement {
   @property({ type: Boolean })
   allowButtonFocus: boolean = false;
 
+  protected abstract _socketController: SocketController<
+    SocketControllerOutboundItem,
+    TMessage,
+    TConfig,
+    SocketControllerWebSocket
+  >;
+
+  protected abstract _getConnectConfig(): TConfig;
+
   #mediaController = new MediaController(this);
-  #dictationController = new DictationController(this);
   #keybindingController = new KeybindingController(this);
   #closeConnectionOnInit = false;
   #processing = false;
@@ -133,7 +142,7 @@ export class DictationRecordingButton extends LitElement {
     this.toggleRecording();
   }
 
-  #handleWebSocketMessage = (message: TranscribeMessage): void => {
+  #handleWebSocketMessage = (message: TMessage): void => {
     switch (message.type) {
       case "CONFIG_DENIED":
         this.dispatchEvent(
@@ -151,6 +160,9 @@ export class DictationRecordingButton extends LitElement {
       case "command":
         this.dispatchEvent(commandEvent(message));
         break;
+      case "facts":
+        this.dispatchEvent(factsEvent(message));
+        break;
       case "usage":
         this.dispatchEvent(usageEvent(message));
         break;
@@ -160,6 +172,11 @@ export class DictationRecordingButton extends LitElement {
       case "error":
         this.dispatchEvent(errorEvent(message.error));
         this.#handleStop();
+        break;
+      case "ended":
+      case "ENDED":
+        this.#processing = false;
+        this.#dispatchRecordingStateChanged(this._recordingState);
         break;
       case "flushed":
         if (
@@ -174,17 +191,16 @@ export class DictationRecordingButton extends LitElement {
   };
 
   #handleWebSocketError = (error: Error): void => {
-    this.dispatchEvent(errorEvent("Socket error: " + error.message));
+    this.dispatchEvent(errorEvent(`Socket error: ${error.message}`));
     this.#processing = false;
     this.#connection = "CLOSED";
     this.#handleStop();
   };
 
   #handleWebSocketClose = (event: unknown): void => {
-    // When we already have new socket opened
     if (
-      this.#dictationController.isConnectionOpen() ||
-      this.#dictationController.isConnecting()
+      this._socketController.isConnectionOpen() ||
+      this._socketController.isConnecting()
     ) {
       return;
     }
@@ -213,7 +229,7 @@ export class DictationRecordingButton extends LitElement {
           this.dispatchEvent(errorEvent("Recording device access was lost."));
           this.#handleStop();
         }
-      }, this.#dictationController.mediaRecorderHandler);
+      }, this._socketController.mediaRecorderHandler);
       this.#mediaController.mediaRecorder?.start(AUDIO_CHUNK_INTERVAL_MS);
       this.#mediaController.startAudioLevelMonitoring((level) => {
         this.dispatchEvent(audioLevelChangedEvent(level));
@@ -227,8 +243,8 @@ export class DictationRecordingButton extends LitElement {
 
       this.#dispatchRecordingStateChanged("recording");
 
-      const isNewConnection = await this.#dictationController.connect(
-        this._dictationConfig ?? DEFAULT_DICTATION_CONFIG,
+      const isNewConnection = await this._socketController.connect(
+        this._getConnectConfig(),
         {
           onClose: this.#handleWebSocketClose,
           onError: this.#handleWebSocketError,
@@ -258,14 +274,14 @@ export class DictationRecordingButton extends LitElement {
     try {
       this.#mediaController.stopAudioLevelMonitoring();
       await this.#mediaController.stopRecording();
-      await this.#dictationController.stopRecording();
-
-      this.#dispatchRecordingStateChanged("stopped");
+      await this._socketController.stopRecording();
 
       await this.#mediaController.cleanup();
     } catch (error) {
       this.dispatchEvent(errorEvent(error));
     }
+
+    this.#dispatchRecordingStateChanged("stopped");
   }
 
   public startRecording(): void {
@@ -305,7 +321,7 @@ export class DictationRecordingButton extends LitElement {
       return;
     }
 
-    if (this.#dictationController.isConnectionOpen()) {
+    if (this._socketController.isConnectionOpen()) {
       return;
     }
 
@@ -313,17 +329,14 @@ export class DictationRecordingButton extends LitElement {
       this.#connection = "CONNECTING";
       this.#dispatchRecordingStateChanged(this._recordingState);
 
-      await this.#dictationController.connect(
-        this._dictationConfig ?? DEFAULT_DICTATION_CONFIG,
-        {
-          onClose: this.#handleWebSocketClose,
-          onError: this.#handleWebSocketError,
-          onMessage: this.#handleWebSocketMessage,
-          onNetworkActivity: (direction, data) => {
-            this.dispatchEvent(networkActivityEvent(direction, data));
-          },
+      await this._socketController.connect(this._getConnectConfig(), {
+        onClose: this.#handleWebSocketClose,
+        onError: this.#handleWebSocketError,
+        onMessage: this.#handleWebSocketMessage,
+        onNetworkActivity: (direction, data) => {
+          this.dispatchEvent(networkActivityEvent(direction, data));
         },
-      );
+      });
 
       this.#connection = "OPEN";
       this.#dispatchRecordingStateChanged(this._recordingState);
@@ -338,11 +351,11 @@ export class DictationRecordingButton extends LitElement {
       return;
     }
 
-    if (this.#dictationController.isConnecting()) {
-      await this.#dictationController.waitForConnection();
+    if (this._socketController.isConnecting()) {
+      await this._socketController.waitForConnection();
     }
 
-    if (!this.#dictationController.isConnectionOpen()) {
+    if (!this._socketController.isConnectionOpen()) {
       this.#connection = "CLOSED";
       this.#dispatchRecordingStateChanged("stopped");
       return;
@@ -351,9 +364,7 @@ export class DictationRecordingButton extends LitElement {
     try {
       this.#connection = "CLOSING";
       this.#dispatchRecordingStateChanged("stopped");
-      await this.#dictationController.closeConnection(
-        this.#handleWebSocketClose,
-      );
+      await this._socketController.closeConnection(this.#handleWebSocketClose);
     } catch (error) {
       this.dispatchEvent(errorEvent(error));
     }
@@ -386,11 +397,5 @@ export class DictationRecordingButton extends LitElement {
         />
       </button>
     `;
-  }
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    "dictation-recording-button": DictationRecordingButton;
   }
 }

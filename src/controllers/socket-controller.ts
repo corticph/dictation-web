@@ -263,6 +263,10 @@ export abstract class SocketController<
     this.#outboundQueue.push({ type: "flush" } as TOutbound);
   }
 
+  async stopRecording(): Promise<void> {
+    await this.pause();
+  }
+
   async closeConnection(onClose?: (event: unknown) => void): Promise<void> {
     await new Promise<void>((resolve, reject) => {
       const oldSocket = this.#webSocket;
@@ -286,6 +290,8 @@ export abstract class SocketController<
 
         if (onClose) {
           onClose(event);
+        } else if (this.#callbacks?.onClose) {
+          this.#callbacks.onClose(event);
         }
 
         resolve();
