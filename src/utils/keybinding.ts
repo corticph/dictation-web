@@ -31,7 +31,7 @@ function capitalize(str: string): string {
  * Normalizes a key string to the keybinding format.
  * Handles platform-specific mappings and capitalization.
  *
- * @param key - Key string to normalize (will be trimmed and lowercased)
+ * @param key - Key string to normalize (will be trimmed and uppercased)
  * @returns Formatted key string for keybinding
  *
  * @example
@@ -39,7 +39,8 @@ function capitalize(str: string): string {
  * normalizeKeyForKeybinding("META") // "Cmd" on Mac, "Meta" elsewhere
  * normalizeKeyForKeybinding(" alt ") // "Opt" on Mac, "Alt" elsewhere
  * normalizeKeyForKeybinding("shift") // "Shift"
- * normalizeKeyForKeybinding("k") // "k"
+ * normalizeKeyForKeybinding("k") // "K"
+ * normalizeKeyForKeybinding(" ") // "Space"
  */
 function normalizeKeyForKeybinding(key: string): string {
   if (key === " ") {
@@ -61,6 +62,12 @@ function normalizeKeyForKeybinding(key: string): string {
     return "Space";
   }
 
+  // TODO: Uncomment this for v1 to avoid breaking changes now
+  // Capitalize single letters (a-z) for consistent display
+  // if (/^[a-z]$/.test(normalized)) {
+  //   return normalized.toUpperCase();
+  // }
+
   return normalized.length > 1 ? capitalize(normalized) : normalized;
 }
 
@@ -71,8 +78,9 @@ function normalizeKeyForKeybinding(key: string): string {
  * @returns Normalized keybinding string or null if empty
  *
  * @example
- * normalizeKeybinding("k") // "k"
+ * normalizeKeybinding("k") // "K"
  * normalizeKeybinding("meta") // "Cmd" on Mac
+ * normalizeKeybinding(" ") // "Space"
  * normalizeKeybinding(" space ") // "Space"
  */
 export function normalizeKeybinding(
@@ -81,14 +89,11 @@ export function normalizeKeybinding(
   if (!keybinding) {
     return null;
   }
-
-  const trimmed = keybinding.trim();
-
-  if (trimmed === "") {
+  if (keybinding !== " " && keybinding.trim() === "") {
     return null;
   }
 
-  return normalizeKeyForKeybinding(trimmed);
+  return normalizeKeyForKeybinding(keybinding);
 }
 
 /**
