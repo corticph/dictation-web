@@ -5,6 +5,7 @@ import { property, state } from "lit/decorators.js";
 import { LanguagesController } from "../../controllers/languages-controller.js";
 import { commaSeparatedConverter } from "../../utils/converters.js";
 import type { LanguagesChangedEventDetail } from "../../utils/events.js";
+import { getPreferredDefaultLanguage } from "../../utils/languages.js";
 import type { Constructor } from "./types.js";
 
 export const languagesContext = createContext<
@@ -46,6 +47,18 @@ export function LanguagesContextMixin<T extends Constructor<LitElement>>(
       if (value !== undefined) {
         this.#languagesController.clearAutoLoadedFlag();
       }
+
+      if (value === undefined || value.length === 0) {
+        this.selectedLanguage = undefined;
+        return;
+      }
+
+      if (
+        this.selectedLanguage === undefined ||
+        !value.includes(this.selectedLanguage)
+      ) {
+        this.selectedLanguage = getPreferredDefaultLanguage(value);
+      }
     }
 
     get languages(): Corti.TranscribeSupportedLanguage[] | undefined {
@@ -78,7 +91,9 @@ export function LanguagesContextMixin<T extends Constructor<LitElement>>(
           | Corti.TranscribeSupportedLanguage
           | undefined;
 
-        this.selectedLanguage = selectedLanguage ?? event.detail.languages[0];
+        this.selectedLanguage =
+          selectedLanguage ??
+          getPreferredDefaultLanguage(event.detail.languages);
       });
     }
   }
