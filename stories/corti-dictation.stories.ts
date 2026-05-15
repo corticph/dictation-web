@@ -9,7 +9,12 @@ import LanguageSelectorStoryMeta from "./language-selector.stories.js";
 import SettingsMeunStoryMeta from "./settings-menu.stories.js";
 
 import "../src/components/corti-dictation.js";
-import { disableControls, eventAction, languages, mockDevices } from "./helpers.js";
+import {
+  disableControls,
+  eventAction,
+  languages,
+  mockDevices,
+} from "./helpers.js";
 
 type CortiDictationStory = Omit<CortiDictation, "selectedDevice"> & {
   selectedDevice?: string;
@@ -181,6 +186,12 @@ export const AutoLoadLanguagesAndDevices = {
     settingsEnabled: ["device", "language"],
     toggleToTalkKeybinding: "`",
   },
+  argTypes: disableControls([
+    "devices",
+    "languagesSupported",
+    "selectedDevice",
+    "settingsEnabled",
+  ]),
   render: ({
     accessToken,
     settingsEnabled,
@@ -209,10 +220,4 @@ export const AutoLoadLanguagesAndDevices = {
       @error=${eventAction("error")}
     />
   `,
-  argTypes: disableControls([
-    "devices",
-    "languagesSupported",
-    "selectedDevice",
-    "settingsEnabled",
-  ]),
 };
