@@ -51,14 +51,7 @@ export class DictationRoot extends RootContext {
       return;
     }
 
-    const configuredLanguage = this.dictationConfig?.primaryLanguage;
-
-    if (
-      configuredLanguage !== undefined &&
-      configuredLanguage !== this.selectedLanguage
-    ) {
-      this.selectedLanguage = configuredLanguage;
-    }
+    this._selectedLanguage = this.dictationConfig?.primaryLanguage;
   }
 }
 

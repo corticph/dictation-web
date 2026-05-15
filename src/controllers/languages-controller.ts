@@ -9,7 +9,6 @@ interface LanguagesControllerHost extends ReactiveControllerHost {
   requestUpdate(): void;
   _languages?: Corti.TranscribeSupportedLanguage[];
   _selectedLanguage?: Corti.TranscribeSupportedLanguage;
-  selectedLanguage?: Corti.TranscribeSupportedLanguage;
 }
 
 /**
@@ -70,7 +69,7 @@ export class LanguagesController implements ReactiveController {
       this.#autoLoadedLanguages = true;
       this.host._languages = languages;
 
-      const previousLanguage = this.host.selectedLanguage;
+      const previousLanguage = this.host._selectedLanguage;
       const selectedLanguage =
         previousLanguage && languages.includes(previousLanguage)
           ? previousLanguage

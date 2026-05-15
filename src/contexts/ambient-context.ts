@@ -54,16 +54,8 @@ export class AmbientRoot extends RootContext {
       return;
     }
 
-    const configuredLanguage =
+    this._selectedLanguage =
       this.ambientConfig?.transcription?.primaryLanguage ?? "en";
-
-    if (
-      configuredLanguage !== undefined &&
-      configuredLanguage !== this.selectedLanguage
-    ) {
-      this.selectedLanguage =
-        configuredLanguage as Corti.TranscribeSupportedLanguage;
-    }
   }
 }
 

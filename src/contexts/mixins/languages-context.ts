@@ -19,7 +19,6 @@ export declare class LanguagesContextInterface {
   _languages?: Corti.TranscribeSupportedLanguage[];
   _selectedLanguage?: Corti.TranscribeSupportedLanguage;
   languages?: Corti.TranscribeSupportedLanguage[];
-  selectedLanguage?: Corti.TranscribeSupportedLanguage;
 }
 
 export function LanguagesContextMixin<T extends Constructor<LitElement>>(
@@ -48,30 +47,25 @@ export function LanguagesContextMixin<T extends Constructor<LitElement>>(
         this.#languagesController.clearAutoLoadedFlag();
       }
 
-      if (value === undefined || value.length === 0) {
-        this.selectedLanguage = undefined;
+      if (value === undefined) {
+        return;
+      }
+
+      if (value.length === 0) {
+        this._selectedLanguage = undefined;
         return;
       }
 
       if (
-        this.selectedLanguage === undefined ||
-        !value.includes(this.selectedLanguage)
+        this._selectedLanguage === undefined ||
+        !value.includes(this._selectedLanguage)
       ) {
-        this.selectedLanguage = getPreferredDefaultLanguage(value);
+        this._selectedLanguage = getPreferredDefaultLanguage(value);
       }
     }
 
     get languages(): Corti.TranscribeSupportedLanguage[] | undefined {
       return this._languages;
-    }
-
-    @property({ type: String })
-    set selectedLanguage(value: Corti.TranscribeSupportedLanguage | undefined) {
-      this._selectedLanguage = value;
-    }
-
-    get selectedLanguage(): Corti.TranscribeSupportedLanguage | undefined {
-      return this._selectedLanguage;
     }
 
     constructor(...args: any[]) {
@@ -91,7 +85,7 @@ export function LanguagesContextMixin<T extends Constructor<LitElement>>(
           | Corti.TranscribeSupportedLanguage
           | undefined;
 
-        this.selectedLanguage =
+        this._selectedLanguage =
           selectedLanguage ??
           getPreferredDefaultLanguage(event.detail.languages);
       });

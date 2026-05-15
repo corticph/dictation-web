@@ -47,6 +47,7 @@ export class DictationLanguageSelector extends LitElement {
           id="language-select"
           aria-labelledby="language-select-label"
           @change=${this.#handleSelectLanguage}
+          .value=${this._selectedLanguage ?? ""}
           ?disabled=${this.disabled || !this._languages || this._languages.length === 0}
         >
           ${this._languages?.map(
