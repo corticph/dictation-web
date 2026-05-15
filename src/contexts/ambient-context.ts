@@ -1,5 +1,6 @@
 import type { Corti } from "@corti/sdk";
 import { createContext, provide } from "@lit/context";
+import type { PropertyValues } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { DEFAULT_STREAM_CONFIG } from "../constants.js";
 import { RootContext } from "./root-context.js";
@@ -44,6 +45,25 @@ export class AmbientRoot extends RootContext {
         },
       };
     });
+  }
+
+  protected override willUpdate(changedProperties: PropertyValues): void {
+    super.willUpdate(changedProperties);
+
+    if (!changedProperties.has("ambientConfig")) {
+      return;
+    }
+
+    const configuredLanguage =
+      this.ambientConfig?.transcription?.primaryLanguage ?? "en";
+
+    if (
+      configuredLanguage !== undefined &&
+      configuredLanguage !== this.selectedLanguage
+    ) {
+      this.selectedLanguage =
+        configuredLanguage as Corti.TranscribeSupportedLanguage;
+    }
   }
 }
 

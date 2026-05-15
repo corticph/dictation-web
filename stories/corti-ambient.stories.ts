@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/web-components-vite";
 import { html, nothing } from "lit";
-import { action } from "storybook/actions";
 
 import "../src/components/audio-visualiser.js";
 import type { CortiAmbient } from "../src/components/corti-ambient.js";
@@ -10,7 +9,7 @@ import LanguageSelectorStoryMeta from "./language-selector.stories.js";
 import SettingsMeunStoryMeta from "./settings-menu.stories.js";
 
 import "../src/components/corti-ambient.js";
-import { disableControls, languages, mockDevices } from "./helpers.js";
+import { disableControls, eventAction, languages, mockDevices } from "./helpers.js";
 
 type CortiAmbientStory = Omit<CortiAmbient, "selectedDevice"> & {
   selectedDevice?: string;
@@ -89,20 +88,20 @@ const meta = {
         .selectedDevice=${selectedDeviceValue}
         pushToTalkKeybinding=${pushToTalkKeybinding}
         toggleToTalkKeybinding=${toggleToTalkKeybinding}
-        @command=${action("command")}
-        @delta-usage=${action("delta-usage")}
-        @error=${action("error")}
-        @facts=${action("facts")}
-        @keybinding-changed=${action("keybinding-changed")}
-        @languages-changed=${action("languages-changed")}
-        @network-activity=${action("network-activity")}
-        @ready=${action("ready")}
-        @recording-devices-changed=${action("recording-devices-changed")}
-        @recording-state-changed=${action("recording-state-changed")}
-        @stream-closed=${action("stream-closed")}
-        @transcript=${action("transcript")}
-        @usage=${action("usage")}
-        @audio-level-changed=${action("audio-level-changed")}
+        @command=${eventAction("command")}
+        @delta-usage=${eventAction("delta-usage")}
+        @error=${eventAction("error")}
+        @facts=${eventAction("facts")}
+        @keybinding-changed=${eventAction("keybinding-changed")}
+        @languages-changed=${eventAction("languages-changed")}
+        @network-activity=${eventAction("network-activity")}
+        @ready=${eventAction("ready")}
+        @recording-devices-changed=${eventAction("recording-devices-changed")}
+        @recording-state-changed=${eventAction("recording-state-changed")}
+        @stream-closed=${eventAction("stream-closed")}
+        @transcript=${eventAction("transcript")}
+        @usage=${eventAction("usage")}
+        @audio-level-changed=${eventAction("audio-level-changed")}
       />
     `;
   },
@@ -123,5 +122,57 @@ export const NoSettings = {
     "settingsEnabled",
     "devices",
     "languagesSupported",
+  ]),
+} satisfies StoryObj<CortiAmbientStory>;
+
+export const AutoLoadLanguagesAndDevices = {
+  args: {
+    accessToken: "dummy_token",
+    allowButtonFocus: false,
+    interactionId: "9254ec9b-70e6-45d1-bacb-63d6cce19e86",
+    pushToTalkKeybinding: "Space",
+    settingsEnabled: ["device", "language"],
+    toggleToTalkKeybinding: "`",
+  },
+  render: ({
+    accessToken,
+    interactionId,
+    settingsEnabled,
+    allowButtonFocus,
+    pushToTalkKeybinding,
+    toggleToTalkKeybinding,
+  }) => {
+    const interaction = interactionId?.trim() || undefined;
+
+    return html`
+      <corti-ambient
+        .accessToken=${accessToken}
+        .interactionId=${interaction}
+        settingsEnabled=${settingsEnabled}
+        ?allowButtonFocus=${allowButtonFocus}
+        pushToTalkKeybinding=${pushToTalkKeybinding}
+        toggleToTalkKeybinding=${toggleToTalkKeybinding}
+        @command=${eventAction("command")}
+        @delta-usage=${eventAction("delta-usage")}
+        @error=${eventAction("error")}
+        @facts=${eventAction("facts")}
+        @keybinding-changed=${eventAction("keybinding-changed")}
+        @languages-changed=${eventAction("languages-changed")}
+        @network-activity=${eventAction("network-activity")}
+        @ready=${eventAction("ready")}
+        @recording-devices-changed=${eventAction("recording-devices-changed")}
+        @recording-state-changed=${eventAction("recording-state-changed")}
+        @stream-closed=${eventAction("stream-closed")}
+        @transcript=${eventAction("transcript")}
+        @usage=${eventAction("usage")}
+        @audio-level-changed=${eventAction("audio-level-changed")}
+      />
+    `;
+  },
+  argTypes: disableControls([
+    "devices",
+    "languagesSupported",
+    "selectedDevice",
+    "settingsEnabled",
   ]),
 } satisfies StoryObj<CortiAmbientStory>;

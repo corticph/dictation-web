@@ -1,5 +1,6 @@
 import type { Corti } from "@corti/sdk";
 import { createContext, provide } from "@lit/context";
+import type { PropertyValues } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { RootContext } from "./root-context.js";
 
@@ -32,12 +33,32 @@ export class DictationRoot extends RootContext {
 
     this.addEventListener("languages-changed", (e: Event) => {
       const event = e as CustomEvent;
+      const selectedLanguage = event.detail.selectedLanguage as
+        | Corti.TranscribeSupportedLanguage
+        | undefined;
 
       this.dictationConfig = {
         ...this.dictationConfig,
-        primaryLanguage: event.detail.selectedLanguage ?? "en",
+        primaryLanguage: selectedLanguage ?? "en",
       };
     });
+  }
+
+  protected override willUpdate(changedProperties: PropertyValues): void {
+    super.willUpdate(changedProperties);
+
+    if (!changedProperties.has("dictationConfig")) {
+      return;
+    }
+
+    const configuredLanguage = this.dictationConfig?.primaryLanguage;
+
+    if (
+      configuredLanguage !== undefined &&
+      configuredLanguage !== this.selectedLanguage
+    ) {
+      this.selectedLanguage = configuredLanguage;
+    }
   }
 }
 

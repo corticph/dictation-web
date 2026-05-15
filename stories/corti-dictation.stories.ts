@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/web-components-vite";
 import { html, nothing } from "lit";
-import { action } from "storybook/actions";
 
 import "../src/components/audio-visualiser.js";
 import type { CortiDictation } from "../src/components/corti-dictation.js";
@@ -10,7 +9,7 @@ import LanguageSelectorStoryMeta from "./language-selector.stories.js";
 import SettingsMeunStoryMeta from "./settings-menu.stories.js";
 
 import "../src/components/corti-dictation.js";
-import { disableControls, languages, mockDevices } from "./helpers.js";
+import { disableControls, eventAction, languages, mockDevices } from "./helpers.js";
 
 type CortiDictationStory = Omit<CortiDictation, "selectedDevice"> & {
   selectedDevice?: string;
@@ -79,19 +78,19 @@ const meta = {
         .selectedDevice=${selectedDeviceValue}
         pushToTalkKeybinding=${pushToTalkKeybinding}
         toggleToTalkKeybinding=${toggleToTalkKeybinding}
-        @keybinding-changed=${action("keybinding-changed")}
-        @languages-changed=${action("languages-changed")}
-        @recording-devices-changed=${action("recording-devices-changed")}
-        @stream-closed=${action("stream-closed")}
-        @usage=${action("usage")}
-        @delta-usage=${action("delta-usage")}
-        @transcript=${action("transcript")}
-        @command=${action("command")}
-        @ready=${action("ready")}
-        @audio-level-changed=${action("audio-level-changed")}
-        @recording-state-changed=${action("recording-state-changed")}
-        @network-activity=${action("network-activity")}
-        @error=${action("error")}
+        @keybinding-changed=${eventAction("keybinding-changed")}
+        @languages-changed=${eventAction("languages-changed")}
+        @recording-devices-changed=${eventAction("recording-devices-changed")}
+        @stream-closed=${eventAction("stream-closed")}
+        @usage=${eventAction("usage")}
+        @delta-usage=${eventAction("delta-usage")}
+        @transcript=${eventAction("transcript")}
+        @command=${eventAction("command")}
+        @ready=${eventAction("ready")}
+        @audio-level-changed=${eventAction("audio-level-changed")}
+        @recording-state-changed=${eventAction("recording-state-changed")}
+        @network-activity=${eventAction("network-activity")}
+        @error=${eventAction("error")}
       />
     `;
   },
@@ -172,4 +171,48 @@ export const WithKeybindings = {
     toggleToTalkKeybinding: "k",
   },
   argTypes: disableControls(["settingsEnabled"]),
+};
+
+export const AutoLoadLanguagesAndDevices = {
+  args: {
+    accessToken: "dummy_token",
+    allowButtonFocus: false,
+    pushToTalkKeybinding: "Space",
+    settingsEnabled: ["device", "language"],
+    toggleToTalkKeybinding: "`",
+  },
+  render: ({
+    accessToken,
+    settingsEnabled,
+    allowButtonFocus,
+    pushToTalkKeybinding,
+    toggleToTalkKeybinding,
+  }) => html`
+    <corti-dictation
+      .accessToken=${accessToken}
+      settingsEnabled=${settingsEnabled}
+      ?allowButtonFocus=${allowButtonFocus}
+      pushToTalkKeybinding=${pushToTalkKeybinding}
+      toggleToTalkKeybinding=${toggleToTalkKeybinding}
+      @keybinding-changed=${eventAction("keybinding-changed")}
+      @languages-changed=${eventAction("languages-changed")}
+      @recording-devices-changed=${eventAction("recording-devices-changed")}
+      @stream-closed=${eventAction("stream-closed")}
+      @usage=${eventAction("usage")}
+      @delta-usage=${eventAction("delta-usage")}
+      @transcript=${eventAction("transcript")}
+      @command=${eventAction("command")}
+      @ready=${eventAction("ready")}
+      @audio-level-changed=${eventAction("audio-level-changed")}
+      @recording-state-changed=${eventAction("recording-state-changed")}
+      @network-activity=${eventAction("network-activity")}
+      @error=${eventAction("error")}
+    />
+  `,
+  argTypes: disableControls([
+    "devices",
+    "languagesSupported",
+    "selectedDevice",
+    "settingsEnabled",
+  ]),
 };
