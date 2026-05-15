@@ -40,7 +40,7 @@ export class DictationDeviceSelector extends LitElement {
     return html`
       <div>
         <label id="device-select-label" for="device-select">
-          Recording Device
+          Microphone
         </label>
         <select
           id="device-select"

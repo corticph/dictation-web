@@ -41,7 +41,7 @@ export class DictationLanguageSelector extends LitElement {
     return html`
       <div>
         <label id="language-select-label" for="language-select">
-          Dictation Language
+          Spoken language
         </label>
         <select
           id="language-select"
