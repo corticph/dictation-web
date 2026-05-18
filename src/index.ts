@@ -6,6 +6,7 @@ import { DictationRecordingButton } from "./components/dictation-recording-butto
 import { DictationKeybindingSelector } from "./components/keybinding-selector.js";
 import { DictationLanguageSelector } from "./components/language-selector.js";
 import { DictationSettingsMenu } from "./components/settings-menu.js";
+import { AmbientRoot } from "./contexts/ambient-context.js";
 import { DictationRoot } from "./contexts/dictation-context.js";
 
 if (!customElements.get("ambient-recording-button")) {
@@ -46,6 +47,10 @@ if (!customElements.get("dictation-settings-menu")) {
   customElements.define("dictation-settings-menu", DictationSettingsMenu);
 }
 
+if (!customElements.get("ambient-root")) {
+  customElements.define("ambient-root", AmbientRoot);
+}
+
 if (!customElements.get("dictation-root")) {
   customElements.define("dictation-root", DictationRoot);
 }
@@ -58,6 +63,7 @@ export { DictationRecordingButton } from "./components/dictation-recording-butto
 export { DictationKeybindingSelector } from "./components/keybinding-selector.js";
 export { DictationLanguageSelector } from "./components/language-selector.js";
 export { DictationSettingsMenu } from "./components/settings-menu.js";
+export { AmbientRoot } from "./contexts/ambient-context.js";
 export { DictationRoot } from "./contexts/dictation-context.js";
 
 export type { AmbientStreamSessionConfig } from "./controllers/ambient-controller.js";

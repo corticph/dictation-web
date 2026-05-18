@@ -6,7 +6,7 @@ import type { CortiAmbient } from "../src/components/corti-ambient.js";
 
 import DeviceSelectorStoryMeta from "./device-selector.stories.js";
 import LanguageSelectorStoryMeta from "./language-selector.stories.js";
-import SettingsMeunStoryMeta from "./settings-menu.stories.js";
+import SettingsMenuStoryMeta from "./settings-menu.stories.js";
 
 import "../src/components/corti-ambient.js";
 import {
@@ -52,7 +52,7 @@ const meta = {
       description:
         "Push-to-talk keyboard shortcut (keydown starts, keyup stops). Single key only (e.g., 'Space', 'k', 'KeyK')",
     },
-    settingsEnabled: SettingsMeunStoryMeta.argTypes.settingsEnabled,
+    settingsEnabled: SettingsMenuStoryMeta.argTypes.settingsEnabled,
     toggleToTalkKeybinding: {
       control: "text",
       description:

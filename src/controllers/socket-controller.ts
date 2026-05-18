@@ -156,7 +156,7 @@ export abstract class SocketController<
 
       this.#webSocket = socket;
 
-      this.#callbacks?.onNetworkActivity?.("sent", {
+      callbacks?.onNetworkActivity?.("sent", {
         configuration: config,
         type: "config",
       });

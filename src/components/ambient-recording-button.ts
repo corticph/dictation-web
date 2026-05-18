@@ -15,7 +15,9 @@ import { errorEvent } from "../utils/events.js";
 import { RecordingButtonBase } from "./recording-button-base.js";
 
 const interactionIdRequiredError = () =>
-  new Error("interactionId is required. Set interactionId on ambient-root.");
+  new Error(
+    "interactionId is required. Set interactionId on corti-ambient or ambient-root.",
+  );
 
 @customElement("ambient-recording-button")
 export class AmbientRecordingButton extends RecordingButtonBase<

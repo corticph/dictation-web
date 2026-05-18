@@ -71,7 +71,6 @@ export class CortiRoot<
   /**
    * Which settings should be available in the UI.
    *  If an empty array is passed, the settings will be disabled entirely.
-   *  Options are language and devices
    */
   @property({
     converter: commaSeparatedConverter,
@@ -80,9 +79,9 @@ export class CortiRoot<
   settingsEnabled: ConfigurableSettings[] = ["device", "language"];
 
   /**
-   * When false (default), allows the start/stop button from taking focus when clicked,
-   *  disabling textareas or other input elements to maintain focus.
-   *  Set to "true" to allow the button to receive focus on click.
+   * When false (default), clicking the start/stop button does not move focus
+   *  to the button, allowing textareas or other input elements to keep focus.
+   *  Set to true to allow the button to receive focus on click.
    */
   @property({ type: Boolean })
   allowButtonFocus: boolean = false;
@@ -169,7 +168,7 @@ export class CortiRoot<
    * Toggle-to-talk keybinding for keyboard shortcut. Single key only (e.g., "`", "k", "meta", "ctrl").
    * Combinations with "+" are not supported.
    * Pressing the key toggles recording on/off.
-   * Defaults to "`" if keybinding is in settingsEnabled, otherwise undefined
+   * Defaults to "Enter" if keybinding is in settingsEnabled, otherwise undefined
    */
   @property({ type: String })
   set toggleToTalkKeybinding(value: string | null | undefined) {
