@@ -67,6 +67,21 @@ export class CortiAmbient extends CortiRoot<
   @state()
   _interactionId?: string;
 
+  /**
+   * Enables virtual mode behavior for ambient recording.
+   */
+  @property({ attribute: "virtualMode", type: Boolean })
+  set virtualMode(value: boolean) {
+    this._virtualMode = value;
+  }
+
+  get virtualMode(): boolean {
+    return this._contextProviderRef.value?.virtualMode ?? this._virtualMode;
+  }
+
+  @state()
+  _virtualMode: boolean = false;
+
   // ─────────────────────────────────────────────────────────────────────────────
   // Render
   // ─────────────────────────────────────────────────────────────────────────────
@@ -88,6 +103,7 @@ export class CortiAmbient extends CortiRoot<
         .socketProxy=${this.socketProxy}
         .ambientConfig=${this._ambientConfig}
         .interactionId=${this._interactionId}
+        ?virtualMode=${this.virtualMode}
         .languages=${this._languagesSupported}
         .devices=${this._devices}
         .selectedDevice=${this._selectedDevice}

@@ -285,7 +285,11 @@ export abstract class RecordingButtonBase<
       this.#mediaController.stopAudioLevelMonitoring();
       await this.#mediaController.stopRecording();
       await this._socketController.stopRecording();
+    } catch (error) {
+      this.dispatchEvent(errorEvent(error));
+    }
 
+    try {
       await this.#mediaController.cleanup();
     } catch (error) {
       this.dispatchEvent(errorEvent(error));

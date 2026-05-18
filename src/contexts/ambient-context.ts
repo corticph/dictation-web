@@ -26,7 +26,7 @@ export class AmbientRoot extends RootContext {
   interactionId?: string;
 
   @provide({ context: virtualModeContext })
-  @property({ attribute: "virtual-mode", type: Boolean })
+  @property({ attribute: "virtualMode", type: Boolean })
   virtualMode: boolean = false;
 
   constructor() {
@@ -35,6 +35,22 @@ export class AmbientRoot extends RootContext {
     this.addEventListener("virtual-mode-changed", (e: Event) => {
       const event = e as CustomEvent<{ enabled: boolean }>;
       this.virtualMode = event.detail.enabled;
+
+      if (!event.detail.enabled) {
+        return;
+      }
+
+      // Set multichannel transcription for virtual mode
+      const base = this.ambientConfig ?? DEFAULT_STREAM_CONFIG;
+
+      this.ambientConfig = {
+        ...base,
+        transcription: {
+          ...base.transcription,
+          isDiarization: false,
+          isMultichannel: true,
+        },
+      };
     });
 
     this.addEventListener("languages-changed", (e: Event) => {
