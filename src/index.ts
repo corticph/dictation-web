@@ -1,4 +1,5 @@
 import { AmbientRecordingButton } from "./components/ambient-recording-button.js";
+import { AmbientVirtualModeSelector } from "./components/ambient-virtual-mode-selector.js";
 import { CortiAmbient } from "./components/corti-ambient.js";
 import { CortiDictation } from "./components/corti-dictation.js";
 import { DictationDeviceSelector } from "./components/device-selector.js";
@@ -11,6 +12,13 @@ import { DictationRoot } from "./contexts/dictation-context.js";
 
 if (!customElements.get("ambient-recording-button")) {
   customElements.define("ambient-recording-button", AmbientRecordingButton);
+}
+
+if (!customElements.get("ambient-virtual-mode-selector")) {
+  customElements.define(
+    "ambient-virtual-mode-selector",
+    AmbientVirtualModeSelector,
+  );
 }
 
 if (!customElements.get("corti-ambient")) {
@@ -56,6 +64,7 @@ if (!customElements.get("dictation-root")) {
 }
 
 export { AmbientRecordingButton } from "./components/ambient-recording-button.js";
+export { AmbientVirtualModeSelector } from "./components/ambient-virtual-mode-selector.js";
 export { CortiAmbient } from "./components/corti-ambient.js";
 export { CortiDictation } from "./components/corti-dictation.js";
 export { DictationDeviceSelector } from "./components/device-selector.js";
@@ -87,6 +96,7 @@ export type {
   RecordingStateChangedEventDetail,
   TranscriptEventDetail,
   UsageEventDetail,
+  VirtualModeChangedEventDetail,
 } from "./utils/events.js";
 
 export default CortiDictation;

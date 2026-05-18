@@ -27,7 +27,7 @@ const meta = {
     interactionId: "9254ec9b-70e6-45d1-bacb-63d6cce19e86",
     languagesSupported: languages,
     pushToTalkKeybinding: "Space",
-    settingsEnabled: ["device", "language", "keybinding"],
+    settingsEnabled: ["device", "language", "keybinding", "virtualMode"],
     toggleToTalkKeybinding: "`",
   },
   argTypes: {
@@ -102,6 +102,7 @@ const meta = {
         @network-activity=${eventAction("network-activity")}
         @ready=${eventAction("ready")}
         @recording-devices-changed=${eventAction("recording-devices-changed")}
+        @virtual-mode-changed=${eventAction("virtual-mode-changed")}
         @recording-state-changed=${eventAction("recording-state-changed")}
         @stream-closed=${eventAction("stream-closed")}
         @transcript=${eventAction("transcript")}
@@ -148,7 +149,6 @@ export const AutoLoadLanguagesAndDevices = {
   render: ({
     accessToken,
     interactionId,
-    settingsEnabled,
     allowButtonFocus,
     pushToTalkKeybinding,
     toggleToTalkKeybinding,
@@ -159,7 +159,6 @@ export const AutoLoadLanguagesAndDevices = {
       <corti-ambient
         .accessToken=${accessToken}
         .interactionId=${interaction}
-        settingsEnabled=${settingsEnabled}
         ?allowButtonFocus=${allowButtonFocus}
         pushToTalkKeybinding=${pushToTalkKeybinding}
         toggleToTalkKeybinding=${toggleToTalkKeybinding}
@@ -177,6 +176,7 @@ export const AutoLoadLanguagesAndDevices = {
         @transcript=${eventAction("transcript")}
         @usage=${eventAction("usage")}
         @audio-level-changed=${eventAction("audio-level-changed")}
+        @virtual-mode-changed=${eventAction("virtual-mode-changed")}
       />
     `;
   },

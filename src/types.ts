@@ -13,7 +13,11 @@ export type RecordingState =
 
 export type Keybinding = string;
 
-export type ConfigurableSettings = "device" | "language" | "keybinding";
+export type ConfigurableSettings =
+  | "device"
+  | "language"
+  | "keybinding"
+  | "virtualMode";
 
 export type ProxyOptions = {
   url: string;

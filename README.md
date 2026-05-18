@@ -40,6 +40,13 @@ For more control and flexibility, you can use individual components:
 - **`<dictation-language-selector>`** - Language selection dropdown
 - **`<dictation-keybinding-selector>`** - Keybinding configuration component for keyboard shortcuts (supports both push-to-talk and toggle-to-talk)
 
+Ambient stream components:
+
+- **`<corti-ambient>`** - All-in-one ambient capture component (includes virtual mode by default in settings)
+- **`<ambient-root>`** - Context provider for ambient stream sessions
+- **`<ambient-recording-button>`** - Recording button for ambient capture
+- **`<ambient-virtual-mode-selector>`** - Toggles virtual mode: captures the selected microphone plus audio from a shared browser tab, window, or application (mixed as separate channels in one stream)
+
 These components share state through a context system, allowing you to build custom UIs while leveraging the same underlying functionality.
 
 ## Installation
@@ -158,6 +165,18 @@ For more control, use individual components to build a custom UI:
 </body>
 </html>
 ```
+
+### Ambient Example (with Virtual Mode)
+
+```html
+<corti-ambient
+  accessToken="YOUR_AUTH_TOKEN"
+  interactionId="YOUR_INTERACTION_ID"
+  settingsEnabled="device,language,virtualMode"
+></corti-ambient>
+```
+
+Include `virtualMode` in `settingsEnabled` to show the Virtual mode toggle in the settings menu. When the user turns it on and starts recording, the browser prompts to share a tab/window/application; that audio is mixed with the selected microphone into one stream (microphone on the left channel, shared audio on the right).
 
 ### Keyboard Shortcuts (Keybindings)
 

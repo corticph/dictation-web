@@ -8,6 +8,7 @@ import {
 } from "lit";
 import { property, state } from "lit/decorators.js";
 import { AUDIO_CHUNK_INTERVAL_MS } from "../constants.js";
+import { virtualModeContext } from "../contexts/ambient-context.js";
 import { debugDisplayAudioContext } from "../contexts/dictation-context.js";
 import {
   accessTokenContext,
@@ -96,6 +97,10 @@ export abstract class RecordingButtonBase<
   @consume({ context: debugDisplayAudioContext, subscribe: true })
   @state()
   _debug_displayAudio?: boolean;
+
+  @consume({ context: virtualModeContext, subscribe: true })
+  @state()
+  _virtualMode?: boolean;
 
   @consume({ context: pushToTalkKeybindingContext, subscribe: true })
   @state()

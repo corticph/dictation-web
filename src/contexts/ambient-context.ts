@@ -13,6 +13,8 @@ export const interactionIdContext = createContext<string | undefined>(
   Symbol("interactionId"),
 );
 
+export const virtualModeContext = createContext<boolean>(Symbol("virtualMode"));
+
 @customElement("ambient-root")
 export class AmbientRoot extends RootContext {
   @provide({ context: ambientConfigContext })
@@ -23,8 +25,17 @@ export class AmbientRoot extends RootContext {
   @property({ type: String })
   interactionId?: string;
 
+  @provide({ context: virtualModeContext })
+  @property({ attribute: "virtual-mode", type: Boolean })
+  virtualMode: boolean = false;
+
   constructor() {
     super();
+
+    this.addEventListener("virtual-mode-changed", (e: Event) => {
+      const event = e as CustomEvent<{ enabled: boolean }>;
+      this.virtualMode = event.detail.enabled;
+    });
 
     this.addEventListener("languages-changed", (e: Event) => {
       const event = e as CustomEvent;

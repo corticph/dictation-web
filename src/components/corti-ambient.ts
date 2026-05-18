@@ -5,6 +5,8 @@ import { classMap } from "lit/directives/class-map.js";
 import { ref } from "lit/directives/ref.js";
 import { DEFAULT_STREAM_CONFIG } from "../constants.js";
 import type { AmbientRoot } from "../contexts/ambient-context.js";
+import type { ConfigurableSettings } from "../types.js";
+import { commaSeparatedConverter } from "../utils/converters.js";
 import type { AmbientRecordingButton } from "./ambient-recording-button.js";
 import { CortiRoot } from "./corti-root.js";
 
@@ -20,6 +22,16 @@ export class CortiAmbient extends CortiRoot<
   // ─────────────────────────────────────────────────────────────────────────────
   // Properties
   // ─────────────────────────────────────────────────────────────────────────────
+
+  @property({
+    converter: commaSeparatedConverter,
+    type: Array,
+  })
+  override settingsEnabled: ConfigurableSettings[] = [
+    "device",
+    "language",
+    "virtualMode",
+  ];
 
   /**
    * Stream configuration for ambient capture (modes, transcription, etc.).

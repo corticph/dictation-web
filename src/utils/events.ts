@@ -252,3 +252,17 @@ export function keybindingActivatedEvent(
     detail: { keyboardEvent },
   });
 }
+
+export type VirtualModeChangedEventDetail = {
+  enabled: boolean;
+};
+
+export function virtualModeChangedEvent(
+  enabled: boolean,
+): CustomEvent<VirtualModeChangedEventDetail> {
+  return new CustomEvent("virtual-mode-changed", {
+    bubbles: true,
+    composed: true,
+    detail: { enabled },
+  });
+}

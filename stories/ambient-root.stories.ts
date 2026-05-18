@@ -31,7 +31,7 @@ const meta = {
     noWrapper: false,
     pushToTalkKeybinding: "Space",
     recordingState: "stopped",
-    settingsEnabled: ["device", "language", "keybinding"],
+    settingsEnabled: ["device", "language", "keybinding", "virtualMode"],
     toggleToTalkKeybinding: "`",
   },
   argTypes: {
@@ -92,6 +92,7 @@ const meta = {
         @network-activity=${action("network-activity")}
         @ready=${action("ready")}
         @recording-devices-changed=${action("recording-devices-changed")}
+        @virtual-mode-changed=${action("virtual-mode-changed")}
         @recording-state-changed=${action("recording-state-changed")}
         @stream-closed=${action("stream-closed")}
         @transcript=${action("transcript")}
@@ -108,6 +109,7 @@ const meta = {
           @keybinding-changed=${action("keybinding-changed")}
           @languages-changed=${action("languages-changed")}
           @recording-devices-changed=${action("recording-devices-changed")}
+          @virtual-mode-changed=${action("virtual-mode-changed")}
           @ready=${action("ready")}
         ></dictation-settings-menu>
       </ambient-root>

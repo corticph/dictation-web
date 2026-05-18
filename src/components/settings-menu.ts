@@ -8,6 +8,7 @@ import SettingsMenuStyles from "../styles/settings-menu.js";
 import type { ConfigurableSettings, RecordingState } from "../types.js";
 import { commaSeparatedConverter } from "../utils/converters.js";
 
+import "./ambient-virtual-mode-selector.js";
 import "./device-selector.js";
 import "./keybinding-selector.js";
 import "./language-selector.js";
@@ -40,6 +41,7 @@ export class DictationSettingsMenu extends LitElement {
     const showDeviceSelector = this.settingsEnabled.includes("device");
     const showLanguageSelector = this.settingsEnabled.includes("language");
     const showKeybinding = this.settingsEnabled.includes("keybinding");
+    const showVirtualMode = this.settingsEnabled.includes("virtualMode");
 
     return html`
       <div class="mic-selector">
@@ -76,6 +78,13 @@ export class DictationSettingsMenu extends LitElement {
                 ? html`<dictation-keybinding-selector
                     ?disabled=${isRecording}
                   />`
+                : nothing
+            }
+            ${
+              showVirtualMode
+                ? html`<ambient-virtual-mode-selector
+                    ?disabled=${isRecording}
+                  ></ambient-virtual-mode-selector>`
                 : nothing
             }
           </div>

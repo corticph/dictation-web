@@ -4,6 +4,7 @@ import { action } from "storybook/actions";
 import type { DictationSettingsMenu } from "../src/components/settings-menu.js";
 
 import "../src/components/settings-menu.js";
+import "../src/contexts/ambient-context.js";
 import "../src/contexts/dictation-context.js";
 import type { DictationRoot } from "../src/contexts/dictation-context.js";
 import DeviceSelectorStoryMeta, {
@@ -58,7 +59,7 @@ const meta = {
     settingsEnabled: {
       control: "check",
       description: "Which settings to enable in the settings menu",
-      options: ["device", "language", "keybinding"],
+      options: ["device", "language", "keybinding", "virtualMode"],
     },
   },
   component: "dictation-settings-menu",
@@ -89,6 +90,7 @@ const meta = {
           @keybinding-changed=${action("keybinding-changed")}
           @languages-changed=${action("languages-changed")}
           @recording-devices-changed=${action("recording-devices-changed")}
+          @virtual-mode-changed=${action("virtual-mode-changed")}
           @ready=${action("ready")}
           @error=${action("error")}
         />
@@ -168,4 +170,20 @@ export const OnlyKeybindingSelector = {
     settingsEnabled: ["keybinding"],
   },
   argTypes: disableControls(["settingsEnabled", "devices", "languages"]),
+} as StoryObj<SettingsMenuStory>;
+
+export const OnlyVirtualMode = {
+  args: {
+    settingsEnabled: ["virtualMode"],
+  },
+  argTypes: disableControls(["settingsEnabled", "devices", "languages"]),
+  render: ({ settingsEnabled, recordingState }) => html`
+    <ambient-root .recordingState=${recordingState}>
+      <dictation-settings-menu
+        settingsEnabled=${settingsEnabled}
+        @virtual-mode-changed=${action("virtual-mode-changed")}
+        @error=${action("error")}
+      />
+    </ambient-root>
+  `,
 } as StoryObj<SettingsMenuStory>;
