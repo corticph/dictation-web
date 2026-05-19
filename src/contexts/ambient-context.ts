@@ -35,22 +35,33 @@ export class AmbientRoot extends RootContext {
     this.addEventListener("virtual-mode-changed", (e: Event) => {
       const event = e as CustomEvent<{ enabled: boolean }>;
       this.virtualMode = event.detail.enabled;
-
-      if (!event.detail.enabled) {
-        return;
-      }
-
       // Set multichannel transcription for virtual mode
       const base = this.ambientConfig ?? DEFAULT_STREAM_CONFIG;
 
-      this.ambientConfig = {
-        ...base,
-        transcription: {
-          ...base.transcription,
-          isDiarization: false,
-          isMultichannel: true,
-        },
-      };
+      if (event.detail.enabled) {
+        this.ambientConfig = {
+          ...base,
+          transcription: {
+            ...base.transcription,
+            isDiarization: false,
+            isMultichannel: true,
+            participants: [
+              { channel: 0, role: "doctor" },
+              { channel: 1, role: "patient" },
+            ],
+          },
+        };
+      } else {
+        this.ambientConfig = {
+          ...base,
+          transcription: {
+            ...base.transcription,
+            isDiarization: true,
+            isMultichannel: false,
+            participants: [],
+          },
+        };
+      }
     });
 
     this.addEventListener("languages-changed", (e: Event) => {
