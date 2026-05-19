@@ -35,14 +35,28 @@ export function checkIfDefaultLanguagesList(
   );
 }
 
+export function getPreferredDefaultLanguage(
+  languages: Corti.TranscribeSupportedLanguage[] = [],
+): Corti.TranscribeSupportedLanguage | undefined {
+  if (languages.includes("en")) {
+    return "en";
+  }
+
+  if (languages.includes("en-GB")) {
+    return "en-GB";
+  }
+
+  return languages[0];
+}
+
 export function getLanguagesByRegion(region?: string): {
   languages: Corti.TranscribeSupportedLanguage[];
   defaultLanguage: string | undefined;
 } {
   const languages =
-    DEFAULT_LANGUAGES_BY_REGION[region || "default"] ||
-    DEFAULT_LANGUAGES_BY_REGION["default"];
-  const defaultLanguage = languages?.[0];
+    DEFAULT_LANGUAGES_BY_REGION[region || "default"] ??
+    DEFAULT_LANGUAGES_BY_REGION.default;
+  const defaultLanguage = getPreferredDefaultLanguage(languages);
 
   return { defaultLanguage, languages };
 }

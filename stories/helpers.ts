@@ -1,3 +1,4 @@
+import { action } from "storybook/actions";
 import {
   LANGUAGES_SUPPORTED_EU,
   LANGUAGES_SUPPORTED_US,
@@ -38,3 +39,23 @@ export const mockDevices: MediaDeviceInfo[] = [
 export const languages = Array.from(
   new Set([...LANGUAGES_SUPPORTED_EU, ...LANGUAGES_SUPPORTED_US]),
 );
+
+export function eventAction<TDetail = unknown>(name: string) {
+  const log = action(name);
+
+  return (event: Event) => {
+    const customEvent = event as CustomEvent<TDetail>;
+
+    log({
+      bubbles: event.bubbles,
+      cancelable: event.cancelable,
+      composed: event.composed,
+      defaultPrevented: event.defaultPrevented,
+      detail: customEvent.detail,
+      eventPhase: event.eventPhase,
+      isTrusted: event.isTrusted,
+      timeStamp: event.timeStamp,
+      type: event.type,
+    });
+  };
+}

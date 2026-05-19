@@ -70,6 +70,19 @@
           }
         }
       }
+    },
+    {
+      "includes": ["src/contexts/mixins/**/*.ts"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedPrivateClassMembers": "off"
+          },
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
+      }
     }
   ],
   "vcs": {

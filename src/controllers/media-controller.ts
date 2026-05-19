@@ -7,6 +7,7 @@ import {
 
 interface MediaControllerHost extends ReactiveControllerHost {
   _selectedDevice?: MediaDeviceInfo;
+  _virtualMode?: boolean;
   _debug_displayAudio?: boolean;
   dispatchEvent(event: Event): boolean;
 }
@@ -15,6 +16,8 @@ export class MediaController implements ReactiveController {
   host: MediaControllerHost;
 
   #mediaStream: MediaStream | null = null;
+  #sourceStreams: MediaStream[] = [];
+  #mixContext: AudioContext | null = null;
   #audioContext: AudioContext | null = null;
   #analyser: AnalyserNode | null = null;
   #mediaRecorder: MediaRecorder | null = null;
@@ -41,16 +44,24 @@ export class MediaController implements ReactiveController {
 
     this.#onTrackEnded = onTrackEnded;
     this.#dataHandler = dataHandler;
-    this.#mediaStream = await getMediaStream(
+
+    const capture = await getMediaStream(
       this.host._selectedDevice?.deviceId,
+      this.host._virtualMode,
       this.host._debug_displayAudio,
     );
 
-    this.#mediaStream.getTracks().forEach((track: MediaStreamTrack) => {
-      track.addEventListener("ended", () => {
-        if (this.#onTrackEnded) {
-          this.#onTrackEnded();
-        }
+    this.#mediaStream = capture.stream;
+    this.#sourceStreams = capture.sourceStreams;
+    this.#mixContext = capture.cleanupContext ?? null;
+
+    this.#sourceStreams.forEach((stream) => {
+      stream.getTracks().forEach((track: MediaStreamTrack) => {
+        track.addEventListener("ended", () => {
+          if (this.#onTrackEnded) {
+            this.#onTrackEnded();
+          }
+        });
       });
     });
 
@@ -119,6 +130,19 @@ export class MediaController implements ReactiveController {
       });
       this.#mediaStream = null;
     }
+
+    this.#sourceStreams.forEach((stream) => {
+      stream.getTracks().forEach((track) => {
+        track.stop();
+      });
+    });
+    this.#sourceStreams = [];
+
+    if (this.#mixContext && this.#mixContext.state !== "closed") {
+      await this.#mixContext.close();
+    }
+
+    this.#mixContext = null;
 
     if (this.#audioContext && this.#audioContext.state !== "closed") {
       await this.#audioContext.close();

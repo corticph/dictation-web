@@ -1,3 +1,10 @@
+import type { StreamAmbientMessage } from "./controllers/ambient-controller.js";
+import type { TranscribeMessage } from "./controllers/dictation-controller.js";
+
+export type RecordingSocketInboundMessage =
+  | TranscribeMessage
+  | StreamAmbientMessage;
+
 export type RecordingState =
   | "initializing"
   | "recording"
@@ -6,7 +13,11 @@ export type RecordingState =
 
 export type Keybinding = string;
 
-export type ConfigurableSettings = "device" | "language" | "keybinding";
+export type ConfigurableSettings =
+  | "device"
+  | "language"
+  | "keybinding"
+  | "virtualMode";
 
 export type ProxyOptions = {
   url: string;

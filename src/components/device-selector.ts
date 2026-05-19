@@ -4,7 +4,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import {
   devicesContext,
   selectedDeviceContext,
-} from "../contexts/dictation-context.js";
+} from "../contexts/mixins/devices-context.js";
 import SelectStyles from "../styles/select.js";
 import { recordingDevicesChangedEvent } from "../utils/events.js";
 
@@ -40,7 +40,7 @@ export class DictationDeviceSelector extends LitElement {
     return html`
       <div>
         <label id="device-select-label" for="device-select">
-          Recording Device
+          Microphone
         </label>
         <select
           id="device-select"

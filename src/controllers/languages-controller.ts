@@ -5,10 +5,10 @@ import { getLanguagesByRegion } from "../utils/languages.js";
 
 interface LanguagesControllerHost extends ReactiveControllerHost {
   region?: string;
-  dictationConfig?: Corti.TranscribeConfig;
   dispatchEvent(event: CustomEvent): boolean;
   requestUpdate(): void;
   _languages?: Corti.TranscribeSupportedLanguage[];
+  _selectedLanguage?: Corti.TranscribeSupportedLanguage;
 }
 
 /**
@@ -69,17 +69,13 @@ export class LanguagesController implements ReactiveController {
       this.#autoLoadedLanguages = true;
       this.host._languages = languages;
 
-      const previousLanguage = this.host.dictationConfig?.primaryLanguage;
+      const previousLanguage = this.host._selectedLanguage;
       const selectedLanguage =
         previousLanguage && languages.includes(previousLanguage)
           ? previousLanguage
           : defaultLanguage;
 
-      this.host.dictationConfig = {
-        ...this.host.dictationConfig,
-        primaryLanguage: selectedLanguage || "en",
-      };
-
+      this.host._selectedLanguage = selectedLanguage;
       this.host.requestUpdate();
       this.host.dispatchEvent(
         languagesChangedEvent(languages, selectedLanguage),

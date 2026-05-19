@@ -25,10 +25,21 @@ export type AudioLevelChangedEventDetail = {
   audioLevel: number;
 };
 
-export type TranscriptEventDetail = Corti.TranscribeTranscriptMessage;
+export type TranscriptEventDetail =
+  | Corti.TranscribeTranscriptMessage
+  | Corti.StreamTranscriptMessage;
+
 export type CommandEventDetail = Corti.TranscribeCommandMessage;
-export type UsageEventDetail = Corti.TranscribeUsageMessage;
-export type DeltaUsageEventDetail = Corti.TranscribeDeltaUsageMessage;
+
+export type UsageEventDetail =
+  | Corti.TranscribeUsageMessage
+  | Corti.StreamUsageMessage;
+
+export type DeltaUsageEventDetail =
+  | Corti.TranscribeDeltaUsageMessage
+  | Corti.StreamDeltaUsageMessage;
+
+export type FactsEventDetail = Corti.StreamFactsMessage;
 
 export type ErrorEventDetail = {
   message: string;
@@ -121,6 +132,16 @@ export function deltaUsageEvent(
   detail: DeltaUsageEventDetail,
 ): CustomEvent<DeltaUsageEventDetail> {
   return new CustomEvent("delta-usage", {
+    bubbles: true,
+    composed: true,
+    detail,
+  });
+}
+
+export function factsEvent(
+  detail: FactsEventDetail,
+): CustomEvent<FactsEventDetail> {
+  return new CustomEvent("facts", {
     bubbles: true,
     composed: true,
     detail,
@@ -229,5 +250,19 @@ export function keybindingActivatedEvent(
     cancelable: true,
     composed: true,
     detail: { keyboardEvent },
+  });
+}
+
+export type VirtualModeChangedEventDetail = {
+  enabled: boolean;
+};
+
+export function virtualModeChangedEvent(
+  enabled: boolean,
+): CustomEvent<VirtualModeChangedEventDetail> {
+  return new CustomEvent("virtual-mode-changed", {
+    bubbles: true,
+    composed: true,
+    detail: { enabled },
   });
 }

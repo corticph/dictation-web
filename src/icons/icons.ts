@@ -104,6 +104,41 @@ export class IconSettings extends LitElement {
   }
 }
 
+@customElement("icon-headset")
+export class IconHeadset extends LitElement {
+  static styles = css`
+    :host {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+  `;
+
+  render() {
+    return html`<svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-headset"
+      >
+        <path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H4a1 1 0 0 1-1-1v-6Z" />
+        <path d="M21 14h-3a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h2a1 1 0 0 0 1-1v-6Z" />
+        <path d="M3 14a9 9 0 0 1 18 0" />
+      </svg>`;
+  }
+}
+
 @customElement("icon-loading-spinner")
 export class IconLoadingSpinner extends LitElement {
   static styles = css`

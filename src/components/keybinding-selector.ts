@@ -4,7 +4,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import {
   pushToTalkKeybindingContext,
   toggleToTalkKeybindingContext,
-} from "../contexts/dictation-context.js";
+} from "../contexts/mixins/keybindings-context.js";
 import KeybindingSelectorStyles from "../styles/keybinding-selector.js";
 
 import "./keybinding-input.js";
